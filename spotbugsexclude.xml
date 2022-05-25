@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+    xmlns="https://github.com/spotbugs/filter/3.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+  <!-- Learn about findbugs filters: http://findbugs.sourceforge.net/manual/filter.html -->
+  <Match>
+    <!-- Reason: Protobuf auto-generated code. -->
+    <Bug pattern="UCF_USELESS_CONTROL_FLOW"/>
+    <Method name="maybeForceBuilderInitialization"/>
+  </Match>
+  <Match>
+    <!-- Reason: Protobuf auto-generated code. -->
+    <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
+    <Method name="buildPartial"/>
+  </Match>
+  <Match>
+    <!-- Reason: Code that will be added here from the golden-path-examples. -->
+    <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+    <Method name="trackToString"/>
+  </Match>
+  <Match>
+    <!-- Reason: Code that will be added here from the golden-path-examples. -->
+    <!-- Not needed when https://github.com/spotbugs/spotbugs/issues/574 is fixed -->
+    <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+    <Class name="~.*ServiceIT"/>
+    <Field name="~.*exceptionRule"/>
+  </Match>
+  <Match>
+    <!-- Reason: Use of default values is not a strong indicator of a bug. -->
+    <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
+  </Match>
+  <Match>
+    <!-- Reason: Use of default values is not a strong indicator of a bug. -->
+    <Bug pattern="NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
+  </Match>
+  <Match>
+    <!-- Reason: Testcontainers setup chaining does not work well with spotbugs. -->
+    <!-- Should not be needed when https://github.com/spotbugs/spotbugs/issues/676 is fixed -->
+    <Bug pattern="BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"/>
+    <Class name="~.*IT"/>
+  </Match>
+  <Match>
+    <!-- Reason: Gives false positives on try-with-resources statements
+         https://github.com/spotbugs/spotbugs/issues/756 -->
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+  </Match>
+  <Match>
+    <!-- Reason: Gives false positives on try-with-resources statements
+         https://github.com/spotbugs/spotbugs/issues/259 -->
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+  </Match>
+  <Match>
+    <!-- Reason: False positive, stream gets closed -->
+    <Bug pattern="OS_OPEN_STREAM_EXCEPTION_PATH"/>
+    <Class name="~.*EnvoyIT"/>
+  </Match>
+  <Match>
+    <!-- Reason: spotbugs can't handle @Before @BeforeClass -->
+    <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    <Class name="~^.*(Test|IT)$" />
+  </Match>
+</FindBugsFilter>

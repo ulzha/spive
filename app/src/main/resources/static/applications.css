@@ -1,0 +1,111 @@
+.more-vert {
+  -webkit-font-smoothing: antialiased;
+  box-sizing: inherit;
+  border: 0;
+  cursor: pointer;
+  /* margin: 0; */
+  margin-top: -10px;
+  margin-bottom: -40px;
+  display: inline-flex;
+  outline: 0;
+  /* position: absolute; */
+  /* left: 1800px; */
+  float: right;
+  align-items: center;
+  user-select: none;
+  vertical-align: middle;
+  justify-content: center;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  flex: 0 0 auto;
+  color: rgba(0, 0, 0, 0.54);
+  padding: 12px;
+  overflow: visible;
+  font-size: 1.5rem;
+  text-align: center;
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+#legend {
+  -webkit-font-smoothing: antialiased;
+  --line-height: 12px;
+  --font-size: 12px;
+  --horizontal-spacing: 1em;
+  --narrow-vertical-spacing: 1px;
+  --thick-vertical-spacing: 1em;
+  --ok-color: #1db855;
+  --info-color: #4687d6;
+  --error-color: #ca001b;
+  --warning-color: #f49b20;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  font-family: Circular;
+  box-sizing: inherit;
+  color: rgba(0, 0, 0, 0.87);
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);
+  overflow: hidden;
+  width: 300px;
+  padding: 10px;
+  z-index: 3;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  visibility: hidden;
+}
+
+#legend-toggle {
+  margin-top: -30px;
+  float: right;
+  color: #2e77d0;
+}
+
+.stajl1532 {
+  -webkit-font-smoothing: antialiased;
+  --red-heart:  url(data\:image\/svg\+xml\;base64\,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAuOSAxMzguMiI\+PGRlZnM\+PHN0eWxlPi5jbHMtMXtmaWxsOiNmMjY3NGU7fTwvc3R5bGU\+PC9kZWZzPjx0aXRsZT48L3RpdGxlPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTQ2MS41NiwzMzMuMzJBNDIuNjksNDIuNjksMCwwLDAsNDM0Ljc4LDMyNGMtMjIuNzUsMC0zMywxNy0zNC4yMSwxOC42MS05LjYtMTIuNDYtMjUuNTctMjAuODEtNDEuNDYtMTgtMTMuMTUsMi4zMy0yMy40Niw5LjM5LTMwLjcxLDIxLTEwLjE5LDE2LjM0LTExLDMyLjA5LTIuNDYsNDYuODRBMTIyLjYxLDEyMi42MSwwLDAsMCwzNDQuMDksNDE2YzE0LDE0LjUyLDMwLjUyLDI4LjMxLDUyLjExLDQzLjM5LDEuMzgsMSw0LjM2LDIuODYsNC4zNiwyLjg2czQtMi42MSw0Ljc2LTMuMTljMTkuMTgtMTMuMzcsMzQuOS0yNi4yNSw0OC4wOC0zOS4zNyw3LjQ2LTcuNDIsMTUuOTMtMTYuNTUsMjIuMTItMjcuOTQsMi42NS00Ljg4LDUuNjctMTEuNDIsNS40OS0xOC45MkM0ODAuNjEsMzU2LjY5LDQ3NC4wNiwzNDMuNDEsNDYxLjU2LDMzMy4zMloiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0zMjAuMSAtMzI0LjAzKSIvPjwvc3ZnPg\=\=);
+  --gold-heart:  url(data\:image\/svg\+xml\;base64\,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAuOSAxMzguMiI\+PGRlZnM\+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmQ3MDA7fTwvc3R5bGU\+PC9kZWZzPjx0aXRsZT48L3RpdGxlPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTQ2MS41NiwzMzMuMzJBNDIuNjksNDIuNjksMCwwLDAsNDM0Ljc4LDMyNGMtMjIuNzUsMC0zMywxNy0zNC4yMSwxOC42MS05LjYtMTIuNDYtMjUuNTctMjAuODEtNDEuNDYtMTgtMTMuMTUsMi4zMy0yMy40Niw5LjM5LTMwLjcxLDIxLTEwLjE5LDE2LjM0LTExLDMyLjA5LTIuNDYsNDYuODRBMTIyLjYxLDEyMi42MSwwLDAsMCwzNDQuMDksNDE2YzE0LDE0LjUyLDMwLjUyLDI4LjMxLDUyLjExLDQzLjM5LDEuMzgsMSw0LjM2LDIuODYsNC4zNiwyLjg2czQtMi42MSw0Ljc2LTMuMTljMTkuMTgtMTMuMzcsMzQuOS0yNi4yNSw0OC4wOC0zOS4zNyw3LjQ2LTcuNDIsMTUuOTMtMTYuNTUsMjIuMTItMjcuOTQsMi42NS00Ljg4LDUuNjctMTEuNDIsNS40OS0xOC45MkM0ODAuNjEsMzU2LjY5LDQ3NC4wNiwzNDMuNDEsNDYxLjU2LDMzMy4zMloiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0zMjAuMSAtMzI0LjAzKSIvPjwvc3ZnPg\=\=);
+  --line-height: 12px;
+  --font-size: 12px;
+  --horizontal-spacing: 1em;
+  --narrow-vertical-spacing: 1px;
+  --thick-vertical-spacing: 1em;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  font-family: Circular;
+  color: rgba(0, 0, 0, 0.87);
+  list-style: none;
+  font-size: 12px;
+  cursor: default !important;
+  box-sizing: inherit;
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  margin-right: 1px;
+}
+
+.stajl-incoming {
+  background-color: rgb(190, 190, 190);
+}
+
+.stajl-ok {
+  background-color: #1db855;
+}
+
+.stajl-pending {
+  background-color: #4687d6;
+}
+
+.stajl-warning {
+  background-color: #f49b20;
+}
+
+.stajl-error {
+  background-color: #ca001b;
+}

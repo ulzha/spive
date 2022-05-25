@@ -1,0 +1,23 @@
+version: "3.3"
+services:
+  bigtable-emulator:
+    image: "google/cloud-sdk"
+    command: "gcloud beta emulators bigtable start --host-port=0.0.0.0:8086"
+    ports:
+    - "8086:8086"
+  dev-0:
+    image: "$THREAD_RUNNER_IMAGE_NAME"
+    volumes:
+    - "$PWD/app/target:/app/target"
+    ports:
+    - "8040:8040"
+    - "8080:8080"
+    environment:
+    - "BIGTABLE_EMULATOR_HOST=bigtable-emulator:8086"
+  dev-bootstrap:
+    image: "$THREAD_RUNNER_IMAGE_NAME"
+    volumes:
+    - "$PWD/app/target:/app/target"
+    - "$PWD/event-store:/event-store"
+    ports:
+    - "8079:8080"

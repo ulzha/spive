@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.ulzha</groupId>
+    <artifactId>spive-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>spive-example-copy</artifactId>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.ulzha</groupId>
+      <artifactId>spive-core</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- don't really want this - want UmbilicalReader and UmbilicalWriter from core? -->
+    <dependency>
+      <groupId>io.ulzha</groupId>
+      <artifactId>spive-thread-runner</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+</project>
