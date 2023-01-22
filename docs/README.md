@@ -62,7 +62,7 @@ See [API reference](API.md).
 
 (TODO conventions and opinions)
 
-Strongly opinionated that common development iteration UX should be blazingly fast, to not break [flow](https://en.wikipedia.org/wiki/Flow_state). Aspire to gamify common chores, such as deployment, scaling, and verification of code changes. Do precompute views, throw hardware at the problem, get UI to update in split seconds.
+Strongly opinionated that common development iteration UX should be blazingly fast, to not break [flow](https://en.wikipedia.org/wiki/Flow_state). Aspire to gamify common chores, such as deployment, scaling, and verification of code changes. Do precompute views, throw hardware at the problem, get UI to [update in split seconds](http://lawsofux.com/en/doherty-threshold/).
 
 A [TODO list](TODO.md) full of wishes.
 

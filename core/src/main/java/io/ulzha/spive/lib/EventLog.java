@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An append-only durable data structure, totally ordered by event time. (Akin to a Kafka partition,
- * BookKeeper ledger or a Kinesis shard.) May contain events from one or several
+ * BookKeeper ledger, a Kinesis shard, or an SQS message group.) May contain events from one or several
  * `Stream.Partition`s. (Even from multiple streams?)
  *
  * <p>Reading is not thread-safe. (An EventLog object is only supposed to be iterated through by the
