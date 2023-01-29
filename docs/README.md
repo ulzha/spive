@@ -12,7 +12,7 @@ Project is under construction. Build should succeed using on Linux at least:
 
     mvn verify
 
-A basic "walking skeleton" can be launched in a docker-compose environment:
+A basic "walking skeleton" can be launched in a `docker compose` environment:
 
     ./tools/dev-0/start.sh
 

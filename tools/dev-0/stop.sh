@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-docker-compose -f tools/dev-0/docker-compose.yml down --volumes
+docker compose -f tools/dev-0/docker-compose.yml down --volumes

@@ -9,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An append-only durable data structure, totally ordered by event time. (Akin to a Kafka partition,
- * BookKeeper ledger, a Kinesis shard, or an SQS message group.) May contain events from one or several
- * `Stream.Partition`s. (Even from multiple streams?)
+ * BookKeeper ledger, a Kinesis shard, or an SQS message group.) May contain events from one or
+ * several `Stream.Partition`s. (Even from multiple streams?)
  *
  * <p>Reading is not thread-safe. (An EventLog object is only supposed to be iterated through by the
  * event loop of one <a href="">process instance</a>.)
  *
  * <p>Storing several partitions together is an optimization, useful because Spive scalability and
- * simplicity depends on arbitrarily fine grained partitioning, while the underlying storage may not
+ * simplicity depends on arbitrarily fine-grained partitioning, while the underlying storage may not
  * always happily manage the corresponding amount of small files or similar artifacts, and also
  * one's development environment may struggle with having to open objects/handles for myriads of
  * partitions.
