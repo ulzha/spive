@@ -4,11 +4,13 @@ Event-sourcing and collaboration platform
 
   * ![lifecycle: pre-alpha](https://img.shields.io/badge/lifecycle-pre--alpha-a0c3d2.svg)
 
+Danger: very aspirational [README-driven development](https://tom.preston-werner.com/2010/08/23/readme-driven-development.html).
+
 ## Quick Start
 
 TODO
 
-Project is under construction. Build should succeed using on Linux at least:
+Build should succeed using on Linux at least:
 
     mvn verify
 
@@ -22,23 +24,25 @@ Teaser trailer (not there yet):
 
 ## Why
 
-Spīve's primary goal is to boost productivity in software engineering, concretely - simplify development and management of event-driven applications, like microservices (such that may power your app features, websites or enterprise internal tools) and near-real time data processing pipelines.
+Spīve's primary goal is to boost productivity in software engineering, concretely - simplify development and management of event-driven applications, ranging from near-real time data processing pipelines to microservices, websites and enterprise internal tools.
 
 A secondary goal is to build out a platform where business logic is neatly delineated from infrastructure concerns, such as event storage. This gives you greater power to carry out blanket optimizations across all your owned applications, thus achieving resource economy, as well as strategic capability to hop between vendors.
 
 ## How
 
-Spīve, as a platform, implements a few relatively non-leaky abstractions for managing consistently ordered, partitioned streams of events, and orchestrates [event-sourced](https://www.cqrs.nu/Faq/event-sourcing) applications that reliably consume and produce such streams.
+Spīve, as a platform, implements a few relatively non-leaky abstractions for managing consistently ordered, partitioned streams of events, and orchestrates [event-sourced](https://www.cqrs.nu/Faq/event-sourcing) distributed applications that reliably consume and produce such streams.
 
 (Event-sourcing as a paradigm capitalizes on history retention, repeatable behaviors, and relies on in-memory data structures, to marry simple and easy development work with predictable processing performance. Spīve API is designed to directly assist application developers in successfully leveraging these principles.)
 
 A few of the orchestration aspects include automated <abbr title="&quot;Keep The Lights On&quot;">KTLO<abbr> operations, such as instance restoration to healthy and live state by replaying historical events in case of crashes, assisted rollout of code changes, and proactive scaling (by sharding) in anticipation of excessive number of events hitting any single instance.
 
-Spīve API does strive to abstract away storage and encoding of events - the application developer/owner should be enabled to work "in language" without extraneous concern about where technically the events came from and where they went. Spīve guarantees that the application code will keep executing in a consistent and timely<sup>TBD</sup> fashion to accept the incoming events, or otherwise the application owner will get alerted.
+Automated up-to-date data flow diagrams become a reality, which is not surprising, given how the power of Spīve orchestration lies in its knowledge of the actual data flow between related applications (batch processing pipelines, services, user facing website backends, operations tools). Tens or hundreds of interconnected applications, distributed on thousands of instances, can be easily operated and understood on a "single pane of glass" interface. The rich interactive visualization comes in especially handy when a software system grows to more than one development/operations team and its architecture evolves through years.
 
-Under the hood, the Spīve abstractions unlock a slew of blanket optimizations that can be applied transparently. Examples include microbatching to trade off latency against throughput, moving the persisted event streams between differently priced storages, moving the computation between different machine types, etc.
+Spīve API strives to abstract away storage and encoding of events - the application developer/owner should be enabled to work "in language" without extraneous concern about where technically the events came from and where they went. Spīve guarantees that deployed application code will keep executing in a consistent and timely<sup>TBD</sup> fashion to react to incoming events, or otherwise application owners will get alerted.
 
-Another upside is that the stored events are easily available for offline analytical processing in notebooks and batch pipelines, with minimal effort to extract the data.
+Under the hood, the Spīve abstractions around event handling unlock a slew of blanket optimizations that can be applied transparently. Examples include microbatching to trade off latency against throughput, moving the persisted event streams between differently priced storages, moving the computation between different machine types, etc.
+
+Another upside is that the persisted events are easily available for offline analytical processing in notebooks and batch pipelines, with minimal effort to extract accurate data. No more "data collection as an afterthought".
 
 ## Limitations and tradeoffs
 

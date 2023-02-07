@@ -1,14 +1,16 @@
-A little automated analysis perhaps goes a long way towards feasible version storage and replay: check if it’s better to replay a small subset of shards from scratch or to replay a small subset/ray of time from a snapshot. (Anything else than a ray would seem to be impossible in general, but maybe some ultra-advanced snapshots and contracts on the consumer...)
+A little automated analysis perhaps goes a long way towards feasible version storage and replay: check if it's better to replay a small subset of shards from scratch or to replay a small subset/ray of time from a snapshot. (Anything else than a ray would seem to be impossible in general, but maybe some ultra-advanced snapshots and contracts on the consumer...)
 
 Need lots of education.
 
 Some Docker-inspired slogan like "event sourcing for the masses"?
 
-Every low-volume stream - append BecomeIdle event with exponential backoff to ensure it’s considered unchanged for collaboration?
+Borne out of daily frustrations and repetitiveness in software engineer occupation, marked by all flavors of [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) from RDBMS to NoSQL to NuSQL, mired by nightmares of prospects of death by a thousand YAML files.
+
+Every low-volume stream - append BecomeIdle event with exponential backoff to ensure it's considered unchanged for collaboration?
 
 Upfill - on discovering a buggy event or broken sequence, have automation to assist fixing simple problems in the inputs. (E.g. if just the event time should be different, perhaps the input event also should be just rewritten to a different event time, all the way up the lineage, without necessarily changing any of the processes in the platform?)
 
-I may sometimes want to stop the Spive front process, or upgrade it; in what way will the process be represented by an instance of itself, when it is under rolling upgrade/catchup? In an inconsistent way, I’m afraid?
+I may sometimes want to stop the Spive front process, or upgrade it; in what way will the process be represented by an instance of itself, when it is under rolling upgrade/catchup? In an inconsistent way, I'm afraid?
 
 TOHACK Play any stream as a soundtrack, actually. Drums/sad trombones on errors, etc.
 
@@ -91,4 +93,6 @@ if infrastructure simply let us process all changes to a group of related entiti
 
 Traffic Director ..is not based on DNS
 
-People say "service" but they have a function in mind (function of a request)... Stateful services can do the things we wish and still scale (by sharding)
+People say "service" but they have a function in mind (function of a request)... Stateful services can do the things we wish and still operate at web-scale (by sharding)
+
+Serviceless = focus on data flow of each individual datum/field. DDD/OOP but without that much concern about how to slice it up into services.

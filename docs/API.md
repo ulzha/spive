@@ -122,7 +122,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   Stream as an API in one direction. (In simpler terms - look at the dependencies in process DAG and make a decision what reacts to what... In other words - sagas, sagas everywhere?)
 
-  RPC APIs in... TODO which directions? None? Only ingress/egress/3rd party? And for signals that are rarely used, or hard to compute, thus don’t warrant precomputed streams?
+  RPC APIs in... TODO which directions? None? Only ingress/egress/3rd party? And for signals that are rarely used, or hard to compute, thus don't warrant precomputed streams?
 
   Separate stream for each EventSchema - TODO pros/cons?
 
