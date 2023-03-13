@@ -5,5 +5,7 @@ package io.ulzha.spive.app.model;
  *
  * <p>Also needs to understand when different streams refer to the same "entity", and thus partition
  * key sets need to correspond when joining? Would this be configured per process, in UI?
+ *
+ * <p>Foreign keys hardly a thing?
  */
 public class EventSchema {}

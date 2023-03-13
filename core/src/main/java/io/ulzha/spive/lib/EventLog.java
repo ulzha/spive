@@ -116,7 +116,7 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
    * <p>Relies on concurrency primitives of the underlying storage to safely detect races.
    *
    * <p>By requiring awareness of prevTime, this allows an application to ensure it has seen all the
-   * events already present in the log the moment a subsequent event gets appended. Thus the
+   * events already present in the log the moment a subsequent event gets appended. That way the
    * application can prevent duplicate events or events that form logical contradictions against
    * application state, even if the application has instances running redundantly that race their
    * appends against each other.

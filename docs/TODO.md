@@ -17,10 +17,10 @@
 - [ ] 5 minute "Getting Started" guide + a HelloWorld app - how to generate app.lib, develop and run locally. (Cookiecutter kind of thing but able to function offline, once cached)
 - [ ] Have UI provide debugging instructions (locally, remotely)
 - [ ] Examples of tests (event definition language, named snapshots as JUnit rules, capturers, matchers) - some examples of likely and non-obvious bugs included
-- [ ] Example with best effort graceful shutdown for workloads and gateways (just to clarify the extent of non-guarantee)
-- [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by a hourly batch scan?) Debouncing perhaps useful in some cases?
+- [ ] Example with best-effort graceful shutdown for workloads and gateways (just to clarify the extent of non-guarantee)
+- [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by an hourly batch scan?) Debouncing perhaps useful in some cases?
 - [ ] Example advanced distributed data structure implementation (real time toplist?)
-- [ ] Visualize workload logs (and metrics) somehow in between events as well... or just link to Stackdriver. Should have a way to view logs sorted by event time?
+- [ ] Visualize workload logs (and metrics) somehow in between events as well... or just link to Stackdriver? Champion golden signals, aligned to timeline (with its warning and error hues), embedded from 3rd party sources like that? Should have a way to view logs sorted by event time?
 - [ ] Example interactive application, web page updating itself until you see your writes (React/Redux?) (Also where does the fanout lie for building one result set from a massively sharded backend? In a sidecar? Or rather, fan-in updates to an index in front, like ElasticSearch, and get away with only single gets from backend?)
 - [ ] Compute diffs between streams
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
@@ -41,8 +41,8 @@
 - [ ] For manual overrides (configuration updates over umbilical) during incidents, Spive UI needs to be able to hit the instance that owns any given application shard, even if discovery is down along with SpiveInventory. Harden to have state more durable? Broadcast?
 - [ ] PoC Backstage plugin
 - [ ] PoC dependency visualization, wannabe data mesh
-- [ ] PoC blocking path visualization, Improved Pipeline Overview style - be able to tell whether something is stuck in transcoding or what. (In dependency visualization UI or perhaps in Lightstep UI?)
-- [ ] Basic tracing of causal chains to Lightstep, without needing trace IDs explicitly added by application developers (is EventTime a span? Is causal graph another sort of a span?)
+- [ ] PoC blocking path visualization, Improved Pipeline Overview style - be able to tell whether something is stuck in transcoding or what. (In dependency visualization UI or perhaps in 3rd party tracing UI?)
+- [ ] Basic tracing of causal chains to Lightstep/Datadog/New Relic, without needing trace IDs explicitly added by application developers (is EventTime a span? Is causal graph another sort of span?)
 - [ ] An example scheduler application (CliccTracc)
 - [ ] An example load tester application (for a gateway)
 - [ ] An example custom environment runner (GPU, Azure, ...)
@@ -57,15 +57,15 @@
 - [ ] SpiveChaos as a separate infra application (killing resources, corrupting storages, skewing clocks, redeploying with duplication of side effects, crashing gateway calls, and otherwise testing the overall platform for resiliency)
 - [ ] "Expand all" for an entity - e.g. for a process, see deployment structure with replicas, see cost, KPIs, etc, which would normally be hidden under a UI button
 - [ ] Collect histogram of cost over version, performance over version. The point is to show trends/anomalies along the version dimension too, not just over wall clock time or event time. (Control for effects of inventory changes to ensure comparison is fair? Test performance in overlapping time frames and not spread out in time, so that external systems can be expected to be running a stable version and to be roughly in the same state.)
-- [ ] Expand all automatic maintenance done - retry bursts, error pattern analysis, history of sharding decisions, history of scaling/throttling (non)decisions with human readable reasons (visualize expected effects ahead of time, as annotations on graphs in the future - important because scaling takes time), history of sanity checks, history of profiling runs, history of storage and runtime optimizations
+- [ ] Expand all automatic maintenance done - retry bursts, error pattern analysis, history of sharding decisions, history of scaling/throttling (non)decisions with human-readable reasons (visualize expected effects ahead of time, as annotations on graphs in the future - important because scaling takes time), history of sanity checks, history of profiling runs, history of storage and runtime optimizations
 - [ ] Expand with the control plane timeline filtered to a particular process, color coded by version (overlay with cost & performance histograms)
 - [ ] Sharding heuristics: hot key set (for independent scaling), erroring key set and its complement (though this maybe doesn't need to result in a sharding change), ...
 - [ ] Sanity heuristics: any lagging instance always crashing despite the application purportedly being active-active HA? Spawning new threads in event handlers? Statical analysis of the jar/deployable artifact (alert and reject applications using EventLog or other IO sidestepping the generated interface)?
 - [ ] Search the dashboard (not just process names, also codesearch and even event data)
 - [ ] Visualize dependencies between processes and streams in the dashboard
 - [ ] Visualize groups of related processes as entities, and relations between them
-- [ ] Separate SpiveFancyLayout application? Visualize consequences always from left to right, mostly from top to bottom; each entity roughly clumped as a horizontal slice(s) and colored; ownership roughly clumped as a vertical slice(s) and circled. Seamlessly pan left from dashboard
-- [ ] Visualize meta dependencies - platform, its bootstrap platform, ad infinitum, processes with their replication factors, inventory (particularly interesting if shared)
+- [ ] Separate SpiveFancyLayout application? Visualize consequences always from left to right, mostly from top to bottom; each entity roughly clumped as a horizontal slice(s) and colored; ownership roughly clumped as a vertical slice(s) and circled. Clump arrow slopes for 2.5D+ perception. Seamlessly pan left from dashboard
+- [ ] Visualize meta dependencies - platform, its bootstrap platform, ad infinitum, processes with their replication factors, inventory (particularly interesting if shared) by panning further
 - [ ] Visualize stream version history (seamlessly pan to a drawer in UI)
 - [ ] Visualize dependencies between individual events processed, also sequence diagram style; enable referencing with a "common" or "happy" path
 - [ ] Advanced tracing - visualize event journey with propagation of its effects, with a sharable animated replay for troubleshooting
@@ -76,7 +76,7 @@
 - [ ] Allow detaching and operating the application standalone. This works also as a "Plan B"/escape hatch/retreat path for early Spīve adopters
 - [ ] Document/demo how to implement custom deploy/undeploy hooks listening to platform events to clean up application resources (like dashboards, or Pub/Sub subscriptions) reliably even if application instances die abruptly
 - [ ] Example forking/decoration/piggyback flow - frictionlessly and safely reuse parent application(s) in-memory state as part of the model of a new application, replicated without the parent side effects, but with added I/O to more streams, and/or with different workloads
-- [ ] SpiveCompactor as a separate infra application. (Only for compactable applications that provide the compaction job logic.) (Compactions can be batch, Kappa architecture meets Lambda architecture.) (Compaction also to play a role in GDPR/PII data deletion?)
+- [ ] SpiveCompactor as a separate infra application. (Only for compactable applications that provide the compaction job logic.) (Compactions can be batch, Kappa architecture meets Lambda architecture.) (Compaction also to play a role in GDPR/PII data deletion?) Compaction to generate historical graph? (Doubt)
 - [ ] Example compaction job as a reduce operator in the same codebase as event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
 - [ ] SpiveArchiver as a related infra application
 - [ ] Investigate snapshotting the process memory at a low level... Though this wouldn't work across code versions... (No need to snapshot workloads or gateways, which deal with all the impure things like handles and resources. All the instance state in memory must be completely at rest between events. If we support spill to disk, must capture that too.) https://github.com/google/snappy-start, CRIU

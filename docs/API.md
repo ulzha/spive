@@ -62,7 +62,7 @@ Apart from emitting events, Spīve does not make any provision to preserve state
 
 You can schedule a snapshot workload on a regular basis in terms of event time. (TODO sidenote - processing time scheduling not useful? Preferably handled by a sporadic workload?)
 
-This comes in particularly handy as a simple and easy means to produce robust snapshots/dumps/reports. Spīve will make a best effort to avoid duplicate executions.
+This comes in particularly handy as a simple and easy means to produce robust snapshots/dumps/reports. Spīve caters for at least once execution.
 
 TODO what happens when they run indefinitely? Configurable timeout policies with sensible defaults? Or merely ensure that another instance is making progress handling events without the long-running workload?
 
@@ -81,6 +81,8 @@ The concurrent workload Runnable is started once per instance, and it may spawn 
 TODO
 
 (perhaps rename to Programs, to not cause confusion with distributed systems literature where a process is usually local?)
+
+Think distributed process with durable execution.
 
 (“process formation” a useful term, cf. https://12factor.net/concurrency, https://12factor.net/admin-processes, except stateful)
 
@@ -122,7 +124,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   Stream as an API in one direction. (In simpler terms - look at the dependencies in process DAG and make a decision what reacts to what... In other words - sagas, sagas everywhere?)
 
-  RPC APIs in... TODO which directions? None? Only ingress/egress/3rd party? And for signals that are rarely used, or hard to compute, thus don't warrant precomputed streams?
+  RPC APIs in... TODO which directions? ~Ingress/egress/3rd party, and for signals that are rarely used, or hard to compute, thus don't warrant precomputed streams?
 
   Separate stream for each EventSchema - TODO pros/cons?
 

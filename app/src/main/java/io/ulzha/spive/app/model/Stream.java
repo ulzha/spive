@@ -70,7 +70,7 @@ public class Stream {
   public String name; // human readable
 
   /**
-   * major.minor.patch[-pre-relase]
+   * major.minor.patch[-pre-release]
    *
    * <p>UI can reveal more structure when displaying version, including details like the operational
    * decision ("Tom debug issue #MMMM", "Nina edit incident #NNNN"), or the Process or application
