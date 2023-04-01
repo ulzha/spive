@@ -58,7 +58,7 @@ Use-case wise, Spīve most readily works for backend services serving low write 
 
 On a scale from "a highly optimized query engine for detecting near-Earth asteroids on a specialized astronomy mainframe" to "keep shipping and tweaking features our users value, and don't break the Jenga tower", quite a lot of software systems belong in the latter end, the "long, fat tail" of smallish but business critical systems. Recognizing the significant engineering overhead and accidental complexity present in this area, the design of Spīve platform readily trades off processor cycles in favor of cutting engineering toil, tightening the development feedback loop, and reducing mean time to incident resolution.
 
-Many Big Data problems can just as well benefit from event-sourcing model, especially if the problem is [embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel). Anyway Spīve is not a blob store, nor yet another Big Data analytics engine with faster queries or anything of that sort. Spīve API makes different tradeoffs than those familiar to Beam or Hadoop users:
+Many Big Data problems can just as well benefit from event-sourcing model, especially if the problem is [embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel). In any case, Spīve is not a blob store, nor yet another Big Data analytics engine with faster queries or anything of that sort. Spīve API makes different tradeoffs than those familiar to Beam or Hadoop users:
 * Serializability of [event handler](API.md#Event_handlers) code to transfer it to distributed workers is not required - on the contrary, the application code (image, resp. jar) is deployed and executed as-built, usually on a set of virtual machine instances.
 * Control of per-instance in-memory state using the native constructs of the programming language is facilitated, avoiding superfluous indirection.
 * Event handling logic is designed to be single threaded: among simplicity benefits, it should be particularly noted that stacktraces in case of errors tend to be informative and pointing to the relevant places in business logic. Meanwhile, the necessary parallelism for maintaining acceptable performance is achieved via partitioning of streams, resp. by sharding processes into multiple instances.
@@ -68,7 +68,7 @@ Spīve ultimately provides safeguards so that out-of-order events are never obse
 
 Depending on how suitable your application is for the event-sourcing paradigm, Spīve provides predictably low overhead; "you don't pay for what you don't use".
 
-Last but not least, ubiquity is part of Spīve's strategy - many supported types of event stores, and adaptation into diverse execution environments allow Spīve to prove itself early, and use your cloud or on-premise resources efficiently as your appetite grows.
+Last but not least, on the flipside of Spīve's conceptual simplicity lies its ubiquity. Wide variety of supported types of event stores, and adaptation into diverse execution environments allow Spīve to prove itself early, and use your cloud or on-premise resources efficiently as your appetite grows.
 
 ## Usage
 

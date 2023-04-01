@@ -206,7 +206,7 @@ public final class LocalFileSystemEventLog implements EventLog {
             throw new InternalSpiveException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
-                        previousEvent.time, nextEvent.time, filePath));
+                    previousEvent.time, nextEvent.time, filePath));
           }
         } catch (IOException e) {
           throw new RuntimeException(e);

@@ -157,7 +157,7 @@ public final class BigtableEventLog implements EventLog {
             throw new InternalSpiveException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
-                        previousEvent.time, nextEvent.time, logId));
+                    previousEvent.time, nextEvent.time, logId));
           }
         } catch (IOException e) {
           throw new RuntimeException(e);

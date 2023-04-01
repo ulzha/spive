@@ -14,8 +14,6 @@ Every low-volume stream - append BecomeIdle event with exponential backoff to en
 
 Upfill - on discovering a buggy event or broken sequence, have automation to assist fixing simple problems in the inputs. (E.g. if just the event time should be different, perhaps the input event also should be just rewritten to a different event time, all the way up the lineage, without necessarily changing any of the processes in the platform?)
 
-I may sometimes want to stop the Spive front process, or upgrade it; in what way will the process be represented by an instance of itself, when it is under rolling upgrade/catchup? In an inconsistent way, I'm afraid?
-
 TOHACK Play any stream as a soundtrack, actually. Drums/sad trombones on errors, etc.
 
 TOHACK git as a backend for "document editing" applications (and as an illustration of log-oriented architectures)
@@ -39,6 +37,13 @@ TuneCore?
 
 In order to make the build and test cycle satisfyingly fast, we facilitate separate code repositories, and avoid requiring a monorepo.
 
+Build-test-deploy cycle goal of ~15 minutes:
+* some time for provisioning instances
+* 5 min for replay on each instance, on average
+* expect to stagger them a bit
+* darkload canaries
+* couple of minutes for zero downtime DNS swap
+
 `Runner` (`RuntimeAgent`? `InstanceHost`? `Outstance`? `CapacityProvider`?)
 
 Highlight in ARCHITECTURE.md some coupling that is intentional in order to keep the mental model simple?
@@ -56,7 +61,7 @@ No, given that a stream is only written by one process, we probably can safely a
 
 In gateway code, relying on client built-in retry features may make sense if they support indefinite retry, otherwise their use is likely redundant, as an infinite loop needs to be rolled around anyway.
 
-Processes like neurons, reading 1-n streams and writing one.
+Processes like neurons, reading 0-n streams and writing one. Optionally.
 
 Streams keyed by whatever primary key you'd use in a database -> every join is a new process, new microservice.
 

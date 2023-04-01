@@ -8,24 +8,24 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * A process of an application (microservice or a micropipeline) that consumes a Stream.
+ * A distributed process. (Not to be confused with a process running on a single computer.)
  *
- * <p>Represents the deployment of an application code, its business logic. Multiple versions for
- * one name may be running at once, such as CI test runs, ad-hoc runs by developers, and by
+ * <p>Represents one deployment of an application code. Multiple Processes for one application name
+ * may be deployed and run concurrently, such as CI test runs, ad-hoc runs by developers, and by
  * automatic optimization harnesses. (TODO say only one is exposed in service discovery? Per
  * hermetic domain)
  *
- * <p>Code can accept user input solely by translating it to an Event; when subsequently consuming
- * it, code is to always behave deterministically and only perform side effects via Gateways, and/or
- * emit new Events in-platform. Consumption can fail (cause exceptions or suffer a failure of the
- * external system behind a Gateway), in which case the Platform never skips the problematic event,
- * but instead retries reliably. Platform always tries to "keep the lights on" by replaying event
- * history on a copy of the failing instance, which allows applications to proceed through hardware
- * failures and similar. Moreover, advanced retry behavior includes splitting of partition ranges,
- * throttling, bumping of system resources, etc - automation of what usually is menial on-call work.
+ * <p>A process may be stateless or stateful. Process Instances can have state in local memory,
+ * which must be deterministically computed from the consumed Events.
  *
- * <p>Instances can have local state in memory, which must be deterministically computed from the
- * consumed Events.
+ * <p>A process can consume zero or more Streams of Events, and it can produce zero or one Stream.
+ *
+ * <p>Event consumption can fail (throw exceptions or propagate exceptions from a third party system
+ * behind a Gateway), in which case event-sourced Processes never skip the problematic event, but
+ * instead retry reliably. Spīve always tries to "keep the lights on" by replaying event history on
+ * a copy of the failing Process Instance, which allows Processes to proceed through hardware
+ * failures and similar. The replacement Process Instance replays the same partition range as the
+ * original one, starting from the same position that the whole Process was started from, reliably.
  *
  * <p>Many processes can be consuming from the same Stream; a process can start consumption from the
  * very beginning of the Stream or from an arbitrary position in it.
@@ -35,20 +35,17 @@ import java.util.UUID;
  * of Partitions of the input Stream. (Similar to how Kafka consumers in a consumer group would each
  * receive a subset of messages on the topic.) All the Slices run the same application code.
  *
- * <p>A new behaviorally identical copy of an Instance can be spawned if the physical incarnation
- * running the Instance crashes, losing its state. The replacement Process Instance replays the same
- * partition range of the Stream as the original one, starting from the same position that the whole
- * Process was started from, reliably.
- *
  * <p>An Instance can have multiple identical copies always running as a redundancy measure, too, as
  * a way for an application to have active-active configuration for high availability. The replica
  * Instances that redundantly consume the same set of partitions are guaranteed to share eventually
- * consistent state, while Gateways perform side effects redundantly. Idempotency may matter here.
+ * consistent state, while Gateways perform side effects redundantly if idempotent, or otherwise all
+ * but one replica stay in replay mode (i.e. active-active for reads but active-passive for
+ * updates).
  *
  * <p>At any point in time, the Instances of one Process can be in different positions in the
- * consumed Stream, some may be in replay mode and some live, but the Platform orchestrates them so
- * that they eventually do progress through till the latest Event in the Stream, unless stopped by
- * failures.
+ * consumed Stream, some may be in replay mode and some live. Spīve orchestrates them so that they
+ * all eventually progress through to the latest Event in the Stream and become live, unless stopped
+ * by permanent failures.
  */
 public class Process {
   public String name; // human readable
@@ -171,19 +168,18 @@ public class Process {
 
   /**
    * Besides event handling, an application may also comprise lightweight background workloads,
-   * unpredictable query serving workloads, long running heavy computation workloads, etc, which
-   * benefit from being scalable independently from each other.
+   * unpredictable query serving workloads, long-running heavy computation workloads, etc., which
+   * benefit from being scalable independently of each other.
    *
    * <p>To facilitate easy and simple development of robust and performant applications, workload
    * code in Spīve can be written as part of the application and talk directly to its data model
-   * (the consistent in-memory that's built by the way of handling events). Nevertheless Spīve makes
-   * first class decisions about the independent scaling of workloads.
+   * (that is built in-memory by the way of handling input events).
    *
    * <p>The application code should not make assumptions as to which (if any) workload Runnables
    * coexist on a given Instance.
    *
    * <p>The workload Runnables should never modify the Instance's in-memory state nor create side
-   * effects through gateways, except emitting events through EventStoreGateway. (Unsure how to
+   * effects through Gateways, except emitting events through EventStoreGateway. (Unsure how to
    * enforce that, within realms of Java, without badly sacrificing simplicity.)
    */
   public static class Workload {

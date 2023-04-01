@@ -110,11 +110,14 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
   - no serializability of functions
   - no thread-safety for event handlers and snapshot workloads
   - no substantial constraints on logging, metric collection, build system, ...
+  - no geographical limitation of instances to a particular region
 * do need
   - wrap side effects in gateways that take care of the mundane (replay a.k.a. dry-run mode, retries, throttling/backoff, undo)
-  - determinism in event handlers (i.e. event handlers must not act dependent on external input via service calls or similar. That's what workloads are for)
+  - determinism in event handlers
+    Event handlers may perform deterministic activities, including posting to external services via gateways (which retry indefinitely until success, or crash out on permanent failures), but otherwise they must not act dependent on chance. That's what concurrent workloads are for.
+    (TODO helpers for creation from event handlers? via emitSelect/emitCase/emitConditional/emitUnpredictable hardly applicable in active-active... Or is that a higher level workflow API in making? A "lightweight decider" pattern also possible?)
   - thread-safe data structures, if consumed by concurrent workloads
-  - design your streams + your in-memory data model with sharding in mind (ie. event handlers do not operate on the global snapshot but a local one) and with lack of transactions in mind (referential integrity will break, and the conventional thing to do is to emit immediate consequential events propagating downstream app dependency graph, which is not necessarily the same way as upward in the entity aggregation graph... TODO is there a generic method for orienting the relations?)
+  - design your streams + your in-memory data model with sharding in mind (i.e. event handlers do not operate on the global snapshot but a local one) and with lack of transactions in mind (referential integrity will break, and the conventional thing to do is to emit immediate consequential events propagating downstream app dependency graph, which is not necessarily the same way as upward in the entity aggregation graph... TODO is there a generic method for orienting the relations?)
   - write a compaction job, if replay of the entire history per shard is too costly (useful even if we hypothetically get snapshotting working)
 
 
