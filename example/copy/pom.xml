@@ -8,6 +8,7 @@
     <groupId>io.ulzha</groupId>
     <artifactId>spive-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>spive-example-copy</artifactId>
