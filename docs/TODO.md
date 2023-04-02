@@ -51,7 +51,7 @@
 - [ ] An example Python application (Trio for async workloads? Requests hopefully support it already? "generally asyncio simply prints and discards unhandled exceptions from Tasks")
 - [ ] An example Scala application
 - [ ] Configurable timeouts/moneyouts, per time interval, and/or per event
-- [ ] Document the [contract](doc/API.md#Contract), a nice two-sided list of what concerns don't exist and what concerns do
+- [ ] Document the [contract](API.md#Contract), a nice two-sided list of what concerns don't exist and what concerns do
 - [ ] Document migration from 3rd party event-sourcing systems, a tutorial/script on how to import change data stored in any ordered/timestamped format of your choice
 - [ ] Test helpers for parameterizing over various modes of parallelization and replay (https://tech.redplanetlabs.com/2021/03/17/where-were-going-we-dont-need-threads-simulating-distributed-systems/)
 - [ ] SpiveBench as a separate infra application (running another application and testing for performance and correctness issues etc. when it comes to high event rates, extreme sharding, swapping storages...)

@@ -49,16 +49,16 @@ public class CliccTraccOutputGateway extends Gateway {
    *
    * @return true if appended, false if not because the latest stored Event has time >
    *     lastEventTime.
-   * @throws IllegalArgumentException if event.time <= lastEventTime, or the latest event time in
-   *     the log has time > lastEventTime.
+   * @throws IllegalArgumentException if event.time <= lastEventTime.
    */
   private boolean emit(Event event, EventTime lastEventTime) {
     // TODO check that it belongs to the intended stream and the intended subset of partitions
     long sleepMs = 10;
     long sleepMsMax = 100000;
+    EventEnvelope ee = EventEnvelope.wrap(event);
     while (true) {
       try {
-        return eventLog.appendIfPrevTimeMatch(EventEnvelope.wrap(event), lastEventTime);
+        return eventLog.appendIfPrevTimeMatch(ee, lastEventTime);
         // TODO report that we're leading
       } catch (IOException e) {
         // likely an intermittent failure, let's keep trying
@@ -79,18 +79,21 @@ public class CliccTraccOutputGateway extends Gateway {
    * Emits an event to the output simultaneous with the event being handled.
    *
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
-   * Otherwise the event time is the same as for the input event currently handled. (TODO
-   * non-simultaneous version?)
+   * Otherwise the event time is the same as for the input event currently handled. FIXME
+   * (TODO non-simultaneous version?)
    */
-  public boolean emitConsequential(CreateFoo payload) {
+  public boolean emitConsequential(Clicc payload) {
     return emitIf(() -> true, cliccType, payload);
   }
 
   /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
    * that point in time.
+   *
+   * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
+   * appends, or until the check returns false.
    */
-  public boolean emitIf(Supplier<Boolean> check, CreateFoo payload) {
+  public boolean emitIf(Supplier<Boolean> check, Clicc payload) {
     return emitIf(check, cliccType, payload);
   }
 
@@ -105,7 +108,7 @@ public class CliccTraccOutputGateway extends Gateway {
           if (emit(event, lastEventTime.get())) {
             lastEventTimeEmitted.set(eventTime);
             return true;
-          }
+          } // FIXME else cikls
         }
         return false;
       } finally {
@@ -116,6 +119,45 @@ public class CliccTraccOutputGateway extends Gateway {
       throw t;
     }
   }
+
+  /**
+   * Emits between event handlers, first checking if the check returns true for in-memory state at
+   * that point in time.
+   *
+   * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
+   * appends, or until the check returns false, or until the latest event read from the log has
+   * time >= eventTime.
+   */
+  public boolean emitIf(Supplier<Boolean> check, Clicc payload, EventTime eventTime) {
+    return emitIf(check, cliccType, payload, eventTime);
+  }
+
+  private <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload, EventTime eventTime) {
+    try {
+      awaitAdvancing();
+      if (lastEventTime.get() != null && lastEventTime.get().compareTo(eventTime) >= 0) {
+        return false;
+      }
+
+      try {
+        eventLog.lock();
+        if (check.get()) {
+          final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+          if (emit(event, lastEventTime.get())) {
+            lastEventTimeEmitted.set(eventTime);
+            return true;
+          } // FIXME else cikls
+        }
+        return false;
+      } finally {
+        eventLog.unlock();
+      }
+    } catch (Throwable t) {
+      umbilicus.addError(t);
+      throw t;
+    }
+  }
+
 
   /**
    * Picks the earliest event time that may be used for the next event so that an append operation

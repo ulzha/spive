@@ -133,7 +133,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
 #### Partitioning is arbitrarily fine-grained
 
-  Do partition by whatever primary key you would use in a database. (A business entity id, like user ID or such. Cf. [workflow IDs in Temporal](https://cadenceworkflow.io/docs/concepts/workflows/#id-uniqueness).)
+  Do partition by whatever primary key you would use in a database. (A business entity ID, like user ID or such. Cf. [workflow IDs in Temporal](https://docs.temporal.io/workflows#workflow-id).)
 
   TODO elaborate
 

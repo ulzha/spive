@@ -56,9 +56,10 @@ public class CopyOutputGateway extends Gateway {
     // TODO check that it belongs to the intended stream and the intended subset of partitions
     long sleepMs = 10;
     long sleepMsMax = 100000;
+    EventEnvelope ee = EventEnvelope.wrap(event);
     while (true) {
       try {
-        return eventLog.appendIfPrevTimeMatch(EventEnvelope.wrap(event), lastEventTime);
+        return eventLog.appendIfPrevTimeMatch(ee, lastEventTime);
         // TODO report that we're leading
       } catch (IOException e) {
         // likely an intermittent failure, let's keep trying
@@ -79,8 +80,8 @@ public class CopyOutputGateway extends Gateway {
    * Emits an event to the output simultaneous with the event being handled.
    *
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
-   * Otherwise the event time is the same as for the input event currently handled. (TODO
-   * non-simultaneous version?)
+   * Otherwise the event time is the same as for the input event currently handled. FIXME
+   * (TODO non-simultaneous version?)
    */
   public boolean emitConsequential(CreateFoo payload) {
     return emitIf(() -> true, createFooType, payload);
@@ -89,6 +90,9 @@ public class CopyOutputGateway extends Gateway {
   /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
    * that point in time.
+   *
+   * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
+   * appends, or until the check returns false.
    */
   public boolean emitIf(Supplier<Boolean> check, CreateFoo payload) {
     return emitIf(check, createFooType, payload);
@@ -105,7 +109,7 @@ public class CopyOutputGateway extends Gateway {
           if (emit(event, lastEventTime.get())) {
             lastEventTimeEmitted.set(eventTime);
             return true;
-          }
+          } // FIXME else cikls
         }
         return false;
       } finally {

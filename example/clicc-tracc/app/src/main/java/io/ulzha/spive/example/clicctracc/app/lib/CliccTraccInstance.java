@@ -29,7 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public interface CliccTraccInstance {
-  void accept(final CreateFoo event);
+  default void accept(final Clicc event) {
+  }
+
+  default void accept(final Clicc event, final EventTime eventTime) {
+    accept(event);
+  }
 
   /**
    * Implements application's interaction boilerplate with a concrete processing runtime and event
@@ -91,7 +96,7 @@ public interface CliccTraccInstance {
     }
 
     private static List<Runnable> selectWorkloads(CliccTracc app) {
-      return ImmutableList.of();
+      return ImmutableList.of(app.new Trigger());
     }
 
     /**

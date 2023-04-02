@@ -70,16 +70,16 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
    *
    * @return true if appended, false if not because the latest stored Event has time >
    *     lastEventTime.
-   * @throws IllegalArgumentException if event.time <= lastEventTime, or the latest event time in
-   *     the log has time > lastEventTime.
+   * @throws IllegalArgumentException if event.time <= lastEventTime.
    */
   private boolean emit(Event event, EventTime lastEventTime) {
     // TODO check that it belongs to the intended stream and the intended subset of partitions
     long sleepMs = 10;
     long sleepMsMax = 100000;
+    EventEnvelope ee = EventEnvelope.wrap(event);
     while (true) {
       try {
-        return eventLog.appendIfPrevTimeMatch(EventEnvelope.wrap(event), lastEventTime);
+        return eventLog.appendIfPrevTimeMatch(ee, lastEventTime);
         // TODO report that we're leading
       } catch (IOException e) {
         // likely an intermittent failure, let's keep trying
@@ -111,6 +111,9 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
   /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
    * that point in time.
+   *
+   * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
+   * appends, or until the check returns false.
    */
   // `Predicate<Spive> check`? So it's clearer what state is accessible?
   public boolean emitIf(Supplier<Boolean> check, InstanceStatusChange payload) {
@@ -163,7 +166,7 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
           if (emit(event, lastEventTime.get())) {
             lastEventTimeEmitted.set(eventTime);
             return true;
-          }
+          } // FIXME else cikls
         }
         return false;
       } finally {
@@ -215,8 +218,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
    * Emits an event to the output simultaneous with the event being handled.
    *
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
-   * Otherwise the event time is the same as for the input event currently handled. (TODO
-   * non-simultaneous version?)
+   * Otherwise the event time is the same as for the input event currently handled. FIXME
+   * (TODO non-simultaneous version?)
    *
    * <p>For use in event handlers. Ensures that workloads would not append any sporadic event in
    * between. (Haven't yet thought about situations where the consequence comes a significant time

@@ -56,16 +56,16 @@ public class SpiveScalerOutputGateway extends Gateway {
    *
    * @return true if appended, false if not because the latest stored Event has time >
    *     lastEventTime.
-   * @throws IllegalArgumentException if event.time <= lastEventTime, or the latest event time in
-   *     the log has time > lastEventTime.
+   * @throws IllegalArgumentException if event.time <= lastEventTime.
    */
   private boolean emit(Event event, EventTime lastEventTime) {
     // TODO check that it belongs to the intended stream and the intended subset of partitions
     long sleepMs = 10;
     long sleepMsMax = 100000;
+    EventEnvelope ee = EventEnvelope.wrap(event);
     while (true) {
       try {
-        return eventLog.appendIfPrevTimeMatch(EventEnvelope.wrap(event), lastEventTime);
+        return eventLog.appendIfPrevTimeMatch(ee, lastEventTime);
         // TODO report that we're leading
       } catch (IOException e) {
         // likely an intermittent failure, let's keep trying
