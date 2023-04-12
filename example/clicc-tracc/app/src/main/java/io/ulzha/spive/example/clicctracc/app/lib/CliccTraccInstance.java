@@ -32,6 +32,7 @@ public interface CliccTraccInstance {
   default void accept(final Clicc event) {
   }
 
+  // Any neater type signature possible? Help ensure that exactly one of the two is implemented?
   default void accept(final Clicc event, final EventTime eventTime) {
     accept(event);
   }
@@ -96,7 +97,7 @@ public interface CliccTraccInstance {
     }
 
     private static List<Runnable> selectWorkloads(CliccTracc app) {
-      return ImmutableList.of(app.new Trigger());
+      return ImmutableList.of(app.new Metronome());
     }
 
     /**

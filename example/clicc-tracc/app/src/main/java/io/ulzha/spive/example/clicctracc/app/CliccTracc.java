@@ -11,8 +11,8 @@ import java.time.temporal.ChronoUnit;
 /**
  * A simplistic scheduler process.
  *
- * <p>Emits an event every hour sharp, in a durable fashion - does not skip over hours even if
- * temporary downtime in processing time occurs.
+ * <p>Emits an event every hour sharp, in a reliable fashion - catches up and does not skip over
+ * hours even if temporary downtime in processing time occurs.
  *
  * <p>Can be used as a durable cron thingy.
  */
@@ -28,7 +28,7 @@ public class CliccTracc implements CliccTraccInstance {
     lastClicc = eventTime.instant;
   }
 
-  public class Trigger implements Runnable {
+  public class Metronome implements Runnable {
     // ephemeral state in workloads is ok, so long as we are ok with it getting emptied on redeploy
     private Instant start;
 

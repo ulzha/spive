@@ -44,7 +44,7 @@ public class CliccTraccOutputGateway extends Gateway {
   }
 
   /**
-   * Blocks indefinitely until append occurs or a competing prior append has been positively
+   * Blocks until either successfully appended, or a competing prior append has been positively
    * detected.
    *
    * @return true if appended, false if not because the latest stored Event has time >
@@ -83,36 +83,43 @@ public class CliccTraccOutputGateway extends Gateway {
    * (TODO non-simultaneous version?)
    */
   public boolean emitConsequential(Clicc payload) {
-    return emitIf(() -> true, cliccType, payload);
+    return emitIf(() -> true, cliccType, payload, lastEventTime.get());
   }
 
   /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
    * that point in time.
    *
-   * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
+   * <p>Blocks until either successfully appended, which may be indefinitely preempted by competing
    * appends, or until the check returns false.
+   * (TODO possible to provide fairer guarantees than indefinitely?)
+   * (TODO a version with deadline? For predictable response time in server scenarios)
    */
-  public boolean emitIf(Supplier<Boolean> check, Clicc payload) {
-    return emitIf(check, cliccType, payload);
+  public boolean emitWhen(Supplier<Boolean> check, Clicc payload) {
+    return emitWhen(check, cliccType, payload);
   }
 
-  private <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload) {
+  private <T> boolean emitWhen(Supplier<Boolean> check, Type type, T payload) {
     try {
-      final EventTime eventTime = awaitAdvancing();
+      while (true) {
+        final EventTime eventTime = awaitAdvancing();
 
-      try {
-        eventLog.lock();
-        if (check.get()) {
-          final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
-          if (emit(event, lastEventTime.get())) {
-            lastEventTimeEmitted.set(eventTime);
-            return true;
-          } // FIXME else cikls
+        try {
+          eventLog.lock();
+          if (lastEventTime.get() == null || lastEventTime.get().compareTo(eventTime) < 0) {
+            if (check.get()) {
+              final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+              if (emit(event, lastEventTime.get())) {
+                lastEventTimeEmitted.set(eventTime);
+                return true;
+              }
+            } else {
+              return false;
+            }
+          }
+        } finally {
+          eventLog.unlock();
         }
-        return false;
-      } finally {
-        eventLog.unlock();
       }
     } catch (Throwable t) {
       umbilicus.addError(t);
@@ -122,31 +129,32 @@ public class CliccTraccOutputGateway extends Gateway {
 
   /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
-   * that point in time.
+   * eventTime.
    *
-   * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
-   * appends, or until the check returns false, or until the latest event read from the log has
-   * time >= eventTime.
+   * <p>Blocks until either successfully appended (which may be preempted by a burst of competing
+   * appends, even if at call time all events in the log have time < eventTime), or until a
+   * competing prior append has been positively detected (the latest event read from the log has
+   * time >= eventTime), or until the check returns false.
+   * (TODO possible to provide fairer guarantees than haphazard competition?)
    */
   public boolean emitIf(Supplier<Boolean> check, Clicc payload, EventTime eventTime) {
     return emitIf(check, cliccType, payload, eventTime);
   }
 
   private <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload, EventTime eventTime) {
+    final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
     try {
       awaitAdvancing();
-      if (lastEventTime.get() != null && lastEventTime.get().compareTo(eventTime) >= 0) {
-        return false;
-      }
 
       try {
         eventLog.lock();
-        if (check.get()) {
-          final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
-          if (emit(event, lastEventTime.get())) {
-            lastEventTimeEmitted.set(eventTime);
-            return true;
-          } // FIXME else cikls
+        if (lastEventTime.get() == null || lastEventTime.get().compareTo(eventTime) < 0) {
+          if (check.get()) {
+            if (emit(event, lastEventTime.get())) {
+              lastEventTimeEmitted.set(eventTime);
+              return true;
+            }
+          }
         }
         return false;
       } finally {
@@ -157,7 +165,6 @@ public class CliccTraccOutputGateway extends Gateway {
       throw t;
     }
   }
-
 
   /**
    * Picks the earliest event time that may be used for the next event so that an append operation
@@ -181,6 +188,7 @@ public class CliccTraccOutputGateway extends Gateway {
     // in testing, this Supplier call also advances lastEventTime. Should create a cleaner harness
     Instant tentativeInstant = wallClockTime.get();
 
+    // FIXME null until the first event is read, right?
     while (lastEventTime.get().compareTo(lastEventTimeEmitted.get()) < 0
         || tentativeInstant.compareTo(lastEventTime.get().instant) <= 0) {
       try {

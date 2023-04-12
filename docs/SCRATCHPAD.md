@@ -8,6 +8,8 @@ Borne out of daily frustrations and repetitiveness in software engineer occupati
 
 Answer to the question: "What's the smallest amount of effort to get robust observability and scalability?" How to get there as cheaply as possible, with the least cognitive overhead. In my application code I would prefer to not write any retry loops or metrics emitters ~ever again.
 
+Quasi-durable execution? Is this structured scalability? (By analogy to structured concurrency)
+
 We taught sand to think, but then it got sidetracked with all those nondeterministic ideas... Sand, get back in line
 
 Every low-volume stream - append BecomeIdle event with exponential backoff to ensure it's considered unchanged for collaboration?
