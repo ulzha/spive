@@ -1,15 +1,49 @@
+.timeline {
+  position: relative;
+}
+.timeline svg {
+  position: relative;
+  z-index: 1;
+}
+tr.even {
+  background-color: #f8f8f8;
+}
+tr.expanded {
+  background-color: #f2f2f2;
+  border-top: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+}
+.app-name {
+  max-width: 200px;
+  text-overflow: ellipsis;
+}
+.expanded {
+  position: relative;
+}
+.expanded table {
+  width: 100%;
+}
+.range-picker {
+  position: absolute;
+  top: 3px;
+  left: 100px;
+  background-color: #f2f2f2;
+  width: 40px;
+  height: 28px;
+  border-top: 1px solid #d9d9d9;
+  border-left: 1px solid #d9d9d9;
+  border-right: 1px solid #d9d9d9;
+}
+
 .more-vert {
   -webkit-font-smoothing: antialiased;
   box-sizing: inherit;
   border: 0;
   cursor: pointer;
-  /* margin: 0; */
   margin-top: -10px;
   margin-bottom: -40px;
   display: inline-flex;
   outline: 0;
-  /* position: absolute; */
-  /* left: 1800px; */
   float: right;
   align-items: center;
   user-select: none;

@@ -1,11 +1,8 @@
 render_timeline = function(el, volume, offset, color) {
   // inspired from https://www.essycode.com/posts/create-sparkline-charts-d3/
-  // const WIDTH      = 160;
-  // const HEIGHT     = 30;
-  // const DATA_COUNT = 40;
-  const WIDTH      = 1000;
+  const WIDTH      = 700;
   const HEIGHT     = 10;
-  const DATA_COUNT = 250;
+  const DATA_COUNT = 175;
   const BAR_WIDTH  = WIDTH / DATA_COUNT - 1;
   const data = d3.range(DATA_COUNT).map( d => (d < DATA_COUNT - offset ?  (Math.random() < volume ? 1 - Math.random() : 1) : 1) );
   const x    = d3.scaleLinear().domain([0, DATA_COUNT]).range([0, WIDTH]);

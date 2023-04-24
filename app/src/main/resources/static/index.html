@@ -1333,10 +1333,6 @@ body::backdrop {
   margin: 0;
   max-width: 100%;
 }
-</style><style data-jss="" data-meta="MuiCard">
-.MuiCard-root-2232 {
-  overflow: hidden;
-}
 </style><style data-jss="" data-meta="MuiCardHeader">
 .MuiCardHeader-root-2261 {
   display: flex;
@@ -1420,9 +1416,6 @@ body::backdrop {
   font-weight: normal;
   line-height: 1;
 }
-.MuiTableCell-body-2341 {
-  color: rgba(0, 0, 0, 0.87);
-}
 .MuiTableCell-footer-2342 {
   color: rgba(0, 0, 0, 0.54);
   font-size: 0.75rem;
@@ -1498,36 +1491,6 @@ body::backdrop {
 }
 .MuiTable-stickyHeader-2333 {
   border-collapse: separate;
-}
-</style><style data-jss="" data-meta="MuiTableBody">
-.MuiTableBody-root-2351 {
-  display: table-row-group;
-}
-</style><style data-jss="" data-meta="MuiTableRow">
-.MuiTableRow-root-2335 {
-  color: inherit;
-  height: auto;
-  display: table-row;
-  outline: 0;
-  vertical-align: middle;
-}
-.MuiTableRow-root-2335.MuiTableRow-hover-2336:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-.MuiTableRow-root-2335.Mui-selected, .MuiTableRow-root-2335.Mui-selected:hover {
-  background-color: rgba(175, 41, 150, 0.08);
-}
-.MuiTableRow-root-2335:not([data-is-virtual]):nth-of-type(even), .MuiTableRow-root-2335[data-is-virtual][data-is-odd] {
-  background-color: #f8f8f8;
-}
-.MuiTableRow-hover-2336:hover {
-  cursor: pointer;
-}
-.MuiTableRow-head-2337 {
-  height: auto;
-}
-.MuiTableRow-head-2337:nth-of-type(odd) {
-  background-color: #ffffff;
 }
 </style><style data-jss="" data-meta="MuiBadge">
 .MuiBadge-root-63 {
@@ -1834,6 +1797,7 @@ a.text:hover {
   overflow: auto;
 }
 .content .padding {
+  min-width: 1000px;
   padding-top: 24px;
   padding-left: 16px;
   padding-right: 16px;
@@ -1874,7 +1838,7 @@ a {
 				<button class="MuiButtonBase-root-2191 MuiButton-root-2201 MuiButton-text-2203 MuiButton-textPrimary-2204" tabindex="0" type="button"><span class="MuiButton-label-2202"><svg class="MuiSvgIcon-root-2192" focusable="false" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path></svg>Support</span><span class="MuiTouchRipple-root-2322"></span></button>
 			</div>
 		</div>
-		<div class="MuiPaper-root-2233 MuiCard-root-2232 MuiPaper-elevation1-2237 MuiPaper-rounded-2234">
+		<div class="MuiPaper-root-2233 MuiPaper-elevation1-2237 MuiPaper-rounded-2234">
 
 			<div class="MuiCardHeader-root-2261" style="display: inline-block; width: 100%">
 			  <div class="MuiCardHeader-content-2264"><span class="MuiTypography-root-2141 MuiCardHeader-title-2265 MuiTypography-h5-2150 MuiTypography-displayBlock-2170">Your Event-Driven Applications</span></div>
@@ -1888,10 +1852,10 @@ a {
 				<table class="MuiTable-root-2332">
 
 				<thead class="MuiTableHead-root-2334">
-				<tr class="MuiTableRow-root-2335 MuiTableRow-head-2337"><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">NAME</th><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">TIMELINE</th><!--<th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">DATAFLOW URL</th><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">DEPLOYMENT LOG URL</th>--></tr>
+				<tr class="MuiTableRow-head-2337"><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">NAME</th><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">TIMELINE</th><!--<th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">DATAFLOW URL</th><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">DEPLOYMENT LOG URL</th>--></tr>
 				</thead>
 
-				<tbody id="applications" class="MuiTableBody-root-2351">
+				<tbody id="applications">
 				</tbody>
 
 				</table>
