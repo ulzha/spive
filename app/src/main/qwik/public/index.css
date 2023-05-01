@@ -1,9 +1,3 @@
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="theme-color" content="#000000"><link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff2" type="font/woff2" crossorigin="anonymous"><link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff2" type="font/woff2" crossorigin="anonymous"><link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff2" type="font/woff2" crossorigin="anonymous"><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" media="all" onload="if(media!='all')media='all'"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/3.5.0/octicons.css" media="all" onload="if(media!='all')media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" media="all" onload="if(media!='all')media='all'"><link rel="shortcut icon" href="/favicon.ico"><title>Event-Driven Applications</title>
-
-<link href="applications.css" rel="stylesheet">
-<link href="applications-expanded-row.css" rel="stylesheet">
-
-<style data-jss="" data-meta="MuiTouchRipple">
 .MuiTouchRipple-root-2322 {
   top: 0;
   left: 0;
@@ -74,7 +68,6 @@
     transform: scale(1);
   }
 }
-</style><style data-jss="" data-meta="MuiButtonBase">
 .MuiButtonBase-root-2191 {
   color: inherit;
   border: 0;
@@ -107,7 +100,6 @@
     -webkit-print-color-adjust: exact;
   }
 }
-</style><style data-jss="" data-meta="MuiButton">
 .MuiButton-root-2201 {
   color: rgba(0, 0, 0, 0.87);
   padding: 6px 16px;
@@ -327,7 +319,6 @@
 .MuiButton-iconSizeLarge-2227 > *:first-child {
   font-size: 22px;
 }
-</style><style data-jss="" data-meta="MuiSvgIcon">
 .MuiSvgIcon-root-78 {
   fill: currentColor;
   width: 1em;
@@ -362,7 +353,6 @@
 .MuiSvgIcon-fontSizeLarge-86 {
   font-size: 2.1875rem;
 }
-</style><style data-jss="" data-meta="MuiSvgIcon">
 .MuiSvgIcon-root-2192 {
   fill: currentColor;
   width: 1em;
@@ -397,37 +387,6 @@
 .MuiSvgIcon-fontSizeLarge-2200 {
   font-size: 2.1875rem;
 }
-</style><style data-jss="" data-meta="MuiCssBaseline">
-html {
-  box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-*, *::before, *::after {
-  box-sizing: inherit;
-}
-strong, b {
-  font-weight: 700;
-}
-body {
-  color: rgba(0, 0, 0, 0.87);
-  margin: 0;
-  font-size: 0.875rem;
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-  font-weight: 400;
-  line-height: 1.43;
-  letter-spacing: 0.01071em;
-  background-color: #fafafa;
-}
-@media print {
-  body {
-    background-color: #fff;
-  }
-}
-body::backdrop {
-  background-color: #fafafa;
-}
-</style><style data-jss="" data-meta="MuiTypography">
 .MuiTypography-root-87 {
   margin: 0;
 }
@@ -568,7 +527,6 @@ body::backdrop {
 .MuiTypography-displayBlock-116 {
   display: block;
 }
-</style><style data-jss="" data-meta="MuiTypography">
 .MuiTypography-root-2141 {
   margin: 0;
 }
@@ -715,7 +673,6 @@ body::backdrop {
 .MuiTypography-displayBlock-2170 {
   display: block;
 }
-</style><style data-jss="" data-meta="MuiPaper">
 .MuiPaper-root-2233 {
   color: rgba(0, 0, 0, 0.87);
   transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
@@ -802,7 +759,6 @@ body::backdrop {
 .MuiPaper-elevation24-2260 {
   box-shadow: 0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12);
 }
-</style><style data-jss="" data-meta="MuiSnackbar">
 .MuiSnackbar-root-146 {
   left: 8px;
   right: 8px;
@@ -878,7 +834,6 @@ body::backdrop {
     bottom: 24px;
   }
 }
-</style><style data-jss="" data-meta="MuiIconButton">
 .MuiIconButton-root-2183 {
   flex: 0 0 auto;
   color: rgba(0, 0, 0, 0.54);
@@ -948,7 +903,6 @@ body::backdrop {
   align-items: inherit;
   justify-content: inherit;
 }
-</style><style data-jss="" data-meta="MuiAvatar">
 .MuiAvatar-root-167 {
   width: 40px;
   height: 40px;
@@ -986,7 +940,6 @@ body::backdrop {
   width: 75%;
   height: 75%;
 }
-</style><style data-jss="" data-meta="MuiTooltip">
 .MuiTooltip-popper-2172 {
   z-index: 1500;
   pointer-events: none;
@@ -1111,7 +1064,6 @@ body::backdrop {
     margin: 14px 0;
   }
 }
-</style><style data-jss="" data-meta="MuiDialog">
 @media print {
   .MuiDialog-root-4 {
     position: absolute !important;
@@ -1222,7 +1174,6 @@ body::backdrop {
   margin: 0;
   max-width: 100%;
 }
-</style><style data-jss="" data-meta="MuiDialog">
 @media print {
   .MuiDialog-root-121 {
     position: absolute !important;
@@ -1333,7 +1284,6 @@ body::backdrop {
   margin: 0;
   max-width: 100%;
 }
-</style><style data-jss="" data-meta="MuiCardHeader">
 .MuiCardHeader-root-2261 {
   display: flex;
   padding: 16px;
@@ -1359,7 +1309,6 @@ body::backdrop {
 .MuiCardHeader-content-2264 {
   flex: 1 1 auto;
 }
-</style><style data-jss="" data-meta="MuiCardContent">
 .MuiCardContent-root-2267 {
   padding: 16px;
 }
@@ -1372,7 +1321,6 @@ body::backdrop {
     padding-right: 16px;
   }
 }
-</style><style data-jss="" data-meta="MuiPopover">
 .MuiPopover-paper-119 {
   outline: 0;
   position: absolute;
@@ -1383,7 +1331,6 @@ body::backdrop {
   overflow-x: hidden;
   overflow-y: auto;
 }
-</style><style data-jss="" data-meta="MuiPopover">
 .MuiPopover-paper-2231 {
   outline: 0;
   position: absolute;
@@ -1394,7 +1341,6 @@ body::backdrop {
   overflow-x: hidden;
   overflow-y: auto;
 }
-</style><style data-jss="" data-meta="MuiTableCell">
 .MuiTableCell-root-2339 {
   margin: 0;
   display: table-cell;
@@ -1472,7 +1418,6 @@ body::backdrop {
   position: sticky;
   background-color: #f8f8f8;
 }
-</style><style data-jss="" data-meta="MuiTable">
 .MuiTable-root-2332 {
   width: 100%;
   display: table;
@@ -1492,7 +1437,6 @@ body::backdrop {
 .MuiTable-stickyHeader-2333 {
   border-collapse: separate;
 }
-</style><style data-jss="" data-meta="MuiBadge">
 .MuiBadge-root-63 {
   display: inline-flex;
   position: relative;
@@ -1612,11 +1556,9 @@ body::backdrop {
 .MuiBadge-invisible-77 {
   transition: transform 195ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 }
-</style><style data-jss="" data-meta="MuiTableHead">
 .MuiTableHead-root-2334 {
   display: table-header-group;
 }
-</style><style data-jss="" data-meta="MuiDrawer">
 .MuiDrawer-docked-156 {
   flex: 0 0 auto;
 }
@@ -1668,7 +1610,6 @@ body::backdrop {
 .MuiDrawer-paperAnchorDockedBottom-165 {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
-</style><style data-jss="" data-meta="MuiDrawer">
 .MuiDrawer-docked-181 {
   flex: 0 0 auto;
 }
@@ -1720,180 +1661,3 @@ body::backdrop {
 .MuiDrawer-paperAnchorDockedBottom-190 {
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
-</style><style>
-.sidebar button {
-  color: #b5b5b5;
-  cursor: pointer;
-  width: 48px;
-  height: 48px;
-  border: none;
-  margin: 0;
-  padding: 0;
-  background: none;
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: center;
-}
-.sidebar hr {
-  width: 100%;
-  border: none;
-  height: 1px;
-  background: #383838;
-}
-.sidebar .filler {
-  flex: 1;
-}
-a.text {
-  color: #2e77d0;
-  white-space: nowrap;
-}
-a.text:hover {
-  color: #4687d6;
-}
-.titlebar {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  flex-direction: row;
-  justify-content: flex-end;
-}
-.titlebar h4 {
-  flex: 1 1 auto;
-  margin-bottom: 8px;
-}
-.titlebar .rightpanel {
-  flex: 0 1 auto;
-  display: flex;
-  overflow: visible;
-  flex-wrap: wrap;
-  min-width: 0;
-  align-items: center;
-  margin-left: 8px;
-  margin-bottom: 8px;
-  flex-direction: row;
-}
-.titlebar button svg {
-  margin-right: 8px;
-}
-.sidebar {
-  top: 0;
-  height: 100vh;
-  display: flex;
-  position: sticky;
-  flex-flow: column nowrap;
-  background: #171717;
-  overflow: auto;
-}
-.viewport {
-  width: 100%;
-  height: 100vh;
-  display: grid;
-  grid-template-rows: 1fr;
-  grid-template-columns: max-content 1fr;
-}
-.content {
-  overflow: auto;
-}
-.content .padding {
-  min-width: 1000px;
-  padding-top: 24px;
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 24px;
-  background-color: #f8f8f8;
-  @media (min-width:600px) {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-}
-html {
-  height: 100%;
-  font-family: Circular;
-  overflow: hidden;
-}
-body {
-  height: 100%;
-  font-family: Circular;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-</style></head><body style=""><noscript>You need to enable JavaScript to run this app.</noscript><div class="viewport">
-	<div class="sidebar">
-		<button><span class="MuiBadge-root-63"><svg class="MuiSvgIcon-root-78 MuiSvgIcon-fontSizeSmall-85" focusable="false" viewBox="0 0 24 24"><path d="M9 2C5.146 2 2 5.146 2 9s3.146 7 7 7a6.959 6.959 0 004.574-1.719l.426.426V16l6 6 2-2-6-6h-1.293l-.426-.426A6.959 6.959 0 0016 9c0-3.854-3.146-7-7-7zm0 2c2.773 0 5 2.227 5 5s-2.227 5-5 5-5-2.227-5-5 2.227-5 5-5z"></path></svg><span class="MuiBadge-badge-64 MuiBadge-anchorOriginTopRightCircle-73 MuiBadge-colorSecondary-66 MuiBadge-invisible-77 MuiBadge-dot-68"></span></span></button>
-		<hr>
-		<div class="filler"></div>
-		<hr>
-		<button><span class="MuiBadge-root-63"><svg class="MuiSvgIcon-root-78 MuiSvgIcon-fontSizeSmall-85" focusable="false" viewBox="0 0 24 24" style="transform: rotate(90deg);"><path d="M12 6.93L5.93 13l1.5 1.5L12 9.93l4.57 4.57 1.5-1.5L12 6.93z"></path></svg><span class="MuiBadge-badge-64 MuiBadge-anchorOriginTopRightCircle-73 MuiBadge-colorSecondary-66 MuiBadge-invisible-77 MuiBadge-dot-68"></span></span></button>
-	</div>
-	<div class="content">
-		<div class="padding">
-		<div class="titlebar">
-			<h4 class="MuiTypography-root-2141 MuiTypography-h4-2149">Event-Driven Applications</h4>
-			<div class="rightpanel">
-				<button class="MuiButtonBase-root-2191 MuiButton-root-2201 MuiButton-text-2203" tabindex="0" type="button" to="/create-component"><span class="MuiButton-label-2202">Create new</span><span class="MuiTouchRipple-root-2322"></span></button>
-				<button class="MuiButtonBase-root-2191 MuiButton-root-2201 MuiButton-text-2203 MuiButton-textPrimary-2204" tabindex="0" type="button"><span class="MuiButton-label-2202"><svg class="MuiSvgIcon-root-2192" focusable="false" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path></svg>Support</span><span class="MuiTouchRipple-root-2322"></span></button>
-			</div>
-		</div>
-		<div class="MuiPaper-root-2233 MuiPaper-elevation1-2237 MuiPaper-rounded-2234">
-
-			<div class="MuiCardHeader-root-2261" style="display: inline-block; width: 100%">
-			  <div class="MuiCardHeader-content-2264"><span class="MuiTypography-root-2141 MuiCardHeader-title-2265 MuiTypography-h5-2150 MuiTypography-displayBlock-2170">Your Event-Driven Applications</span></div>
-				<span id="legend-toggle">LEGEND</span>
-			</div>
-
-			<div class="MuiCardContent-root-2267">
-
-				<button class="MuiButtonBase-root-1541 MuiIconButton-root-1558 more-vert" tabindex="0" type="button" gaprops="[object Object]"><span class="MuiIconButton-label-1565"><span class="material-icons MuiIcon-root-1679">more_vert</span></span><span class="MuiTouchRipple-root-1785"></span></button>
-
-				<table class="MuiTable-root-2332">
-
-				<thead class="MuiTableHead-root-2334">
-				<tr class="MuiTableRow-head-2337"><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">NAME</th><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">TIMELINE</th><!--<th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">DATAFLOW URL</th><th class="MuiTableCell-root-2339 MuiTableCell-head-2340" scope="col">DEPLOYMENT LOG URL</th>--></tr>
-				</thead>
-
-				<tbody id="applications">
-				</tbody>
-
-				</table>
-
-			</div>
-		</div>
-		</div>
-	</div>
-</div>
-
-<script src="d3.v6.min.js"></script>
-<script src="timeline.js"></script>
-<script src="spive.js"></script>
-
-<div class="MuiPaper-root-878 MuiCard-root-966 MuiPaper-elevation1-882 MuiPaper-rounded-879" id="legend">
-	<ul>
-		<li title="Grey bars indicate input events that have not been handled yet. Blurred timeline area indicates the interval leading up to current time, where new input events may appear." class=""><span class="legend-swatch color-incoming"></span><span>Incoming</span></li>
-
-		<!-- Perhaps this is not very necessary. When expanding to include inputs, we will see input progress, and events are "pending"" as much as the input application is ahead. Also the blue color is a bit ugly. -->
-		<!-- <li title="Blue bars indicate input events exist in input streams but have not been handled yet" class=""><span class="legend-swatch color-pending"></span><span>Pending</span></li> -->
-
-		<li title="Flashing spots indicate events that are being handled or just finished handling. Blinking vertical lines indicate the last handled event time of each application instance. Note: this indication is approximate and delayed from real time." class=""><span class="legend-swatch"></span><span>In Progress</span></li>
-
-		<li title="Green bars indicate events which have been handled successfully, and for which no warning or error information is logged by runner." class=""><span class="legend-swatch color-ok"></span><span>OK</span></li>
-
-		<li title="Orange bars indicate events whose handling has run into intermittent failures. Happens when a gateway receives an error from an external system, and proceeds to retry the call. The bar stays orange even if the event ends up handled successfully. Note: this indication is best-effort - not every occurrence is logged." class=""><span class="legend-swatch color-warning"></span><span>Warning</span></li>
-
-		<li title="Red bars indicate events whose handlers crashed. Note: this indication is reliable, assuming the runner is not lost - progress on a stream partition stops as soon as the first crash occurs, and the runner attempts to report crash information back indefinitely." class=""><span class="legend-swatch color-error"></span><span>Error</span></li>
-
-    <!-- So far only sketching UI for basic KTLO operations. Will need to graph data quality information as an additional layer. Or extend the Warning status with more conditions? -->
-
-		<!-- TODO wall clock time? Both important? Wall clock time in another column overlaid with cost? -->
-		<li title="Orange horizontal lines indicate intervals in event time where at least one application instance is in TIMEOUT state. Thicker lines correspond to more such instances. Happens when events exceed their nominal handling time (which may be due to e.g. long processing in event handler handler, or many retries in gateway, or just a single external call taking very long). The events may eventually get handled successfully. Note: this indication is best-effort - not every occurrence is logged."><span class="legend-swatch"></span><span>Instances with timeouts</span></li>
-
-		<!-- TODO wall clock time? Both important? Wall clock time in another column overlaid with cost? -->
-		<li title="Red horizontal lines indicate intervals in event time where at least one application instance is in ERROR state. Thicker lines correspond to more such instances. Happens when an event handler crashes. The application code may need fixing (unless the crashing behavior goes away by automated scaling/replacement of the affected instance). Note: this indication is reliable, assuming the runner is not lost - progress on a stream partition stops as soon as the first crash occurs, and the runner attempts to report crash information back indefinitely."><span class="legend-swatch"></span><span>Instances with errors</span></li>
-	</ul>
-	<p>Hover over the event bars in the timeline to inspect event details and troubleshoot eventual warnings or errors.</p>
-</div>
-
-</body></html>

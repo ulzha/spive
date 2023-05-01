@@ -1,0 +1,22 @@
+tr.event td {
+    overflow: hidden;
+    padding-left: 8px;
+    padding-right: 8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+tr.event td:first-child {
+    padding-left: 24px;
+}
+tr.event td button {
+    padding: 0;
+}
+tr.event td button .icon {
+    width: auto;
+    height: 1em;
+    font-size: 1rem;
+}
+tr.event img.logs-icon {
+    height: 20px;
+    width: 20px
+}

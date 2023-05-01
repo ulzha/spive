@@ -106,34 +106,3 @@
 .MuiTableSortLabel-icon-548{opacity:0;font-size:18px;transition:opacity 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;margin-left:4px;user-select:none;margin-right:4px;}
 .MuiTableSortLabel-iconDirectionDesc-549{transform:rotate(0deg);}
 .MuiTableSortLabel-iconDirectionAsc-550{transform:rotate(180deg);}
-
-tr.event td {
-  overflow: hidden;
-  padding-left: 8px;
-  padding-right: 8px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-tr.event td:first-child {
-  padding-left: 24px;
-}
-tr.event td button {
-    padding: 0;
-}
-tr.event td button .icon {
-    width: auto;
-    height: 1em;
-    font-size: 1rem;
-}
-tr.event img.logs-icon {
-    height: 20px;
-    width: 20px
-}
-
-/*! CSS Used fontfaces */
-@font-face{font-family:'Material Icons';font-style:normal;font-weight:400;src:url(https://fonts.gstatic.com/s/materialicons/v80/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');}
-@font-face{font-family:Circular;src:url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-light.woff2') format('woff2'),   url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-light.woff') format('woff');font-weight:300;font-style:normal;}
-@font-face{font-family:Circular;src:url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff2') format('woff2'),   url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff') format('woff');font-weight:400;font-style:normal;}
-@font-face{font-family:Circular;src:url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff2') format('woff2'),   url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff') format('woff');font-weight:500;font-style:normal;}
-@font-face{font-family:Circular;src:url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff2') format('woff2'),   url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff') format('woff');font-weight:700;font-style:normal;}
-@font-face{font-family:Circular;src:url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-black.woff2') format('woff2'),   url('https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-black.woff') format('woff');font-weight:900;font-style:normal;}

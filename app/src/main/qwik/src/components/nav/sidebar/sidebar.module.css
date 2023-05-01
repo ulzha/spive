@@ -1,0 +1,33 @@
+.sidebar {
+  float: left;
+  width: 48px;
+  height: 100vh;
+  background: #171717;
+  overflow: auto;
+}
+
+.sidebar button {
+  color: #b5b5b5;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  border: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar hr {
+  width: 100%;
+  border: none;
+  height: 1px;
+  background: #383838;
+}
+
+.sidebar .filler {
+  flex: 1;
+}

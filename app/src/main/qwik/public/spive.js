@@ -8,7 +8,7 @@ window.onload = function () {
         .on('mouseout', (event, d) => legend
             .style('visibility', 'hidden'));
 
-    d3.select('.content')
+    d3.select('body')
         .on('click', (event, d) => {
             shite = [
                 {id: 1, name: "VitrumNostrumGloriosum"},
