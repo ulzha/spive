@@ -20,7 +20,6 @@ export default component$(() => {
         <meta name="theme-color" content="#000000" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="stylesheet" type="text/css" href="/applications.css" />
-        <link rel="stylesheet" type="text/css" href="/applications-expanded-row.css" />
         <link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff2" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff2" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff2" type="font/woff2" crossOrigin="anonymous"/>

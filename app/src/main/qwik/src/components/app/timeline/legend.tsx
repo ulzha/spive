@@ -1,7 +1,7 @@
 import { component$ } from "@builder.io/qwik"
 
 export default component$(() => (
-    <div class="MuiPaper-root-878 MuiCard-root-966 MuiPaper-elevation1-882 MuiPaper-rounded-879" id="legend">
+    <div id="legend">
         <ul>
             <li title="Grey bars indicate input events that have not been handled yet. Blurred timeline area indicates the interval leading up to current time, where new input events may appear." class=""><span class="legend-swatch color-incoming"></span><span>Incoming</span></li>
 

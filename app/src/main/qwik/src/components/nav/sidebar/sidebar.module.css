@@ -1,33 +1,26 @@
 .sidebar {
-  float: left;
-  width: 48px;
+  min-width: 48px;
   height: 100vh;
   background: #171717;
+  display: flex;
+  flex-flow: column nowrap;
   overflow: auto;
 }
 
-.sidebar button {
+.sidebar a {
   color: #b5b5b5;
   cursor: pointer;
-  width: 48px;
-  height: 48px;
-  border: none;
-  margin: 0;
-  padding: 0;
-  background: none;
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 .sidebar hr {
-  width: 100%;
+  width: 40%;
   border: none;
   height: 1px;
   background: #383838;
 }
 
-.sidebar .filler {
-  flex: 1;
+.sidebar hr:last-of-type {
+  margin-top: auto;
 }

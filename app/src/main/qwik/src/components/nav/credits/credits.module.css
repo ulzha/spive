@@ -1,6 +1,6 @@
-.support {
+.credits {
   position: absolute;
-  top: 5px;
+  bottom: 20px;
   right: 20px;
   font-weight: 500;
 }
