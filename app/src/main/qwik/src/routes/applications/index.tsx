@@ -1,25 +1,37 @@
-import { component$, useSignal } from '@builder.io/qwik';
-import { MUIButton, MUICard, MUICardHeader, MUICardContent, TableApp } from '~/integrations/react/mui';
+import { $, component$, useStore } from '@builder.io/qwik';
+import { MUIButton, MUICard, MUICardHeader, MUICardContent } from '~/integrations/react/mui';
 
 import type { DocumentHead } from '@builder.io/qwik-city';
-import Legend from '~/components/app/timeline/legend';
+import ApplicationGrid from '~/components/application/grid';
+import Legend from '~/components/application/timeline/legend';
 
 export default component$(() => {
-  const appId = useSignal(0);
+  const state = useStore<{ rows: any[] }>({rows: []});
+
+  const apps = [
+    { uuid: 1, name: 'VitrumNostrumGloriosum', version: '1.2.0', timeline: <b>Spir</b> },
+    { uuid: 2, name: 'ShakingAmber', version: '1.2.0', timeline: <b>Lī</b> },
+    { uuid: 3, name: 'DemoDeployElasticsearch', version: '1.2.0', timeline: <b>Bā</b> },
+  ];
+
+  const pushApp = $(() => {
+    const i = state.rows.length;
+    state.rows.push({id: i, ...apps[i % 3]});
+  });
 
   return (
     <div class="padding">
       <div class="titlebar">
         <h2>Event-Driven Applications</h2>
-        <MUIButton href="#create" variant="outlined" onClick$={() => { appId.value++ }}>Create new</MUIButton>
+        <MUIButton client: hover variant="outlined" onClick$={pushApp}>Create new</MUIButton>
       </div>
       <MUICard elevation={1}>
-        <MUICardHeader
-          title="Your Event-Driven Applications" />
-        <span id="legend-toggle">LEGEND</span>
+        {/* action={[<Legend />]} failed with "Objects are not valid as a React child (found: object with keys {type, props, immutableProps, children, flags, key, dev})" */}
+        <MUICardHeader title="Your Event-Driven Applications" />
         <Legend />
         <MUICardContent>
-          <TableApp client:visible />{/*lastAppId={appId.value} */}
+          {/* simple state.rows failed with "Cannot add property 0, object is not extensible" */}
+          <ApplicationGrid rows={state.rows.map((x) => x)} />
         </MUICardContent>
       </MUICard>
     </div>

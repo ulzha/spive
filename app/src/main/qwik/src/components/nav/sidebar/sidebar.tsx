@@ -5,12 +5,12 @@ import styles from './sidebar.module.css';
 export default component$(() => (
   <div class={styles.sidebar}>
     <MUIButton href="#search">
-        <MUISearchIcon />
+      <MUISearchIcon />
     </MUIButton>
     <hr />
     <hr />
     <MUIButton href="#expand">
-        <MUIExpandMoreIcon style={{transform: 'rotate(-90deg)'}} />
+      <MUIExpandMoreIcon style={{ transform: 'rotate(-90deg)' }} />
     </MUIButton>
   </div>
 ));

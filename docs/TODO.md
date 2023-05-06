@@ -15,7 +15,7 @@
 - [ ] KubernetesRunner, InProcessThreadRunner
 - [ ] 5 minute "Getting Started" guide + a HelloWorld app - how to generate app.lib, develop and run locally. (Cookiecutter kind of thing but able to function offline, once cached)
 - [ ] Have UI provide debugging instructions (locally, remotely)
-- [ ] Examples of tests (event definition language, named snapshots as JUnit rules, capturers, matchers) - some examples of likely and non-obvious bugs included
+- [ ] Examples of tests (event definition language, named snapshots as JUnit rules, capturers, matchers... git inspired from d3) - some examples of likely and non-obvious bugs included
 - [ ] Example with best-effort graceful shutdown for workloads and gateways (just to clarify the extent of non-guarantee)
 - [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by an hourly batch scan?) Debouncing perhaps useful in some cases?
 - [ ] Example advanced distributed data structure implementation (real time toplist?)
@@ -90,7 +90,7 @@
 - [ ] Stream and event handler design should facilitate rekeying (e.g. `channel` -> `channel+priority` should not cause much code change, but enable queue management, if that's not at odds with the application logic. Same for `something` -> `something+s2cell` - not much code change, but enables geosharding)
 - [ ] Grouping of companion applications which consume a given application's events (a compactor, a generated backup replicator, a generated optimization attempt, etc.) close together with the primary application for UI intuitiveness. (And for risky event visibility, and for cost visibility.)
 
-### Undecided problems 
+### Undecided problems
 
 - [ ] Error pattern heuristics: noisy neighbors, clock drift, ...
 - [ ] Collect at least basic resource saturation stats like CPU, IO, take into account to avoid noisy neighbors and misguided scaling decisions.

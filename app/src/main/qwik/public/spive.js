@@ -1,19 +1,7 @@
 window.onload = function () {
-    const legend = d3.select('#legend');
-    d3.select('#legend-toggle')
-        .on('mouseover', (event, d) => legend
-            .style('left', event.pageX - legend.node().getBoundingClientRect().width + 'px')
-            .style('top', event.pageY - 28 + 'px')
-            .style('visibility', 'visible'))
-        .on('mouseout', (event, d) => legend
-            .style('visibility', 'hidden'));
-
     d3.select('body')
         .on('click', (event, d) => {
             shite = [
-                {id: 1, name: "VitrumNostrumGloriosum"},
-                {id: 2, name: "ShakingAmber"},
-                {id: 3, name: "DemoDeployElasticsearch"}
             ];
 
             var i = 1;

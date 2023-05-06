@@ -1,4 +1,4 @@
-import { component$, Slot, } from '@builder.io/qwik';
+import { component$, Slot } from '@builder.io/qwik';
 import { routeLoader$ } from '@builder.io/qwik-city';
 
 import Sidebar from '~/components/nav/sidebar/sidebar';
