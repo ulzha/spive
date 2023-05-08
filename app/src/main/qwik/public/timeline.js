@@ -7,7 +7,7 @@ render_timeline = function(el, volume, offset, color) {
   const data = d3.range(DATA_COUNT).map( d => (d < DATA_COUNT - offset ?  (Math.random() < volume ? 1 - Math.random() : 1) : 1) );
   const x    = d3.scaleLinear().domain([0, DATA_COUNT]).range([0, WIDTH]);
   const y    = d3.scaleLinear().domain([0, 1]).range([HEIGHT, 0]);
-  console.log('In render_timeline', el)
+
   const svg = d3.select(el)
     .append('svg')
       .attr('width', WIDTH)
