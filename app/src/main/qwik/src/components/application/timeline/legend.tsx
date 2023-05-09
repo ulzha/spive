@@ -4,7 +4,7 @@ import { MUIButton, MUIPopover } from "~/integrations/react/mui";
 const content = (
   <div id="legend">
     <ul>
-      <li title="Grey bars indicate input events that have not been handled yet. Blurred timeline area indicates the interval leading up to current time, where new input events may appear." class=""><span class="legend-swatch color-incoming"></span><span>Incoming</span></li>
+      <li title="Grey bars indicate input events in input streams that have not been handled yet. Blurred timeline area indicates the interval leading up to current time, where unknown numbers of new input events may appear." class=""><span class="legend-swatch color-incoming"></span><span>Incoming</span></li>
 
       {/* Perhaps this is not very necessary. When expanding to include inputs, we will see input progress, and events are "pending"" as much as the input application is ahead. Also the blue color is a bit ugly. */}
       {/* <li title="Blue bars indicate input events exist in input streams but have not been handled yet" class=""><span class="legend-swatch color-pending"></span><span>Pending</span></li> */}
@@ -20,10 +20,10 @@ const content = (
       {/* So far only sketching UI for basic KTLO operations. Will need to graph data quality information as an additional layer. Or extend the Warning status with more conditions? */}
 
       {/* TODO wall clock time? Both important? Wall clock time in another column overlaid with cost? */}
-      <li title="Orange horizontal lines indicate intervals in event time where at least one application instance is in TIMEOUT state. Thicker lines correspond to more such instances. Happens when events exceed their nominal handling time (which may be due to e.g. long processing in event handler handler, or many retries in gateway, or just a single external call taking very long). The events may eventually get handled successfully. Note: this indication is best-effort - not every occurrence is logged."><span class="legend-swatch"></span><span>Instances with timeouts</span></li>
+      <li title="Orange horizontal lines indicate intervals in event time where at least one application instance is in TIMEOUT state. Thicker lines correspond to more partitions affected. Happens when events exceed their nominal handling time (which may be due to e.g. long processing in event handler handler, or many retries in gateway, or just a single external call taking very long). The events may eventually get handled successfully. Note: this indication is best-effort - not every occurrence is logged."><span class="legend-swatch"></span><span>Instances timing out</span></li>
 
       {/* TODO wall clock time? Both important? Wall clock time in another column overlaid with cost? */}
-      <li title="Red horizontal lines indicate intervals in event time where at least one application instance is in ERROR state. Thicker lines correspond to more such instances. Happens when an event handler crashes. The application code may need fixing (unless the crashing behavior goes away by automated scaling/replacement of the affected instance). Note: this indication is reliable, assuming the runner is not lost - progress on a stream partition stops as soon as the first crash occurs, and the runner attempts to report crash information back indefinitely."><span class="legend-swatch"></span><span>Instances with errors</span></li>
+      <li title="Red horizontal lines indicate intervals in event time where at least one application instance is in ERROR state. Thicker lines correspond to more partitions affected. Happens when an event handler crashes. The application code may need fixing (unless the crashing behavior goes away by automated replacement of the affected instance. Instances will be stopped and partitions retried on newly spawned ones, potentially scaled up. Red lines will remain until caught up with the events that had crashes). Note: this indication is reliable, assuming the runner is not lost - progress on a stream partition stops as soon as the first crash occurs, and the runner attempts to report crash information back indefinitely."><span class="legend-swatch"></span><span>Instances failing</span></li>
     </ul>
     <p>Hover over the event bars in the timeline to inspect event details and troubleshoot eventual warnings or errors.</p>
   </div>

@@ -26,12 +26,8 @@ window.onload = function () {
 
     d3.json('/api/applications')
         .then(function (apps) {
-            for (var app of apps) {
-                var rowHtml = '<td class="MuiTableCell-root-2339 MuiTableCell-body-2341"><a class="text" href="https://company.net/event-sourced-applications/' + app.name + '">' + app.name + '</a></td><td class="MuiTableCell-root-2339 MuiTableCell-body-2341" id="timeline-' + app.id + '"></td>';
-                d3.select('#applications')
-                  .append('tr').attr('class', i % 2 ? 'odd' : 'even')
-                  .html(rowHtml);
-                render_timeline(d3.select('#timeline-' + app.id), 1, 0, '#1db855');
-            }
+            console.debug('Apps', apps);
+        }).catch(function (error) {
+            console.debug('Meh', error);
         });
 }

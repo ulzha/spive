@@ -22,7 +22,6 @@ export default component$(() => {
     console.debug('Row clicked', params, state.rows[0]);
     const uuid = params.id.toString().replace('_events', '');
     const i = state.rows.findIndex((r) => r.id == uuid);
-    console.debug('Checking for', uuid + '_events');
     const isOn = state.rows[i + 1]?.id === uuid + '_events';
     if (isOn) {
       state.rows.splice(i + 1, 1);

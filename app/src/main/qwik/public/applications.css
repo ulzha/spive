@@ -1,40 +1,22 @@
-.applications {
-  border: 0;
-}
-.applications .MuiDataGrid-cell {
-  border: 0;
-}
-.applications .MuiDataGrid-columnHeaders {
-  border: 0;
-}
+.applications .MuiDataGrid-root,
+.applications .MuiDataGrid-cell,
+.applications .MuiDataGrid-cell:focus,
+.applications .MuiDataGrid-columnHeaders,
 .applications .MuiDataGrid-footerContainer {
   border: 0;
+  outline: 0;
 }
-.timeline {
-  position: relative;
-}
-.timeline svg {
-  position: relative;
-  z-index: 1;
-}
-tr.even {
+
+.applications .even {
   background-color: #f8f8f8;
 }
-tr.expanded {
+
+.applications .events {
   background-color: #f2f2f2;
   border-top: 1px solid #d9d9d9;
   border-bottom: 1px solid #d9d9d9;
 }
-.app-name {
-  max-width: 200px;
-  text-overflow: ellipsis;
-}
-.expanded {
-  position: relative;
-}
-.expanded table {
-  width: 100%;
-}
+
 .range-picker {
   position: absolute;
   top: 3px;

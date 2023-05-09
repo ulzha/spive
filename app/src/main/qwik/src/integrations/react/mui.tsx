@@ -7,7 +7,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpIcon from '@mui/icons-material/Help';
 import SearchIcon from '@mui/icons-material/Search';
 import { DataGrid } from '@mui/x-data-grid';
-import type { GridCellParams, GridColDef, GridRenderCellParams, GridRowHeightParams } from '@mui/x-data-grid';
+import type { GridCellParams, GridColDef, GridRenderCellParams, GridRowClassNameParams, GridRowHeightParams } from '@mui/x-data-grid';
 
 type GridRenderCellDOMCallback = (id: any, el: any) => void;
 
@@ -49,8 +49,9 @@ export const MUIButton = qwikify$(Button);
 export const MUICard = qwikify$(Card);
 export const MUICardContent = qwikify$(CardContent);
 export const MUICardHeader = qwikify$(CardHeader);
-export const MUIDataGrid = qwikify$((props: any) => (
-  <DataGrid
+export const MUIDataGrid = qwikify$((props: any) => {
+  const rowCount = props.rows.reduce((count, r) => count + !(r.id.toString().endsWith('_events')), 0);
+  return <DataGrid
     {...props}
     rows={props.rows}
     columns={[
@@ -58,21 +59,23 @@ export const MUIDataGrid = qwikify$((props: any) => (
       // (whereas a cell in a hidden column disappears and doesn't span cells in the remaining visible columns)
       { field: '_events', headerName: '', width: 0, hideable: false, hideSortIcons: true, disableColumnMenu: true, resizable: false, minWidth: 0, maxWidth: 0 },
       ...props.columns
-    ].map((c: MUIGridColDef) =>
-      c.renderCellDOM
-        ? { ...c, renderCell: renderMemoizedCell(c.renderCellDOM) }
-        : c
+    ].map((c: MUIGridColDef) => c.renderCellDOM
+      ? { ...c, renderCell: renderMemoizedCell(c.renderCellDOM) }
+      : c
     ).map((c: MUIGridColDef) => ({
-      ...c, colSpan: ({ row }: GridCellParams) =>
-        (row.id.toString().endsWith('_events') ? 7 : null)
+      ...c, colSpan: ({ row }: GridCellParams) => (row.id.toString().endsWith('_events') ? 7 : null)
     }))}
     getRowHeight={getRowHeight}
     // components={{
     //   NoRowsOverlay: () => <b>No rows.</b>,  // hoped that this would make height < 72, but no
     //   NoResultsOverlay: () => <b>No results found.</b>,
     // }}
+    rowCount={rowCount}
+    getRowClassName={({ row }: GridRowClassNameParams) => row.id.toString().endsWith('_events')
+      ? 'events'
+      : (row.id % 2 ? 'even' : 'odd')}
   />
-));
+});
 export const MUIPopover = qwikify$(Popover);
 
 export const MUIExpandMoreIcon = qwikify$(ExpandMoreIcon);
