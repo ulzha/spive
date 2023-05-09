@@ -1,12 +1,11 @@
 import { $, component$, useStore } from '@builder.io/qwik';
 import { MUIButton, MUICard, MUICardHeader, MUICardContent } from '~/integrations/react/mui';
-
 import type { DocumentHead } from '@builder.io/qwik-city';
 import ApplicationGrid from '~/components/application/grid';
 import Legend from '~/components/application/timeline/legend';
 
 export default component$(() => {
-  const state = useStore<{ rows: any[] }>({rows: []});
+  const state = useStore<{ rows: any[] }>({ rows: [] });
 
   const apps = [
     { uuid: 1, name: 'VitrumNostrumGloriosum', version: '1.2.0', timeline: <b>Spir</b> },
@@ -15,8 +14,21 @@ export default component$(() => {
   ];
 
   const pushApp = $(() => {
-    const i = state.rows.length;
-    state.rows.push({id: i, ...apps[i % 3]});
+    const n = state.rows.reduce((count, r) => count + !(r.id.toString().endsWith('_events')), 0);
+    state.rows.push({ id: n, ...apps[n % 3] });
+  });
+
+  const toggleEventsRow = $((params) => {
+    console.debug('Row clicked', params, state.rows[0]);
+    const uuid = params.id.toString().replace('_events', '');
+    const i = state.rows.findIndex((r) => r.id == uuid);
+    console.debug('Checking for', uuid + '_events');
+    const isOn = state.rows[i + 1]?.id === uuid + '_events';
+    if (isOn) {
+      state.rows.splice(i + 1, 1);
+    } else {
+      state.rows.splice(i + 1, 0, { id: uuid + '_events' });
+    }
   });
 
   return (
@@ -31,7 +43,10 @@ export default component$(() => {
         <Legend />
         <MUICardContent>
           {/* simple state.rows failed with "Cannot add property 0, object is not extensible" */}
-          <ApplicationGrid rows={state.rows.map((x) => x)} />
+          <ApplicationGrid
+            rows={state.rows.map((x) => x)}
+            onRowClick={toggleEventsRow}
+          />
         </MUICardContent>
       </MUICard>
     </div>

@@ -1,3 +1,15 @@
+.applications {
+  border: 0;
+}
+.applications .MuiDataGrid-cell {
+  border: 0;
+}
+.applications .MuiDataGrid-columnHeaders {
+  border: 0;
+}
+.applications .MuiDataGrid-footerContainer {
+  border: 0;
+}
 .timeline {
   position: relative;
 }

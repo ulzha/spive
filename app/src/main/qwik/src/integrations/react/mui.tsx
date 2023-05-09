@@ -7,7 +7,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpIcon from '@mui/icons-material/Help';
 import SearchIcon from '@mui/icons-material/Search';
 import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import type { GridCellParams, GridColDef, GridRenderCellParams, GridRowHeightParams } from '@mui/x-data-grid';
 
 type GridRenderCellDOMCallback = (id: any, el: any) => void;
 
@@ -40,6 +40,11 @@ const renderMemoizedCell =
   (callback: GridRenderCellDOMCallback) => (params: GridRenderCellParams) =>
     <MemoizedCell id={params.id} callback={callback} />;
 
+// documentation says memoize, I don't get why
+// const getRowHeight = const getRowHeight = React.useCallback(() => { ... }, [])
+const getRowHeight = ({ id }: GridRowHeightParams) =>
+  (id.toString().endsWith('_events') ? 300 : null)
+
 export const MUIButton = qwikify$(Button);
 export const MUICard = qwikify$(Card);
 export const MUICardContent = qwikify$(CardContent);
@@ -47,11 +52,25 @@ export const MUICardHeader = qwikify$(CardHeader);
 export const MUIDataGrid = qwikify$((props: any) => (
   <DataGrid
     {...props}
-    columns={props.columns.map((c: MUIGridColDef) =>
+    rows={props.rows}
+    columns={[
+      // we add a non-hideable first column to hold the colspanning content
+      // (whereas a cell in a hidden column disappears and doesn't span cells in the remaining visible columns)
+      { field: '_events', headerName: '', width: 0, hideable: false, hideSortIcons: true, disableColumnMenu: true, resizable: false, minWidth: 0, maxWidth: 0 },
+      ...props.columns
+    ].map((c: MUIGridColDef) =>
       c.renderCellDOM
         ? { ...c, renderCell: renderMemoizedCell(c.renderCellDOM) }
         : c
-    )}
+    ).map((c: MUIGridColDef) => ({
+      ...c, colSpan: ({ row }: GridCellParams) =>
+        (row.id.toString().endsWith('_events') ? 7 : null)
+    }))}
+    getRowHeight={getRowHeight}
+    // components={{
+    //   NoRowsOverlay: () => <b>No rows.</b>,  // hoped that this would make height < 72, but no
+    //   NoResultsOverlay: () => <b>No results found.</b>,
+    // }}
   />
 ));
 export const MUIPopover = qwikify$(Popover);
