@@ -1,6 +1,8 @@
 .applications .MuiDataGrid-root,
 .applications .MuiDataGrid-cell,
 .applications .MuiDataGrid-cell:focus,
+.applications .MuiDataGrid-cell:focus-within,
+.applications .MuiDataGrid-columnHeader:focus,
 .applications .MuiDataGrid-columnHeaders,
 .applications .MuiDataGrid-footerContainer {
   border: 0;
@@ -15,6 +17,28 @@
   background-color: #f2f2f2;
   border-top: 1px solid #d9d9d9;
   border-bottom: 1px solid #d9d9d9;
+  outline: 0;
+}
+
+/* come on */
+.applications .span > .MuiDataGrid-cell > div {
+  width: 100%;
+}
+
+.events {
+  padding: 10px;
+}
+
+.events .MuiDataGrid-columnHeaders {
+  background-color: #ffffff;
+}
+
+.events .odd {
+  background-color: #f2f2f2;
+}
+
+.events .even {
+  background-color: #f8f8f8;
 }
 
 .range-picker {

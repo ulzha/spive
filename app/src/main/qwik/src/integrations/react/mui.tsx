@@ -66,7 +66,7 @@ export const MUIDataGrid = qwikify$((props: any) => {
       ...c, colSpan: ({ row }: GridCellParams) => (row.id.toString().endsWith('.span') ? props.columns.length : null)
     }))}
     getRowHeight={getRowHeight}
-    autoHeight={true}
+    autoHeight
     pageSize={props.rows.length + props.spanRows.length}  // all in one page
     rowsPerPageOptions={[props.rows.length + props.spanRows.length]}
     disableSelectionOnClick
