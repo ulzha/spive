@@ -31,6 +31,10 @@ const MemoizedCell = memo<MemoizedCellProps>(({ id, callback }) => {
   }, [id, callback]);
 
   console.debug('Rendering cell React', id, callback);
+
+  // if (id.toString().endsWith('.span')) {
+  //   return <EventsGrid />
+  // }
   return <div ref={ref}></div>;
 });
 
@@ -43,36 +47,36 @@ const renderMemoizedCell =
 // documentation says memoize, I don't get why
 // const getRowHeight = const getRowHeight = React.useCallback(() => { ... }, [])
 const getRowHeight = ({ id }: GridRowHeightParams) =>
-  (id.toString().endsWith('_events') ? 300 : null)
+  (id.toString().endsWith('.span') ? 300 : null)
 
 export const MUIButton = qwikify$(Button);
 export const MUICard = qwikify$(Card);
 export const MUICardContent = qwikify$(CardContent);
 export const MUICardHeader = qwikify$(CardHeader);
 export const MUIDataGrid = qwikify$((props: any) => {
-  const rowCount = props.rows.reduce((count, r) => count + !(r.id.toString().endsWith('_events')), 0);
   return <DataGrid
     {...props}
-    rows={props.rows}
+    rows={props.rows.concat(props.spanRows)}
     columns={[
-      // we add a non-hideable first column to hold the colspanning content
-      // (whereas a cell in a hidden column disappears and doesn't span cells in the remaining visible columns)
-      { field: '_events', headerName: '', width: 0, hideable: false, hideSortIcons: true, disableColumnMenu: true, resizable: false, minWidth: 0, maxWidth: 0 },
       ...props.columns
     ].map((c: MUIGridColDef) => c.renderCellDOM
       ? { ...c, renderCell: renderMemoizedCell(c.renderCellDOM) }
       : c
     ).map((c: MUIGridColDef) => ({
-      ...c, colSpan: ({ row }: GridCellParams) => (row.id.toString().endsWith('_events') ? 7 : null)
+      ...c, colSpan: ({ row }: GridCellParams) => (row.id.toString().endsWith('.span') ? props.columns.length : null)
     }))}
     getRowHeight={getRowHeight}
+    autoHeight={true}
+    pageSize={props.rows.length + props.spanRows.length}  // all in one page
+    rowsPerPageOptions={[props.rows.length + props.spanRows.length]}
+    disableSelectionOnClick
     // components={{
     //   NoRowsOverlay: () => <b>No rows.</b>,  // hoped that this would make height < 72, but no
     //   NoResultsOverlay: () => <b>No results found.</b>,
     // }}
-    rowCount={rowCount}
-    getRowClassName={({ row }: GridRowClassNameParams) => row.id.toString().endsWith('_events')
-      ? 'events'
+    rowCount={props.rows.length}
+    getRowClassName={({ row }: GridRowClassNameParams) => row.id.toString().endsWith('.span')
+      ? 'span'
       : (row.id % 2 ? 'even' : 'odd')}
   />
 });

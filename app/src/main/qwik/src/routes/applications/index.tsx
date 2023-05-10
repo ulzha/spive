@@ -5,29 +5,18 @@ import ApplicationGrid from '~/components/application/grid';
 import Legend from '~/components/application/timeline/legend';
 
 export default component$(() => {
-  const state = useStore<{ rows: any[] }>({ rows: [] });
+  // `rows: []` creates weird complaints related to "never[]"
+  const state = useStore({ rows: Array() });
 
   const apps = [
-    { uuid: 1, name: 'VitrumNostrumGloriosum', version: '1.2.0', timeline: <b>Spir</b> },
-    { uuid: 2, name: 'ShakingAmber', version: '1.2.0', timeline: <b>Lī</b> },
-    { uuid: 3, name: 'DemoDeployElasticsearch', version: '1.2.0', timeline: <b>Bā</b> },
+    { uuid: 1, name: 'VitrumNostrumGloriosum', version: '1.2.74' },
+    { uuid: 2, name: 'ShakingAmber', version: '2.4.0' },
+    { uuid: 3, name: 'DemoDeployElasticsearch', version: '0.0.1_dev_8f779e6' },
   ];
 
   const pushApp = $(() => {
-    const n = state.rows.reduce((count, r) => count + !(r.id.toString().endsWith('_events')), 0);
-    state.rows.push({ id: n, ...apps[n % 3] });
-  });
-
-  const toggleEventsRow = $((params) => {
-    console.debug('Row clicked', params, state.rows[0]);
-    const uuid = params.id.toString().replace('_events', '');
-    const i = state.rows.findIndex((r) => r.id == uuid);
-    const isOn = state.rows[i + 1]?.id === uuid + '_events';
-    if (isOn) {
-      state.rows.splice(i + 1, 1);
-    } else {
-      state.rows.splice(i + 1, 0, { id: uuid + '_events' });
-    }
+    const n = state.rows.length;
+    state.rows = [...state.rows, { id: n, rank: n, ...apps[n % 3] }];
   });
 
   return (
@@ -41,10 +30,8 @@ export default component$(() => {
         <MUICardHeader title="Your Event-Driven Applications" />
         <Legend />
         <MUICardContent>
-          {/* simple state.rows failed with "Cannot add property 0, object is not extensible" */}
           <ApplicationGrid
-            rows={state.rows.map((x) => x)}
-            onRowClick={toggleEventsRow}
+            rows={state.rows}
           />
         </MUICardContent>
       </MUICard>
