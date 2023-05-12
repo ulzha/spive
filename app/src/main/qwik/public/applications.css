@@ -3,6 +3,7 @@
 .applications .MuiDataGrid-cell:focus,
 .applications .MuiDataGrid-cell:focus-within,
 .applications .MuiDataGrid-columnHeader:focus,
+.applications .MuiDataGrid-columnHeader:focus-within,
 .applications .MuiDataGrid-columnHeaders,
 .applications .MuiDataGrid-footerContainer {
   border: 0;
@@ -21,8 +22,13 @@
 }
 
 /* come on */
-.applications .span > .MuiDataGrid-cell > div {
+.applications .span .MuiDataGrid-cell>div {
   width: 100%;
+}
+
+.applications .MuiDataGrid-cell[data-field='rank'],
+.applications .MuiDataGrid-columnHeader[data-field='rank'] {
+  padding: 0;
 }
 
 .events {
@@ -39,6 +45,24 @@
 
 .events .even {
   background-color: #f8f8f8;
+}
+
+/* come on */
+.events .MuiDataGrid-cell[data-field='took']>div {
+  text-align: right;
+}
+
+.events .MuiDataGrid-cell[data-field='details'] .legend-swatch {
+  float: left;
+  margin-top: 4px;
+  margin-left: -10px;
+  margin-right: 10px;
+}
+
+.events .MuiDataGrid-cell[data-field='details']>div span:last-child {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .range-picker {
