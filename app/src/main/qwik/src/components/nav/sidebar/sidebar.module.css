@@ -1,26 +1,26 @@
-.sidebar {
+:local(.sidebar) {
   min-width: 48px;
   height: 100vh;
   background: #171717;
   display: flex;
   flex-flow: column nowrap;
   overflow: auto;
-}
 
-.sidebar a {
-  color: #b5b5b5;
-  cursor: pointer;
-  min-width: 48px;
-  min-height: 48px;
-}
+  a {
+    color: #b5b5b5;
+    cursor: pointer;
+    min-width: 48px;
+    min-height: 48px;
+  }
 
-.sidebar hr {
-  width: 40%;
-  border: none;
-  height: 1px;
-  background: #383838;
-}
+  hr {
+    width: 40%;
+    border: none;
+    height: 1px;
+    background: #383838;
+  }
 
-.sidebar hr:last-of-type {
-  margin-top: auto;
+  hr:last-of-type {
+    margin-top: auto;
+  }
 }

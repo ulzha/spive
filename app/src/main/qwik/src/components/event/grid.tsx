@@ -1,5 +1,7 @@
 import { component$, $ } from '@builder.io/qwik';
 import { MUIDataGrid, MUIGridColDef } from '~/integrations/react/mui';
+import EventFilter from '~/components/event/filter';
+import styles from './event.module.css';
 
 const renderDetailsDOM = $((el, id, value) => {
   d3.select(el)
@@ -26,7 +28,8 @@ export default component$<EventGridProps>(({ rows }: EventGridProps) => {
     { field: 'runtimeLog', headerName: 'Runtime Log', width: 100, sortable: false },
   ];
 
-  return <div class="events">
+  return <div class={styles.events}>
+    <EventFilter />
     <MUIDataGrid
       client: visible
       density="compact"
@@ -36,8 +39,9 @@ export default component$<EventGridProps>(({ rows }: EventGridProps) => {
       initialState={{
         columns: { columnVisibilityModel: { uuid: false } },
         sorting: { sortModel: [{ field: 'eventTime', sort: 'asc' }] },
-        pagination: { paginationModel: { pageSize: 25, pageSizeOptions: [5, 25] } },
+        pagination: { paginationModel: { pageSize: 25 } },
       }}
+      pageSizeOptions={[5, 25]}
     />
   </div>
 });

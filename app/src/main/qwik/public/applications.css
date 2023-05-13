@@ -34,40 +34,6 @@
   padding: 0;
 }
 
-.events {
-  padding: 10px;
-}
-
-.events .MuiDataGrid-columnHeaders {
-  background-color: #ffffff;
-}
-
-.events .odd {
-  background-color: #f2f2f2;
-}
-
-.events .even {
-  background-color: #f8f8f8;
-}
-
-/* come on */
-.events .MuiDataGrid-cell[data-field='took']>div {
-  text-align: right;
-}
-
-.events .MuiDataGrid-cell[data-field='details'] .legend-swatch {
-  float: left;
-  margin-top: 4px;
-  margin-left: -10px;
-  margin-right: 10px;
-}
-
-.events .MuiDataGrid-cell[data-field='details']>div span:last-child {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .range-picker {
   position: absolute;
   top: 3px;

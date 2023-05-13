@@ -2,7 +2,7 @@
 
 import { memo, useLayoutEffect, useRef } from 'react';
 import { qwikify$ } from '@builder.io/qwik-react';
-import { Button, Card, CardContent, CardHeader, Popover } from '@mui/material';
+import { Button, Card, CardContent, CardHeader, FormControl, Input, InputAdornment, Popover } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpIcon from '@mui/icons-material/Help';
 import SearchIcon from '@mui/icons-material/Search';
@@ -15,7 +15,7 @@ export interface MUIGridColDef extends GridColDef {
   renderCellDOM?: GridRenderCellDOMCallback;
 }
 
-type MemoizedCellProps = { callback: any, id: any; value: any };
+type MemoizedCellProps = { callback: any, id: any; field: any, value: any };
 
 /**
  * Helper for ensuring that heavy DOM objects (such as timeline SVG) are reused between re-renders, accidental or intentional.
@@ -23,15 +23,13 @@ type MemoizedCellProps = { callback: any, id: any; value: any };
  * When hiding columns, cells do get cleaned up and rendered anew when column is toggled on again. TODO improve?
  * (Alt. make sure they are cleaned from memory too)
  */
-const MemoizedCell = memo<MemoizedCellProps>(({ callback, id, value}) => {
+const MemoizedCell = memo<MemoizedCellProps>(({ callback, id, field, value}) => {
   const ref = useRef(null);
 
   useLayoutEffect(() => {
-    if (ref.current.children.length == 0) {
-      console.debug('Rendering cell DOM', ref.current, id, value);
-      callback(ref.current, id, value);
-    }
-  }, [callback, id, value]);
+    console.debug('Rendering cell DOM', ref.current, id, field, value);
+    callback(ref.current, id, value);
+  }, [id, field, value]);
 
   console.debug('Rendering cell React', id, value);
 
@@ -42,7 +40,7 @@ const MemoizedCell = memo<MemoizedCellProps>(({ callback, id, value}) => {
 // (if multiple columns were to use the same callback, we would spawn multiple closures here but still memoize cells)
 const renderMemoizedCell =
   (callback: GridRenderCellDOMCallback) => (params: GridRenderCellParams) =>
-    <MemoizedCell callback={callback} id={params.id} value={params.value} />;
+    <MemoizedCell callback={callback} id={params.id} field={params.field} value={params.value} />;
 
 // documentation says memoize, I don't get why
 // const getRowHeight = const getRowHeight = React.useCallback(() => { ... }, [])
@@ -77,6 +75,18 @@ export const MUIDataGrid = qwikify$((props: any) => {
       ? 'span'
       : (row.id % 2 ? 'even' : 'odd')}
   />
+});
+export const MUISearchForm = qwikify$(() => {
+  return <FormControl variant="standard">
+    <Input
+      placeholder="Search..."
+      startAdornment={
+        <InputAdornment position="start">
+          <SearchIcon fontSize="small" />
+        </InputAdornment>
+      }
+    />
+  </FormControl>
 });
 export const MUIPopover = qwikify$(Popover);
 

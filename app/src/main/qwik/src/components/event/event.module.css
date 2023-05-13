@@ -1,17 +1,48 @@
-tr.event td {
+:local(.events) {
+  padding: 10px;
+
+  .MuiFormControl-root {
+    margin-bottom: 10px;
+    width: 400px;
+  }
+
+  input {
+    height: 1em;
+    font-size: 0.875rem;
+  }
+
+  .MuiDataGrid-columnHeaders {
+    background-color: #ffffff;
+  }
+
+  .odd {
+    background-color: #f2f2f2;
+  }
+
+  .even {
+    background-color: #f8f8f8;
+  }
+
+  /* come on */
+  .MuiDataGrid-cell[data-field='took']>div {
+    text-align: right;
+  }
+
+  .MuiDataGrid-cell[data-field='details'] .legend-swatch {
+    float: left;
+    margin-top: 4px;
+    margin-left: -10px;
+    margin-right: 10px;
+  }
+
+  .MuiDataGrid-cell[data-field='details']>div span:last-child {
+    display: block;
     overflow: hidden;
-    padding-left: 8px;
-    padding-right: 8px;
     text-overflow: ellipsis;
-    white-space: nowrap;
+  }
 }
-tr.event td:first-child {
-    padding-left: 24px;
-}
-tr.event td button {
-    padding: 0;
-}
-tr.event td button .icon {
+
+/* tr.event td button .icon {
     width: auto;
     height: 1em;
     font-size: 1rem;
@@ -19,4 +50,4 @@ tr.event td button .icon {
 tr.event img.logs-icon {
     height: 20px;
     width: 20px
-}
+} */

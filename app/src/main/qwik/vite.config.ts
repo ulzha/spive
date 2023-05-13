@@ -12,5 +12,15 @@ export default defineConfig(() => {
         "Cache-Control": "public, max-age=600",
       },
     },
+    css: {
+      modules: {
+        scopeBehaviour: "global",
+      },
+      postcss: {
+        plugins: [
+            require('postcss-nested'),
+        ],
+      },
+    },
   };
 });
