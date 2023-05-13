@@ -36,6 +36,7 @@ export default component$<EventGridProps>(({ rows }: EventGridProps) => {
       initialState={{
         columns: { columnVisibilityModel: { uuid: false } },
         sorting: { sortModel: [{ field: 'eventTime', sort: 'asc' }] },
+        pagination: { paginationModel: { pageSize: 25, pageSizeOptions: [5, 25] } },
       }}
     />
   </div>

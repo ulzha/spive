@@ -8,7 +8,7 @@ export default component$(() => {
   // `rows: []` creates weird complaints related to "never[]"
   const state = useStore({ rows: Array() });
 
-  const apps = [
+  const dummy_applications = [
     { uuid: 1, name: 'VitrumNostrumGloriosum', version: '1.2.74' },
     { uuid: 2, name: 'ShakingAmber', version: '2.4.0' },
     { uuid: 3, name: 'DemoDeployElasticsearch', version: '0.0.1_dev_8f779e6' },
@@ -16,7 +16,7 @@ export default component$(() => {
 
   const pushApp = $(() => {
     const n = state.rows.length;
-    state.rows = [...state.rows, { id: n, rank: n, ...apps[n % 3] }];
+    state.rows = [...state.rows, { id: n, rank: n, ...dummy_applications[n % 3] }];
   });
 
   return (

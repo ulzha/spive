@@ -15,10 +15,10 @@ export default component$(() => {
   return (
     <div class="viewport">
       <Sidebar />
-      <HelpLink />
       <main>
         <Slot />
       </main>
+      <HelpLink />
       <QwikLink />
     </div>
   );

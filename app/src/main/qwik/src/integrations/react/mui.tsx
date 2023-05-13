@@ -21,13 +21,16 @@ type MemoizedCellProps = { callback: any, id: any; value: any };
  * Helper for ensuring that heavy DOM objects (such as timeline SVG) are reused between re-renders, accidental or intentional.
  *
  * When hiding columns, cells do get cleaned up and rendered anew when column is toggled on again. TODO improve?
+ * (Alt. make sure they are cleaned from memory too)
  */
 const MemoizedCell = memo<MemoizedCellProps>(({ callback, id, value}) => {
   const ref = useRef(null);
 
   useLayoutEffect(() => {
-    console.debug('Rendering cell DOM', ref.current, id, value);
-    callback(ref.current, id, value);
+    if (ref.current.children.length == 0) {
+      console.debug('Rendering cell DOM', ref.current, id, value);
+      callback(ref.current, id, value);
+    }
   }, [callback, id, value]);
 
   console.debug('Rendering cell React', id, value);
@@ -44,7 +47,8 @@ const renderMemoizedCell =
 // documentation says memoize, I don't get why
 // const getRowHeight = const getRowHeight = React.useCallback(() => { ... }, [])
 const getRowHeight = ({ id }: GridRowHeightParams) =>
-  (id.toString().endsWith('.span') ? 300 : null)
+  (id.toString().endsWith('.span') ? 136 + 25 * 36 : null)
+// 4 -> 280, 24 -> 1000
 
 export const MUIButton = qwikify$(Button);
 export const MUICard = qwikify$(Card);
@@ -63,9 +67,6 @@ export const MUIDataGrid = qwikify$((props: any) => {
       ...c, colSpan: ({ row }: GridCellParams) => (row.id.toString().endsWith('.span') ? props.columns.length : null)
     }))}
     getRowHeight={getRowHeight}
-    autoHeight
-    pageSize={props.rows.length + props.spanRows.length}  // all in one page
-    pageSizeOptions={[props.rows.length + props.spanRows.length]}
     rowSelection={false}
     // components={{
     //   NoRowsOverlay: () => <b>No rows.</b>,  // hoped that this would make height < 72, but no
