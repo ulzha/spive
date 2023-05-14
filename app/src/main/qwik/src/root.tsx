@@ -1,8 +1,8 @@
-import { component$ } from '@builder.io/qwik';
-import { QwikCityProvider, RouterOutlet, ServiceWorkerRegister } from '@builder.io/qwik-city';
-import { RouterHead } from './components/router-head/router-head';
+import { component$ } from "@builder.io/qwik";
+import { QwikCityProvider, RouterOutlet, ServiceWorkerRegister } from "@builder.io/qwik-city";
+import { RouterHead } from "./components/router-head/router-head";
 
-import './global.css';
+import "./global.css";
 
 export default component$(() => {
   /**
@@ -20,9 +20,27 @@ export default component$(() => {
         <meta name="theme-color" content="#000000" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="stylesheet" type="text/css" href="/applications.css" />
-        <link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff2" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff2" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" as="font" href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff2" type="font/woff2" crossOrigin="anonymous"/>
+        <link
+          rel="preload"
+          as="font"
+          href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff2"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff2"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          href="https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff2"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/3.5.0/octicons.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />

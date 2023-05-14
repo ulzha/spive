@@ -24,18 +24,18 @@
   }
 
   /* come on */
-  .MuiDataGrid-cell[data-field='took']>div {
+  .MuiDataGrid-cell[data-field="took"] > div {
     text-align: right;
   }
 
-  .MuiDataGrid-cell[data-field='details'] .legend-swatch {
+  .MuiDataGrid-cell[data-field="details"] .legend-swatch {
     float: left;
     margin-top: 4px;
     margin-left: -10px;
     margin-right: 10px;
   }
 
-  .MuiDataGrid-cell[data-field='details']>div span:last-child {
+  .MuiDataGrid-cell[data-field="details"] > div span:last-child {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;

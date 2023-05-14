@@ -17,9 +17,7 @@ export default defineConfig(() => {
         scopeBehaviour: "global",
       },
       postcss: {
-        plugins: [
-            require('postcss-nested'),
-        ],
+        plugins: [require("postcss-nested")],
       },
     },
     // ssr: {

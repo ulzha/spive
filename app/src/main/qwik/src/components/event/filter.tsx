@@ -4,9 +4,9 @@
  * (DataGrid filters are enabled on EventGrid for the purpose of further text-based filtering, client side.)
  */
 
-import { component$ } from '@builder.io/qwik';
-import { MUISearchForm } from '~/integrations/react/mui';
+import { component$ } from "@builder.io/qwik";
+import { MUISearchForm } from "~/integrations/react/mui";
 
 export default component$(() => {
-  return <MUISearchForm />
+  return <MUISearchForm />;
 });
