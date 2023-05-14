@@ -22,5 +22,24 @@ export default defineConfig(() => {
         ],
       },
     },
+    // ssr: {
+    //   noExternal: [
+    //     'express',
+    //     '@mui/x-date-pickers',
+    //     '@mui/material',
+    //     '@mui/base',
+    //     '@uiw/react-markdown-preview',
+    //     '@uiw/react-md-editor',
+    //   ],
+    // },
+    // build: {
+    //   rollupOptions: {
+    //     output: {
+    //       format: 'es',
+    //     }
+
+    //   },
+    //   minify: false,
+    // },
   };
 });

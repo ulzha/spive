@@ -9,9 +9,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridCellParams, GridColDef, GridRenderCellParams, GridRowClassNameParams, GridRowHeightParams } from '@mui/x-data-grid';
 
-type GridRenderCellDOMCallback = (id: any, el: any) => void;
+type GridRenderCellDOMCallback = (el: Element, id: string, value: any) => void;
 
-export interface MUIGridColDef extends GridColDef {
+export type MUIGridColDef = GridColDef & {
   renderCellDOM?: GridRenderCellDOMCallback;
 }
 

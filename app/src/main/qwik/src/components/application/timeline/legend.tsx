@@ -1,4 +1,4 @@
-import { $, component$, useSignal } from "@builder.io/qwik"
+import { component$, useSignal } from "@builder.io/qwik"
 import { MUIButton, MUIPopover } from "~/integrations/react/mui";
 
 const content = (
@@ -12,6 +12,7 @@ const content = (
       <li title="Flashing spots indicate events that are being handled or just finished handling. Blinking vertical lines indicate the last handled event time of each application instance. Note: this indication is approximate and delayed from real time." class=""><span class="legend-swatch"></span><span>In Progress</span></li>
 
       <li title="Green bars indicate events which have been handled successfully, and for which no warning or error information is logged by runner." class=""><span class="legend-swatch color-ok"></span><span>OK</span></li>
+      {/* TODO output events... Do they add to height? Do they extend down? Do they sit side by side? Do they form a fronting sparkline with a thin top border? */}
 
       <li title="Orange bars indicate events whose handling has run into intermittent failures. Happens when a gateway receives an error from an external system, and proceeds to retry the call. The bar stays orange even if the event ends up handled successfully. Note: this indication is best-effort - not every occurrence is logged." class=""><span class="legend-swatch color-warning"></span><span>Warning</span></li>
 
@@ -32,7 +33,7 @@ const content = (
 
 export default component$(() => {
   const open = useSignal(false);
-  const el = useSignal<HTMLElement|null>(null);
+  const el = useSignal<HTMLElement | null>(null);
 
   return (
     <>
@@ -47,9 +48,9 @@ export default component$(() => {
           vertical: 'top',
           horizontal: 'right',
         }}
-        onClose$={() => {open.value = false}}
+        onClose$={() => { open.value = false }}
       >{content}</MUIPopover>
-      <MUIButton id="legend-toggle" client: visible onClick$={({target}) => { if (target instanceof HTMLElement) {open.value = !open.value; el.value = target.closest('button'); }}}>Legend</MUIButton>
+      <MUIButton id="legend-toggle" client:visible onClick$={({ target }) => { if (target instanceof HTMLElement) { open.value = !open.value; el.value = target.closest('button'); } }} >Legend</MUIButton>
       {/* ^ looks overcomplicated, why can't I just set anchorEl as id or any other static way */}
       {/* <MUIButton client: visible onClick$={(e) => {open.value = !open.value; el.value = e.target!.closest('button')!; alert(el.value.tagName); }}>leg-end</MUIButton> */}
     </>);

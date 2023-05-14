@@ -1,12 +1,15 @@
 import { component$, $, render, useStore } from '@builder.io/qwik';
-import { MUIDataGrid, MUIGridColDef } from '~/integrations/react/mui';
+import { MUIDataGrid } from '~/integrations/react/mui';
+import type { MUIGridColDef } from '~/integrations/react/mui';
 import EventGrid from '~/components/event/grid';
 
-const renderTimelineDOM = $((el, id) => {
+declare const render_timeline: (el: Element, duration: number, offset: number, color: string) => void;
+
+const renderTimelineDOM = $((el: Element) => {
   render_timeline(el, 1, 0, '#1db855');
 })
 
-const renderEventsDOM = $((el, id, value) => {
+const renderEventsDOM = $((el: Element, id: string) => {
   const dummy_events = [
     { uuid: 1, eventTime: '2021-03-10T01:39:03.795Z#0', event: '{"@type": "type.googleapis.com/company.author.ProfileUpdate", "authorId": "4806a8a9-1b83-47ad-b0ae-e6cd54b49c72"}', took: "3 ms" },
     { uuid: 2, eventTime: '2021-03-10T01:49:03.100Z#0', event: '{"@type": "type.googleapis.com/company.lyrics.LyricsEdit", "lyricsId": "b8142cbb-7160-40b7-bf79-1be6562fa243"}', took: "3 ms", details: "java.util.concurrent.ExecutionException: io.grpc...." },
@@ -29,18 +32,17 @@ interface GridProps {
 }
 
 export default component$<GridProps>(({ rows }: GridProps) => {
-  const state = useStore({ eventsRows: {} });
+  const state = useStore<any>({ eventsRows: {} });
 
-  const toggleEventsRow = $((params) => {
-    console.debug('Row clicked', params, state.eventsRows);
-    const uuid = params.id;
-    if (uuid.toString().endsWith('.span')) {
+  const toggleEventsRow = $(({id}: {id: string}) => {
+    console.debug('Row clicked', id, state.eventsRows);
+    if (id.toString().endsWith('.span')) {
       return;
     }
-    if (uuid in state.eventsRows) {
-      delete state.eventsRows[uuid];
+    if (id in state.eventsRows) {
+      delete state.eventsRows[id];
     } else {
-      state.eventsRows[uuid] = { id: uuid + '.span', rank: params.id + 0.5 };
+      state.eventsRows[id] = { id: id + '.span', rank: id + 0.5 };
     }
   });
 
@@ -63,7 +65,7 @@ export default component$<GridProps>(({ rows }: GridProps) => {
 
   return <div class="applications">
     <MUIDataGrid
-      client: visible
+      client:visible
       density="compact"
       rows={rows}
       spanRows={spanRows}

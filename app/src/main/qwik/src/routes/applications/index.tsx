@@ -5,8 +5,7 @@ import ApplicationGrid from '~/components/application/grid';
 import Legend from '~/components/application/timeline/legend';
 
 export default component$(() => {
-  // `rows: []` creates weird complaints related to "never[]"
-  const state = useStore({ rows: Array() });
+  const state = useStore<any>({ rows: [] });
 
   const dummy_applications = [
     { uuid: 1, name: 'VitrumNostrumGloriosum', version: '1.2.74' },
@@ -19,24 +18,22 @@ export default component$(() => {
     state.rows = [...state.rows, { id: n, rank: n, ...dummy_applications[n % 3] }];
   });
 
-  return (
-    <div class="padding">
-      <div class="titlebar">
-        <h2>Event-Driven Applications</h2>
-        <MUIButton client: hover variant="outlined" onClick$={pushApp}>Create new</MUIButton>
-      </div>
-      <MUICard elevation={1}>
-        {/* action={[<Legend />]} failed with "Objects are not valid as a React child (found: object with keys {type, props, immutableProps, children, flags, key, dev})" */}
-        <MUICardHeader title="Your Event-Driven Applications" />
-        <Legend />
-        <MUICardContent>
-          <ApplicationGrid
-            rows={state.rows}
-          />
-        </MUICardContent>
-      </MUICard>
+  return <div class="padding">
+    <div class="titlebar">
+      <h2>Event-Driven Applications</h2>
+      <MUIButton client:hover variant="outlined" onClick$={pushApp}>Create new</MUIButton>
     </div>
-  );
+    <MUICard elevation={1}>
+      {/* action={[<Legend />]} failed with "Objects are not valid as a React child (found: object with keys {type, props, immutableProps, children, flags, key, dev})" */}
+      <MUICardHeader title="Your Event-Driven Applications" />
+      <Legend />
+      <MUICardContent>
+        <ApplicationGrid
+          rows={state.rows}
+        />
+      </MUICardContent>
+    </MUICard>
+  </div>
 });
 
 export const head: DocumentHead = {
