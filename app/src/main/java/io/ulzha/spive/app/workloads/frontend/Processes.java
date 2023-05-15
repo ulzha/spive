@@ -1,6 +1,6 @@
 package io.ulzha.spive.app.workloads.frontend;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+// import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ulzha.spive.app.model.Platform;
 import java.util.List;
 import java.util.UUID;
@@ -21,16 +21,13 @@ public class Processes {
 
   public List<ProcessEntry> list() {
     // FIXME concurrent
-    return platform
-        .processesById
-        .values()
-        .stream()
+    return platform.processesById.values().stream()
         .map(process -> new ProcessEntry(process.name, process.id))
         .collect(Collectors.toList());
   }
 
   // Intellij sees them as read, spotbugs doesn't
-  @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  // @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   public static class ProcessEntry {
     public final String name;
     public final String id;

@@ -199,9 +199,7 @@ class ThreadRunnerResource implements RouteProvider {
       responsePayload =
           objectMapper.writeValueAsString(
               GetThreadGroupsResponse.create(
-                  records
-                      .values()
-                      .stream()
+                  records.values().stream()
                       .map(record -> record.threadGroupDescriptor)
                       .collect(Collectors.toList())));
     } catch (JsonProcessingException e) {

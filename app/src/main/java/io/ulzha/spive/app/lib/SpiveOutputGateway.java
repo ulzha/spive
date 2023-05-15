@@ -218,8 +218,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
    * Emits an event to the output simultaneous with the event being handled.
    *
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
-   * Otherwise the event time is the same as for the input event currently handled. FIXME
-   * (TODO non-simultaneous version?)
+   * Otherwise the event time is the same as for the input event currently handled. FIXME (TODO
+   * non-simultaneous version?)
    *
    * <p>For use in event handlers. Ensures that workloads would not append any sporadic event in
    * between. (Haven't yet thought about situations where the consequence comes a significant time

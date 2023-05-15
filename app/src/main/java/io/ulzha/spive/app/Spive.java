@@ -35,6 +35,8 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -76,8 +78,8 @@ public class Spive implements SpiveInstance {
     // humans in that case
     // TODO cleanup orphaned stuff, optional. Perhaps runners should do that
 
-    Process.Instance instance = platform.getInstanceById(event.instanceId);
-    InstanceStatus newStatus = InstanceStatus.valueOf(event.status);
+    Process.Instance instance = platform.getInstanceById(event.instanceId());
+    InstanceStatus newStatus = InstanceStatus.valueOf(event.status());
 
     if (newStatus == instance.status) {
       throw new IllegalStateException("Repeated status");
@@ -100,7 +102,7 @@ public class Spive implements SpiveInstance {
         break;
       case EXIT:
         // Perhaps not immediately, depending on config?
-        output.emitIf(() -> true, new DeleteInstance());
+        output.emitIf(() -> true, new DeleteInstance(instance.id));
         break;
       default:
     }
@@ -108,7 +110,7 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final InstanceProgress event) {
-    platform.getInstanceById(event.instanceId).checkpoint = event.checkpoint;
+    platform.getInstanceById(event.instanceId()).checkpoint = event.checkpoint();
   }
 
   @Override
@@ -125,9 +127,9 @@ public class Spive implements SpiveInstance {
   @Override
   public void accept(final CreateStream event) {
     System.out.println("Accepting " + event);
-    assert ("local".equals(event.eventStore)); // assert it's a class that exists?
+    assert ("local".equals(event.eventStore())); // assert it's a class that exists?
     // TODO ensure (upon emitting) that name-version and id are not duplicated
-    platform.streams.add(new Stream(event.name));
+    platform.streams.add(new Stream(event.name()));
   }
 
   //  @Override
@@ -137,11 +139,11 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final CreateProcess event) {
-    Process newProcess = new Process(event.artifact);
-    newProcess.name = event.name;
-    newProcess.id = event.processId;
-    newProcess.availabilityZones = event.availabilityZones;
-    platform.processesById.put(event.processId, newProcess);
+    Process newProcess = new Process(event.artifact());
+    newProcess.name = event.name();
+    newProcess.id = event.processId();
+    newProcess.availabilityZones = event.availabilityZones();
+    platform.processesById.put(event.processId(), newProcess);
     // TODO ensure (upon emitting) that name-version and id are not duplicated
     // TODO ensure (upon emitting) that the output stream exists
     // TODO decide initial sharding and emit CreateInstance events... 1000 as a sensible default?
@@ -152,14 +154,14 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final CreateInstance event) {
-    final Process process = platform.processesById.get(event.processId);
-    final Process.Instance newInstance = new Process.Instance(event.instanceId, process);
+    final Process process = platform.processesById.get(event.processId());
+    final Process.Instance newInstance = new Process.Instance(event.instanceId(), process);
     process.instances.add(newInstance);
-    platform.instancesById.put(event.instanceId, newInstance);
+    platform.instancesById.put(event.instanceId(), newInstance);
 
     final RunThreadGroupRequest request = new RunThreadGroupRequest();
     request.threadGroup = new ThreadGroupDescriptor();
-    request.threadGroup.name = event.instanceId.toString();
+    request.threadGroup.name = event.instanceId().toString();
     // FIXME superfluous? Prefer one canonical way for launching a jar, one for Docker image, etc?
     final String[] parts = process.artifact.split(";mainClass=");
     request.threadGroup.artifactUrl = parts[0];
@@ -174,19 +176,19 @@ public class Spive implements SpiveInstance {
             "dev-1",
             "*");
 
-    runner.startInstance(request, event.runnerUrl);
+    runner.startInstance(request, event.runnerUrl());
   }
 
   @Override
   public void accept(final DeleteInstance event) {
-    Process.Instance instance = platform.instancesById.remove(event.instanceId);
+    Process.Instance instance = platform.instancesById.remove(event.instanceId());
     instance.process.instances.remove(instance);
     // runner.stopInstance(...);
   }
 
   @Override
   public void accept(final DeleteProcess event) {
-    platform.processesById.remove(event.processId);
+    platform.processesById.remove(event.processId());
   }
 
   // TODO not start this one until caught up
@@ -298,7 +300,11 @@ public class Spive implements SpiveInstance {
 
             // emitRandom
             // emitSpontaneous
-            if (output.emitIf(() -> true, new CreateEventSchema())) {
+            if (output.emitIf(
+                () -> true,
+                new CreateEventSchema(
+                    // FIXME
+                    UUID.randomUUID(), "VeryGoodSchema", Map.of(), List.of()))) {
               body.write("OK".getBytes(StandardCharsets.UTF_8));
             } else {
               body.write("Not ok, retry yourself".getBytes(StandardCharsets.UTF_8));

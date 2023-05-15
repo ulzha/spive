@@ -11,6 +11,7 @@ import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -23,15 +24,17 @@ public class StatusTracker {
   private final UmbilicalReader placenta;
   private EventTime currentEventTime = EventTime.INFINITE_PAST;
   private Supplier<Instant> wallClockTime;
-  private final InstanceStatusChange event;
+  private final InstanceStatusChange.Draft event;
 
   public StatusTracker(
       final UmbilicalReader placenta,
       final Supplier<Instant> wallClockTime,
-      final InstanceStatusChange eventBuilder) {
+      final UUID instanceId) {
     this.placenta = placenta;
     this.wallClockTime = wallClockTime;
-    this.event = eventBuilder;
+    this.event = new InstanceStatusChange.Draft();
+    this.event.instanceId = instanceId;
+    this.event.status = InstanceStatus.NOMINAL.name();
   }
 
   /**
@@ -40,7 +43,7 @@ public class StatusTracker {
    */
   public InstanceStatusChange getStatus(int timeoutMillis) {
     if (event.status.equals(InstanceStatus.ERROR.name())) {
-      return event;
+      return new InstanceStatusChange(event);
     }
 
     EventTime nextEventTime = placenta.getNextEventTime(currentEventTime);
@@ -53,8 +56,8 @@ public class StatusTracker {
         final ProgressUpdate update = getErrorUpdate(placenta.get(currentEventTime));
         event.instant = update.instant();
         event.cause = update.error();
-        // Sticks to the same return value for the remainder of the poll loop.
-        return event;
+        // Sticks to the same return record for the remainder of the poll loop.
+        return new InstanceStatusChange(event);
       }
       nextEventTime = placenta.getNextEventTime(currentEventTime);
     }
@@ -86,6 +89,6 @@ public class StatusTracker {
     //      }
     //    }
 
-    return event;
+    return new InstanceStatusChange(event);
   }
 }

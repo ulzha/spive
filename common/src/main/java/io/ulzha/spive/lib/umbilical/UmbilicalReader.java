@@ -37,7 +37,9 @@ public interface UmbilicalReader {
         && updates.get(0).instant().plusMillis(timeoutMillis).isBefore(now);
   }
 
-  /** @return the first error */
+  /**
+   * @return the first error
+   */
   static ProgressUpdate getErrorUpdate(List<ProgressUpdate> updates) {
     for (var update : updates) {
       if (update.error() != null) {
@@ -47,7 +49,9 @@ public interface UmbilicalReader {
     throw new IllegalArgumentException("list contains no error");
   }
 
-  /** @return computed timeout instant and the first warning before that, if any */
+  /**
+   * @return computed timeout instant and the first warning before that, if any
+   */
   static ProgressUpdate getTimeoutUpdate(List<ProgressUpdate> updates, int timeoutMillis) {
     if (updates.size() == 0) {
       throw new IllegalArgumentException("list is empty");

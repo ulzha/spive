@@ -330,8 +330,7 @@ public class Umbilical {
       allUpdates.add(start.get());
       allUpdates.add(firstError.get());
       allUpdates.addAll(rest);
-      return allUpdates
-          .stream()
+      return allUpdates.stream()
           .filter(Objects::nonNull)
           .sorted(Comparator.comparing(ProgressUpdate::instant))
           .collect(Collectors.toList());

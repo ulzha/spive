@@ -1,6 +1,6 @@
 package io.ulzha.spive.lib;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+// import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 
 /**
@@ -9,7 +9,7 @@ import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
  */
 public abstract class Gateway {
   // used only by subclasses directly so far
-  @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+  // @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
   protected final UmbilicalWriter umbilicus;
 
   public Gateway(final UmbilicalWriter umbilicus) {

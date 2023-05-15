@@ -2,7 +2,6 @@ package io.ulzha.spive.app.events;
 
 import io.ulzha.spive.lib.EventTime;
 import java.util.UUID;
-import lombok.Data;
 
 /**
  * Captures offsets from the event loop, with reasonably coarse granularity.
@@ -12,14 +11,8 @@ import lombok.Data;
  *
  * <p>(Will benefit from compaction.)
  */
-@Data
-public class InstanceProgress {
-  public UUID instanceId; // partition key
-  public EventTime checkpoint;
-  // TODO byte[] sparkline;
-
-  public InstanceProgress(UUID instanceId, EventTime checkpoint) {
-    this.instanceId = instanceId;
-    this.checkpoint = checkpoint;
-  }
-}
+public record InstanceProgress(
+    UUID instanceId, // partition key
+    EventTime checkpoint
+    // TODO byte[] sparkline
+    ) {}
