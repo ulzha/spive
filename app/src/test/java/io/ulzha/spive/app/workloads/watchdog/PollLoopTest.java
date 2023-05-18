@@ -70,9 +70,9 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null));
 
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
@@ -87,7 +87,7 @@ class PollLoopTest {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
     fakePlacenta.givenHeartbeat(
-        t2, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
 
     instance.checkpoint = t1;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -103,9 +103,9 @@ class PollLoopTest {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
     fakePlacenta.givenHeartbeat(
-        t2, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
     fakePlacenta.givenHeartbeat(
-        t2, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:02.111Z"), true, null, null));
+        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), true, null, null));
 
     instance.checkpoint = t1;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -119,9 +119,9 @@ class PollLoopTest {
   void givenDeletedInstance_shouldNotEmitInstanceProgress() throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null));
 
     instance.process = null;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -136,7 +136,7 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
 
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
@@ -161,7 +161,7 @@ class PollLoopTest {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
     fakePlacenta.givenHeartbeat(
-        t2, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
 
     instance.status = InstanceStatus.ERROR;
     controlPlaneLastEventTime.set(t1);
@@ -191,7 +191,7 @@ class PollLoopTest {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
     fakePlacenta.givenHeartbeat(
-        t2, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
 
     instance.status = InstanceStatus.TIMEOUT;
     controlPlaneLastEventTime.set(t1);
@@ -209,7 +209,7 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, "err"));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, "err"));
 
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
@@ -231,9 +231,9 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:54:59.999Z"), true, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:54:59.999Z"), true, null, null));
 
     instance.status = InstanceStatus.TIMEOUT;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -251,7 +251,7 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     fakePlacenta.givenHeartbeat(
-        t1, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
 
     instance.status = InstanceStatus.TIMEOUT;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -267,7 +267,7 @@ class PollLoopTest {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
     fakePlacenta.givenHeartbeat(
-        t2, ProgressUpdate.create(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
 
     instance.process = null;
     instance.status = InstanceStatus.TIMEOUT;

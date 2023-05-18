@@ -18,14 +18,12 @@
       <groupId>io.ulzha</groupId>
       <artifactId>spive-core</artifactId>
       <version>0.0.1-SNAPSHOT</version>
-      <scope>compile</scope>
     </dependency>
     <!-- don't really want this - want UmbilicalReader and UmbilicalWriter from core? -->
     <dependency>
       <groupId>io.ulzha</groupId>
       <artifactId>spive-thread-runner</artifactId>
       <version>0.0.1-SNAPSHOT</version>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 

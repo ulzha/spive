@@ -31,7 +31,7 @@ public class GetThreadGroupHeartbeatResponseIT {
         heartbeatSampleThat(
             is(t4),
             nullValue(),
-            containsIgnoringTime(ProgressUpdate.create(), ProgressUpdate.createSuccess())));
+            containsIgnoringTime(new ProgressUpdate(), ProgressUpdate.createSuccess())));
     assertThat(actual.checkpoint(), is(t4));
   }
 

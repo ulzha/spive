@@ -84,14 +84,14 @@ public final class LocalFileSystemEventLog implements EventLog {
 
   @Override
   public boolean appendIfPrevTimeMatch(EventEnvelope event, EventTime prevTime) throws IOException {
-    if (event.time.compareTo(prevTime) <= 0) {
+    if (event.time().compareTo(prevTime) <= 0) {
       throw new IllegalArgumentException("event must have time later than prevTime");
     }
     // FIXME lock file to do this reliably
     if (channel.size() > 0) {
       seekToLastLine();
       final EventEnvelope latestEvent = read(channel);
-      if (latestEvent.time.compareTo(prevTime) == 0) {
+      if (latestEvent.time().compareTo(prevTime) == 0) {
         return append(event);
       }
     }
@@ -202,11 +202,11 @@ public final class LocalFileSystemEventLog implements EventLog {
           nextEvent = read(reader);
           if (previousEvent != null
               && nextEvent != null
-              && nextEvent.time.compareTo(previousEvent.time) <= 0) {
+              && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
             throw new InternalSpiveException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
-                    previousEvent.time, nextEvent.time, filePath));
+                    previousEvent.time(), nextEvent.time(), filePath));
           }
         } catch (IOException e) {
           throw new RuntimeException(e);

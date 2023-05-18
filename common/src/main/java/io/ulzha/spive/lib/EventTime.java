@@ -46,6 +46,12 @@ public class EventTime implements Comparable<EventTime> {
     this(instant, 0);
   }
 
+  // just for deserialization to work... But I guess it would work without, if EventTime was a
+  // record too
+  public EventTime() {
+    this(Instant.MIN, -1);
+  }
+
   // Must never appear as ordering key in any event logs.
   public static final EventTime INFINITE_PAST = new EventTime(Instant.MIN, -1);
 

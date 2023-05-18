@@ -16,7 +16,6 @@
       <groupId>io.ulzha</groupId>
       <artifactId>spive-core</artifactId>
       <version>0.0.1-SNAPSHOT</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

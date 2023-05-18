@@ -50,15 +50,12 @@ public record InstanceStatusChange(
   // whole partition set? Something like that could help in troubleshooting when the error is
   // nondeterministic wrt ordering across partitions or partition distribution across shards
 
+  // TODO https://github.com/Randgalt/record-builder?
   public static class Draft {
     public UUID instanceId;
     public @Nullable EventTime eventTime;
     public @Nullable Instant instant;
     public String status;
     public @Nullable String cause;
-  }
-
-  public InstanceStatusChange(Draft draft) {
-    this(draft.instanceId, draft.eventTime, draft.instant, draft.status, draft.cause);
   }
 }

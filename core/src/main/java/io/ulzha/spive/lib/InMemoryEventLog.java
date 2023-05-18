@@ -19,19 +19,19 @@ public class InMemoryEventLog implements EventLog {
   @Override
   public synchronized boolean appendIfPrevTimeMatch(
       final EventEnvelope event, final EventTime prevTime) {
-    if (event.time.compareTo(prevTime) <= 0) {
+    if (event.time().compareTo(prevTime) <= 0) {
       throw new IllegalArgumentException("event time should come strictly after prevTime");
     }
 
     if (list.isEmpty() && EventTime.INFINITE_PAST.compareTo(prevTime) < 0) {
       throw new IllegalArgumentException(
           "prevTime should be set to INFINITE_PAST, when appending the first event");
-    } else if (!list.isEmpty() && list.getLast().time.compareTo(prevTime) < 0) {
+    } else if (!list.isEmpty() && list.getLast().time().compareTo(prevTime) < 0) {
       throw new IllegalArgumentException(
           "prevTime should be set to previous event time read, when appending a subsequent event");
     }
 
-    if (!list.isEmpty() && list.getLast().time.compareTo(prevTime) > 0) {
+    if (!list.isEmpty() && list.getLast().time().compareTo(prevTime) > 0) {
       return false;
     }
 
@@ -51,7 +51,7 @@ public class InMemoryEventLog implements EventLog {
   /** for testing only */
   public List<Object> asPayloadList() {
     return list.stream()
-        .map(event -> Type.fromTypeTag(event.typeTag).deserialize(event.serializedPayload))
+        .map(event -> Type.fromTypeTag(event.typeTag()).deserialize(event.serializedPayload()))
         .collect(Collectors.toList());
   }
 
@@ -60,7 +60,7 @@ public class InMemoryEventLog implements EventLog {
     if (list.isEmpty()) {
       return EventTime.INFINITE_PAST;
     } else {
-      return list.getLast().time;
+      return list.getLast().time();
     }
   }
 }

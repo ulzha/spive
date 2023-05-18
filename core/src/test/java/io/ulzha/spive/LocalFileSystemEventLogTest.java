@@ -30,11 +30,11 @@ public class LocalFileSystemEventLogTest {
 
     assertTrue(iterator.hasNext());
     final EventEnvelope event1 = iterator.next();
-    assertThat(event1.typeTag, is("pojo:io.ulzha.spive.test.CreateProcess"));
+    assertThat(event1.typeTag(), is("pojo:io.ulzha.spive.test.CreateProcess"));
 
     assertTrue(iterator.hasNext());
     final EventEnvelope event2 = iterator.next();
-    assertThat(event2.typeTag, is("pojo:io.ulzha.spive.test.DeleteProcess"));
+    assertThat(event2.typeTag(), is("pojo:io.ulzha.spive.test.DeleteProcess"));
 
     // Sic - this file has no closing marker, the logic is to expect more events eventually.
     Assertions.assertThrows(
@@ -52,7 +52,7 @@ public class LocalFileSystemEventLogTest {
 
     assertTrue(iterator.hasNext());
     final EventEnvelope event1 = iterator.next();
-    assertThat(event1.typeTag, is("pojo:io.ulzha.spive.test.CreateProcess"));
+    assertThat(event1.typeTag(), is("pojo:io.ulzha.spive.test.CreateProcess"));
 
     assertFalse(iterator.hasNext());
   }

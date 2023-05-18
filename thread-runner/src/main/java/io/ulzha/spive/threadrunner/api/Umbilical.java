@@ -87,7 +87,7 @@ public class Umbilical {
 
   /** Set by event loop before every event handled. */
   public void addHeartbeat(EventTime eventTime) {
-    addHeartbeat(eventTime, ProgressUpdate.create());
+    addHeartbeat(eventTime, new ProgressUpdate());
   }
 
   /** Asynchronously polled by control plane via Runner API. */
@@ -95,8 +95,7 @@ public class Umbilical {
     final List<HeartbeatSample> heartbeatSnapshot = new ArrayList<>();
 
     for (var entry : heartbeat.entryListSnapshot()) {
-      heartbeatSnapshot.add(
-          HeartbeatSample.create(entry.getKey(), null, entry.getValue().toList()));
+      heartbeatSnapshot.add(new HeartbeatSample(entry.getKey(), null, entry.getValue().toList()));
     }
 
     return heartbeatSnapshot;
@@ -142,7 +141,7 @@ public class Umbilical {
               .progressUpdates()
               .replaceAll(
                   progressUpdate ->
-                      ProgressUpdate.create(
+                      new ProgressUpdate(
                           progressUpdate.instant(),
                           progressUpdate.success(),
                           truncateStacktrace(progressUpdate.warning()),

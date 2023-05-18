@@ -2,7 +2,6 @@ package io.ulzha.spive.app;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -28,6 +27,8 @@ import io.ulzha.spive.threadrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.threadrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.threadrunner.api.ThreadRunnerGateway;
 import io.ulzha.spive.util.InterruptableSchedulable;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -277,7 +278,7 @@ public class Spive implements SpiveInstance {
     }
 
     private class ApiHandler implements HttpHandler {
-      private final ObjectMapper objectMapper = new ObjectMapper();
+      private final Jsonb jsonb = new JsonbBuilder.create();
       private final Processes processes = new Processes(platform);
 
       public void handle(HttpExchange exchange) throws IOException {
@@ -289,7 +290,7 @@ public class Spive implements SpiveInstance {
           exchange.sendResponseHeaders(200, 0);
           try (OutputStream body = exchange.getResponseBody()) {
             // List of all applications (on this instance), for displaying on a dashboard.
-            String applicationsJson = objectMapper.writeValueAsString(processes.list());
+            String applicationsJson = jsonb.toJson(processes.list());
             body.write(applicationsJson.getBytes(StandardCharsets.UTF_8));
           }
         } else if (path.equals("/api/applications") && method.equals("PUT")) {

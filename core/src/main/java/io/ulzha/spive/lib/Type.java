@@ -1,7 +1,7 @@
 package io.ulzha.spive.lib;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
 
 /**
  * A data type that Event payload can possess and that a Process, written in one of the supported
@@ -32,7 +32,7 @@ public class Type {
   //  Object programmingLanguageFormat; // language, datatype, semantics (validation contract?)
   public final Class<?> programmingLanguageFormat;
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final Jsonb jsonb = JsonbBuilder.create();
 
   private Type(String name, Class<?> programmingLanguageFormat) {
     this.name = name;
@@ -69,16 +69,16 @@ public class Type {
 
   public String serialize(Object payload) {
     try {
-      return objectMapper.writeValueAsString(payload);
-    } catch (JsonProcessingException e) {
+      return jsonb.toJson(payload, programmingLanguageFormat);
+    } catch (Exception e) {
       throw new InternalSpiveException("Failed to serialize event payload " + this, e);
     }
   }
 
   public Object deserialize(String s) {
     try {
-      return objectMapper.readValue(s, programmingLanguageFormat);
-    } catch (JsonProcessingException e) {
+      return jsonb.fromJson(s, programmingLanguageFormat);
+    } catch (Exception e) {
       throw new InternalSpiveException("Failed to deserialize event payload " + this, e);
     }
   }

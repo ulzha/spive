@@ -42,7 +42,7 @@ public final class BigtableEventLog implements EventLog {
    * @return the next event, or null to signify a closed log.
    */
   private EventEnvelope read(final EventEnvelope previousEvent) throws IOException {
-    final String start = (previousEvent == null ? null : toRowKey(previousEvent.time));
+    final String start = (previousEvent == null ? null : toRowKey(previousEvent.time()));
     final Query query =
         Query.create(TABLE_ID)
             .range(start, null)
@@ -76,9 +76,9 @@ public final class BigtableEventLog implements EventLog {
     final String metadataJson = cells.get(0).getValue().toStringUtf8();
 
     if (metadataJson.length() != 0) {
-      EventEnvelope event = Json.deserializeEventMetadata(metadataJson);
+      EventEnvelope event =
+          Json.deserializeEventMetadata(metadataJson, cells.get(1).getValue().toStringUtf8());
       // TODO assert that each one is keyed exactly toRowKey(previous event time read)
-      event.serializedPayload = cells.get(1).getValue().toStringUtf8();
       return event;
     } else {
       return null;
@@ -108,7 +108,7 @@ public final class BigtableEventLog implements EventLog {
 
   @Override
   public boolean appendIfPrevTimeMatch(final EventEnvelope event, final EventTime prevTime) {
-    if (event.time.compareTo(prevTime) <= 0) {
+    if (event.time().compareTo(prevTime) <= 0) {
       throw new IllegalArgumentException("event time should come strictly after prevTime");
     }
 
@@ -122,7 +122,7 @@ public final class BigtableEventLog implements EventLog {
                 Mutation.create()
                     .setCell(EVENT_COLUMN_FAMILY, METADATA_COLUMN_QUALIFIER, metadataJson)
                     .setCell(
-                        EVENT_COLUMN_FAMILY, PAYLOAD_COLUMN_QUALIFIER, event.serializedPayload));
+                        EVENT_COLUMN_FAMILY, PAYLOAD_COLUMN_QUALIFIER, event.serializedPayload()));
 
     return !dataClient.checkAndMutateRow(mutation);
   }
@@ -153,11 +153,11 @@ public final class BigtableEventLog implements EventLog {
           nextEvent = read(previousEvent);
           if (previousEvent != null
               && nextEvent != null
-              && nextEvent.time.compareTo(previousEvent.time) <= 0) {
+              && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
             throw new InternalSpiveException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
-                    previousEvent.time, nextEvent.time, logId));
+                    previousEvent.time(), nextEvent.time(), logId));
           }
         } catch (IOException e) {
           throw new RuntimeException(e);

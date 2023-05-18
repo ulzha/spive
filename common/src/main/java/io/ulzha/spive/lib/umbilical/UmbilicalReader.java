@@ -67,6 +67,6 @@ public interface UmbilicalReader {
         break;
       }
     }
-    return ProgressUpdate.create(timeoutInstant, false, firstWarning, null);
+    return new ProgressUpdate(timeoutInstant, false, firstWarning, null);
   }
 }

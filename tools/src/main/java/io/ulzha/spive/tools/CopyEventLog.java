@@ -14,8 +14,8 @@ public class CopyEventLog {
     EventTime prevTime = EventTime.INFINITE_PAST;
     for (EventEnvelope event : src) {
       dst.appendIfPrevTimeMatch(event, prevTime);
-      prevTime = event.time;
-      if (event.time.equals(last)) break;
+      prevTime = event.time();
+      if (event.time().equals(last)) break;
     }
   }
 }

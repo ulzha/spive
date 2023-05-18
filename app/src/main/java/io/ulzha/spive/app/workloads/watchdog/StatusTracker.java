@@ -43,7 +43,8 @@ public class StatusTracker {
    */
   public InstanceStatusChange getStatus(int timeoutMillis) {
     if (event.status.equals(InstanceStatus.ERROR.name())) {
-      return new InstanceStatusChange(event);
+      return new InstanceStatusChange(
+          event.instanceId, event.eventTime, event.instant, event.status, event.cause);
     }
 
     EventTime nextEventTime = placenta.getNextEventTime(currentEventTime);
@@ -57,7 +58,8 @@ public class StatusTracker {
         event.instant = update.instant();
         event.cause = update.error();
         // Sticks to the same return record for the remainder of the poll loop.
-        return new InstanceStatusChange(event);
+        return new InstanceStatusChange(
+            event.instanceId, event.eventTime, event.instant, event.status, event.cause);
       }
       nextEventTime = placenta.getNextEventTime(currentEventTime);
     }
@@ -89,6 +91,7 @@ public class StatusTracker {
     //      }
     //    }
 
-    return new InstanceStatusChange(event);
+    return new InstanceStatusChange(
+        event.instanceId, event.eventTime, event.instant, event.status, event.cause);
   }
 }
