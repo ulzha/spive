@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.4_11
+FROM openjdk:19-jdk-alpine3.15
 
 ENTRYPOINT ["/usr/bin/spive-thread-runner.sh"]
 

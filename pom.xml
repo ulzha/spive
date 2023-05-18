@@ -15,9 +15,6 @@
 
   <properties>
     <java.version>19</java.version>
-    <maven.compiler.release>19</maven.compiler.release>
-    <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
-    <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
     <license.skipCheckLicense>true</license.skipCheckLicense>
@@ -26,7 +23,6 @@
     <apollo.version>1.15.8</apollo.version>
     <protobuf.version>4.0.0-rc-2</protobuf.version>
     <autovalue.version>1.10.1</autovalue.version>
-    <!-- <lombok.version>1.18.20</lombok.version> -->
   </properties>
 
   <modules>
@@ -51,11 +47,6 @@
       <artifactId>auto-value</artifactId>
       <version>${autovalue.version}</version>
     </dependency>
-    <!-- <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
-    </dependency> -->
   </dependencies>
 
   <dependencyManagement>
@@ -160,35 +151,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <annotationProcessorPaths combine.children="append">
-            <path>
-              <groupId>com.google.auto.value</groupId>
-              <artifactId>auto-value</artifactId>
-              <version>${autovalue.version}</version>
-            </path>
-            <!-- <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
-            </path> -->
-          </annotationProcessorPaths>
-          <compilerArgs>
-            <arg>-Werror</arg>
-            <arg>-Xlint:all</arg>
-            <arg>-Xlint:-path</arg>
-            <arg>-Xlint:-processing</arg>
-            <arg>-Xlint:-try</arg>
-            <arg>-implicit:class</arg> <!-- Get rid of "Implicitly compiled files were not subject to annotation processing" warning -->
-          </compilerArgs>
-          <showDeprecation>true</showDeprecation>
-          <showWarnings>true</showWarnings>
-        </configuration>
-      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -202,6 +164,33 @@
           <configuration>
             <skip>true</skip>
             <mainClass>none</mainClass>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <release>${java.version}</release>
+            <annotationProcessorPaths combine.children="append">
+              <path>
+                <groupId>com.google.auto.value</groupId>
+                <artifactId>auto-value</artifactId>
+                <version>${autovalue.version}</version>
+              </path>
+            </annotationProcessorPaths>
+            <compilerArgs>
+              <arg>-Werror</arg>
+              <arg>-Xlint:all</arg>
+              <arg>-Xlint:-path</arg>
+              <arg>-Xlint:-processing</arg>
+              <arg>-Xlint:-try</arg>
+              <arg>-implicit:class</arg> <!-- Get rid of "Implicitly compiled files were not subject to annotation processing" warning -->
+            </compilerArgs>
+            <showDeprecation>true</showDeprecation>
+            <showWarnings>true</showWarnings>
           </configuration>
         </plugin>
       </plugins>
