@@ -24,16 +24,16 @@ The buildup is a bit arbitrary too, meaning the manner in which feature set is e
 For doing development locally, you have the dev-*/start.sh tools to bootstrap test doubles of the production infrastructure (just prod-0 without replication, or other variously stripped-down and customized variants of the stack).
 
 ```
-{CreateEventSchema {some non-core, like SpiveScaler, SpiveInventory}
+{CreateType {some non-core, like SpiveScaler, SpiveInventory}
 {CreateGateway {some non-core, like BigtableEventStoreGateway, GkeRunnerGateway, PagerDutyGateway - so the bootstrap plane can alert in fancy ways}}
-// ^ or unify those kinds of extension loading events in one mechanism? CreateEventSchema, CreateEventStore, CreateGateway
+// ^ or unify those kinds of extension loading events in one mechanism? CreateType, CreateEventStore, CreateGateway
 {CreateStream (durable event stores, fixed gids)}
 // ^ the above types are perhaps not going to be in the same stream in prod, but they can be in bootstrap, and the code stays the same.
 {CreateProcess {Spive, SpiveScaler, SpiveInventory}}
 // ^ even processes are perhaps going to need a separate stream if we need to scale any prod process to million instances.
 {CreateInstance {europe, north-america, asia}}
-// At the limit, a Spive shard tracks a bunch of instances, their parent process, and the schemas, gateways, and streams that the process references... Owning the instances but not necessarily owning the process or any of the rest.
-// The alternative would be breaking the app up into even smaller microservices, like SpiveStreamManager and SpiveEventSchemaManager, where the productivity premise of a simple in-memory model gets torn down early...
+// At the limit, a Spive shard tracks a bunch of instances, their parent process, and the types, gateways, and streams that the process references... Owning the instances but not necessarily owning the process or any of the rest.
+// The alternative would be breaking the app up into even smaller microservices, like SpiveStreamManager and SpiveTypeManager, where the productivity premise of a simple in-memory model gets torn down early...
 
 // Is this a fused log, containing 3 streams? Overly complex?
 ```

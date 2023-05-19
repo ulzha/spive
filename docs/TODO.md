@@ -25,7 +25,7 @@
 - [ ] Compute diffs between streams
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
 - [ ] Example minor upgrade (involves inspection of diffs)
-- [ ] Example major upgrade flow (must be trivial to add a new field to CreateFoo event, for example. New Stream - copy EventSchemas -> edit? Then copy Stream with defaults? When to deploy the process? What to do with partially applied side effects when handlers of the old process are interrupted?)
+- [ ] Example major upgrade flow (must be trivial to add a new field to CreateFoo event, for example. New Stream - copy Types -> edit? Then copy Stream with defaults? When to deploy the process? What to do with partially applied side effects when handlers of the old process are interrupted?)
 - [ ] Support distributed synchronization of snapshot workloads across shards (may fail on network partition. Scheduling in advance increases reliability)
 - [ ] Pause function ("wait for input" workload shorthand?) in UI to pause a partition/instance/the whole world at a given event time, indefinitely - useful for scheduled maintenance of external systems, debugging, etc.
 - [ ] Example of point-in-time consistent operation on all child entities from app SDK (relies on a synchronization solution in the control plane, as per above)
@@ -62,7 +62,7 @@
 - [ ] Expand all automatic maintenance done - retry bursts, error pattern analysis, history of sharding decisions, history of scaling/throttling (non)decisions with human-readable reasons (visualize expected effects ahead of time, as annotations on graphs in the future - important because scaling takes time), history of sanity checks, history of profiling runs, history of storage and runtime optimizations
 - [ ] Expand with the control plane timeline filtered to a particular process, color coded by version (overlay with cost & performance histograms)
 - [ ] Sharding heuristics: hot key set (for independent scaling), erroring key set and its complement (though this maybe doesn't need to result in a sharding change), ...
-- [ ] Sanity heuristics: any lagging instance always crashing despite the application purportedly being active-active HA? Spawning new threads in event handlers? Statical analysis of the jar/deployable artifact (alert and reject applications using EventLog or other IO sidestepping the generated interface)?
+- [ ] Sanity heuristics: any lagging instance always crashing despite the application purportedly being active-active HA? Spawning new threads in event handlers? Statical analysis of the jar/deployable artifact (alert and reject applications using EventLog or other IO sidestepping the generated interface)? Event time is in distant future or distant past?
 - [ ] Search the dashboard (not just process names, also codesearch and even event data)
 - [ ] Visualize dependencies between processes and streams in the dashboard
 - [ ] Visualize groups of related processes as entities, and relations between them

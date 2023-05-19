@@ -7,16 +7,16 @@ import java.util.UUID;
 /**
  * A reliably persisted, effectively append-only[1], near real-time consumable stream of Events.
  *
- * <p>Every Event in a Stream belongs to one of its (possibly many) EventSchemas. This set is fixed
- * for the lifetime of a Stream.
+ * <p>Every Event in a Stream belongs to one of its (possibly many) Types. This set is fixed for the
+ * lifetime of a Stream.
  *
  * <p>Each Stream normally has at most one Process appending to it - this Process is also
  * responsible for ensuring each newly appended Event is consistent with the history of events that
  * precede it, regarding business semantics of the given Stream.
  *
  * <p>A field or a list of fields are used as the Stream's Partition key. These fields must exist in
- * every EventSchema of the Stream. Events in a Partition are written and consumed totally ordered
- * by EventTime. (Among Events from different Partitions the order is unspecified.)
+ * every Type of the Stream. Events in a Partition are written and consumed totally ordered by
+ * EventTime. (Among Events from different Partitions the order is unspecified.)
  *
  * <p>A Stream holds attributes like a descriptive name, and an ownership (access control list)
  * record for the contained data.

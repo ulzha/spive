@@ -7,4 +7,11 @@ import java.util.UUID;
 // both in tandem then gets a bit more complex, at least annoying by the looks of it...
 public record CreateStream(
     // partition key
-    UUID streamId, String name, String version, List<String> eventSchemas, String eventStore) {}
+    UUID streamId,
+    String name,
+    String version,
+    // what representation?
+    List<String>
+        eventTypes, // a.k.a. schema? Or is one of those usable in abstract, for wire-format
+    // agnostic case?
+    String eventStore) {}

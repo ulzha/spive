@@ -114,7 +114,8 @@ public class Json {
                       new ArrayList<ProgressUpdate>() {}.getClass().getGenericSuperclass(), parser);
               break;
             default:
-              // ignore unknown keys for forward compatibility
+              // TODO ignore (skip over) unknown keys for forward compatibility?
+              throw new JsonException("Unexpected key: \"" + keyName + "\"");
           }
         }
       } while (event == Event.KEY_NAME);

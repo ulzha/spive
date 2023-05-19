@@ -9,8 +9,13 @@ set -euxo pipefail
 
 # 0. clean up
 # (in case lingering pieces are running already)
+mvn clean
+rm -r event-store || true
 
-# 1. prepare runners and event stores
+# 1. build app as a jar
+mvn package -am -pl app
+
+# 2. prepare runners and event stores
 # (initialize local filesystem)
 # (alt. structure the logs so they are mountable directly)
 mkdir -p event-store

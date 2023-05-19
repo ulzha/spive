@@ -1,5 +1,9 @@
 package io.ulzha.spive.app.model;
 
+import java.util.Map;
+import java.util.UUID;
+import javax.annotation.Nullable;
+
 /**
  * Relevant to maintain first class understanding of partition keys among event fields.
  *
@@ -8,4 +12,8 @@ package io.ulzha.spive.app.model;
  *
  * <p>Foreign keys hardly a thing?
  */
-public class EventSchema {}
+public class Type {
+  UUID typeId;
+  String name;
+  @Nullable Map<String, String> fieldTypeTags;
+}

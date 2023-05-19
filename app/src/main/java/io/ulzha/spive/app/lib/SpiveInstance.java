@@ -3,10 +3,10 @@ package io.ulzha.spive.app.lib;
 import com.google.common.collect.ImmutableList;
 import io.ulzha.spive.app.Spive;
 import io.ulzha.spive.app.events.CreateEventLog;
-import io.ulzha.spive.app.events.CreateEventSchema;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.events.CreateStream;
+import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
 import io.ulzha.spive.app.events.DeleteProcess;
 import io.ulzha.spive.app.events.InstanceProgress;
@@ -68,13 +68,13 @@ public interface SpiveInstance
 
   void accept(final CreateEventLog event);
 
-  void accept(final CreateEventSchema event);
-
   void accept(final CreateInstance event);
 
   void accept(final CreateProcess event);
 
   void accept(final CreateStream event);
+
+  void accept(final CreateType event);
 
   void accept(final DeleteInstance event);
 
@@ -245,9 +245,9 @@ public interface SpiveInstance
       public void run() {
         LOG.info("Starting event loop over " + inputEventLog);
         for (EventEnvelope envelope : inputEventLog) {
+          System.out.println("We have an envelope: " + envelope);
           final Event event = envelope.unwrap();
           System.out.println("We have an event: " + event);
-          // TODO bail if the time is in distant future
           // TODO assert that the event belongs to the intended subset of partitions
           // TODO maintain a rolling hash and panic if inconsistency observed?
           umbilical.addHeartbeat(event.time);

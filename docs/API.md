@@ -129,7 +129,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   RPC APIs in... TODO which directions? ~Ingress/egress/3rd party, and for signals that are rarely used, or hard to compute, thus don't warrant precomputed streams?
 
-  Separate stream for each EventSchema - TODO pros/cons?
+  Separate stream for each Type - TODO pros/cons?
 
 #### Partitioning is arbitrarily fine-grained
 

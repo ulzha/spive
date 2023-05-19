@@ -6,23 +6,24 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import io.ulzha.spive.app.events.CreateEventLog;
-import io.ulzha.spive.app.events.CreateEventSchema;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.events.CreateStream;
+import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
 import io.ulzha.spive.app.events.DeleteProcess;
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.app.lib.SpiveInstance;
 import io.ulzha.spive.app.lib.SpiveOutputGateway;
-import io.ulzha.spive.app.model.EventSchema;
 import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.app.model.Stream;
+import io.ulzha.spive.app.model.Type;
 import io.ulzha.spive.app.workloads.frontend.Processes;
 import io.ulzha.spive.app.workloads.watchdog.WatchLoop;
+import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.threadrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.threadrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.threadrunner.api.ThreadRunnerGateway;
@@ -116,13 +117,13 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final CreateEventLog event) {
-    System.out.println("Accepting " + event);
+    System.out.println("Accepting " + event + ", start: " + EventTime.fromString(event.start()));
   }
 
   @Override
-  public void accept(final CreateEventSchema event) {
+  public void accept(final CreateType event) {
     System.out.println("Accepting " + event);
-    platform.eventSchemas.add(new EventSchema());
+    platform.types.add(new Type());
   }
 
   @Override
@@ -302,9 +303,9 @@ public class Spive implements SpiveInstance {
             // emitSpontaneous
             if (output.emitIf(
                 () -> true,
-                new CreateEventSchema(
+                new CreateType(
                     // FIXME
-                    UUID.randomUUID(), "VeryGoodSchema", Map.of(), List.of()))) {
+                    UUID.randomUUID(), "VeryGoodType", Map.of()))) {
               body.write("OK".getBytes(StandardCharsets.UTF_8));
             } else {
               body.write("Not ok, retry yourself".getBytes(StandardCharsets.UTF_8));

@@ -19,8 +19,6 @@ import jakarta.json.bind.JsonbBuilder;
  *
  * <p>Types should not undergo breaking changes in their serde logic; any new functionality should
  * be implemented as a new Type, even though the type in the programming language may stay the same.
- *
- * <p>TODO just Types (plain and nested), no EventSchemas?
  */
 public class Type {
   public final String name; // short... Perhaps the same as tag?
@@ -47,12 +45,12 @@ public class Type {
    */
   public static Type fromTypeTag(final String tag) {
     if (tag.startsWith("pojo:")) {
+      final String name = tag.substring(5);
       try {
-        String name = tag.substring(5);
         Class<?> programmingLanguageFormat = Class.forName(name);
         return new Type(name, programmingLanguageFormat);
       } catch (ClassNotFoundException e) {
-        throw new InternalSpiveException(String.format("Failed to parse type tag: %s", tag), e);
+        throw new InternalSpiveException(String.format("Unknown format: %s", name), e);
       }
     } else {
       throw new InternalSpiveException(String.format("Unknown type tag: %s", tag));

@@ -1,7 +1,7 @@
 package io.ulzha.spive.app.lib;
 
-import io.ulzha.spive.app.events.CreateEventSchema;
 import io.ulzha.spive.app.events.CreateInstance;
+import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
@@ -34,8 +34,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
   private final LockableEventLog eventLog;
 
   // (protobuf Any, anyone? type_url: "type.googleapis.com/company.entity.Foo")
-  private static final Type createEventSchemaType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateEventSchema");
+  private static final Type createTypeType =
+      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateType");
   private static final Type createInstanceType =
       Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateInstance");
   private static final Type createProcessType =
@@ -95,8 +95,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
     }
   }
 
-  public boolean emitIf(Supplier<Boolean> check, CreateEventSchema payload) {
-    return emitIf(check, createEventSchemaType, payload);
+  public boolean emitIf(Supplier<Boolean> check, CreateType payload) {
+    return emitIf(check, createTypeType, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, DeleteInstance payload) {

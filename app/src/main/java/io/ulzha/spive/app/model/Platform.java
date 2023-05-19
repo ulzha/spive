@@ -9,7 +9,7 @@ import java.util.UUID;
 /** Root object wrapping all the constituents of Spive platform. */
 public class Platform {
   public String name; // URN? Domain name, like com.company.production-new-new?
-  public Set<EventSchema> eventSchemas = new HashSet<>();
+  public Set<Type> types = new HashSet<>();
   public Set<Gateway> gateways = new HashSet<>();
   public Map<UUID, Process> processesById = new HashMap<>();
   public Set<Stream> streams = new HashSet<>();
@@ -27,8 +27,8 @@ public class Platform {
         + "name='"
         + name
         + '\''
-        + ", eventSchemas="
-        + eventSchemas
+        + ", types="
+        + types
         + ", gateways="
         + gateways
         + ", processesById="

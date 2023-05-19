@@ -88,7 +88,9 @@ Frontend uses Qwik, D3 and Material UI. See the respective README.md file for in
 
 ### Conventions and opinions
 
-TODO
+(TODO code, architecture, UX conventions and opinions)
+
+InterruptedException for (indefinitely) blocking methods... Hardly seeing need for other checked exceptions.
 
 Strongly opinionated that common development iteration UX should be blazingly fast, to not break [flow](https://en.wikipedia.org/wiki/Flow_state). Aspire to gamify common chores, such as deployment, scaling, and verification of code changes. Do precompute views, throw hardware at the problem, get UI to [update in split seconds](http://lawsofux.com/en/doherty-threshold/).
 

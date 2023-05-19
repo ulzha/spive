@@ -4,14 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventTime;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 public class JsonTest {
   @Test
-  void testRoundTripEventMetadataWithoutPayload() throws IOException {
+  void testRoundTripEventMetadataWithoutPayload() {
     EventEnvelope event =
         new EventEnvelope(
             new EventTime(Instant.ofEpochSecond(1611257224, 10_000_000), 2),

@@ -4,7 +4,7 @@ import static jakarta.json.Json.createParser;
 
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventTime;
-import jakarta.json.JsonObject;
+import jakarta.json.JsonException;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import java.io.IOException;
@@ -22,21 +22,82 @@ public class Json {
         + "\"}";
   }
 
-  public static EventEnvelope deserializeEventMetadata(String metadataJson, String defaultPayload)
-      throws IOException {
-    JsonParser jp = createParser(new StringReader(metadataJson));
-    Event next = jp.next();
-    if (next != Event.START_OBJECT) {
-      throw new IOException("Expected start of object, got: " + next);
+  /**
+   * @param metadataJson may include payload (the key can have any value, not just an object)
+   * @param externalPayloadJson specifies payload in case it is not included in metadataJson
+   */
+  public static EventEnvelope deserializeEventMetadata(
+      String metadataJson, String externalPayloadJson) {
+    JsonParser parser = createParser(new StringReader(metadataJson));
+    String idString = null;
+    String timeString = null;
+    String typeString = null;
+    String payloadJson = null;
+    Event event = parser.next();
+    if (event != Event.START_OBJECT) {
+      throw new JsonException("Expected start of object, got: " + event);
     }
-    JsonObject jo = jp.getObject();
-    String id = jo.getString("id", null);
+    do {
+      event = parser.next();
+      if (event == Event.KEY_NAME) {
+        final String keyName = parser.getString();
+        final Event valueEvent = parser.next();
+        switch (keyName) {
+          case "id":
+            if (idString != null) {
+              throw new JsonException("Duplicate key: \"id\"");
+            }
+            idString = (valueEvent == Event.VALUE_NULL ? null : parser.getString());
+            break;
+          case "time":
+            if (timeString != null) {
+              throw new JsonException("Duplicate key: \"time\"");
+            }
+            timeString = parser.getString();
+            break;
+          case "type":
+            if (typeString != null) {
+              throw new JsonException("Duplicate key: \"type\"");
+            }
+            typeString = parser.getString();
+            break;
+          case "payload":
+            if (payloadJson != null) {
+              throw new JsonException("Duplicate key: \"payload\"");
+            }
+            long payloadStart = parser.getLocation().getStreamOffset() - 1;
+            if (valueEvent == Event.START_ARRAY) {
+              parser.skipArray();
+            } else if (valueEvent == Event.START_OBJECT) {
+              parser.skipObject();
+            } else {
+              parser.next();
+            }
+            long payloadEnd = parser.getLocation().getStreamOffset();
+            if (payloadEnd > Integer.MAX_VALUE) {
+              throw new JsonException(
+                  "Payload too large: start " + payloadStart + ", end " + payloadEnd);
+            }
+            payloadJson = metadataJson.substring((int) payloadStart, (int) payloadEnd);
+            break;
+          default:
+            // TODO ignore (skip over) unknown keys for forward compatibility?
+            throw new JsonException("Unexpected key: \"" + keyName + "\"");
+        }
+      }
+    } while (event == Event.KEY_NAME);
+    if (event != Event.END_OBJECT) {
+      throw new JsonException(
+          "Expected end of object, got: "
+              + event
+              + ((event == Event.VALUE_STRING ? " \"" + parser.getString() + "\"" : "")));
+    }
     return new EventEnvelope(
-        EventTime.fromString(jo.getString("time")),
+        EventTime.fromString(timeString),
         // treat ids as optional for now, unsure if we would need them
-        id == null ? null : UUID.fromString(id),
-        jo.getString("type"),
-        jo.getString("payload", defaultPayload));
+        idString == null ? null : UUID.fromString(idString),
+        typeString,
+        payloadJson == null ? externalPayloadJson : payloadJson);
   }
 
   public static String serializeEventEnvelope(EventEnvelope event) {
