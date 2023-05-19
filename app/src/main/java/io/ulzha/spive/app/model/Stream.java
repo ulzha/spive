@@ -98,7 +98,6 @@ public class Stream {
     owningProcessId = processId;
   }
 
-  // TODO recordify
   @Override
   public String toString() {
     return "Stream{"

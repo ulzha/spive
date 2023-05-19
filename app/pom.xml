@@ -17,6 +17,11 @@
   <dependencies>
     <dependency>
       <groupId>io.ulzha</groupId>
+      <artifactId>spive-common</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ulzha</groupId>
       <artifactId>spive-core</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>

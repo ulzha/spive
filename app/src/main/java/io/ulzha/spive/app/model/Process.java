@@ -74,7 +74,6 @@ public class Process {
   public Set<Stream> outputStreams = new HashSet<>();
   public Set<Gateway> gateways = new HashSet<>();
 
-  // TODO recordify
   @Override
   public String toString() {
     return "Process{"
@@ -142,7 +141,6 @@ public class Process {
     // The link to our control plane ThreadRunnerGateway which launches and tracks this instance.
     public URI umbilicalUri;
 
-    // TODO recordify
     @Override
     public String toString() {
       return "Instance{"
@@ -189,7 +187,6 @@ public class Process {
       this.name = name;
     }
 
-    // TODO recordify
     @Override
     public String toString() {
       return "Workload{" + "name='" + name + '\'' + '}';

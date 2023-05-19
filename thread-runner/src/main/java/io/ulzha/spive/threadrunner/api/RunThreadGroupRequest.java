@@ -1,5 +1,3 @@
 package io.ulzha.spive.threadrunner.api;
 
-public class RunThreadGroupRequest {
-  public ThreadGroupDescriptor threadGroup;
-}
+public record RunThreadGroupRequest(ThreadGroupDescriptor threadGroup) {}

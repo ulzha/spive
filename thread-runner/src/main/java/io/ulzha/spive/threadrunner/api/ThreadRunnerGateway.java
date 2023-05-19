@@ -1,9 +1,10 @@
 package io.ulzha.spive.threadrunner.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ulzha.spive.lib.Gateway;
 import io.ulzha.spive.lib.InternalSpiveException;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ThreadRunnerGateway extends Gateway {
   public static final Logger LOG = LoggerFactory.getLogger(ThreadRunnerGateway.class);
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final Jsonb jsonb = JsonbBuilder.create();
   private static final HttpClient client = HttpClient.newHttpClient();
   private List<String> availabilityZones;
 
@@ -56,14 +57,13 @@ public class ThreadRunnerGateway extends Gateway {
   }
 
   private void doStartInstance(RunThreadGroupRequest request, String runnerUrl) {
-    System.out.println("Starting " + request.threadGroup.name + " on " + runnerUrl);
+    System.out.println("Starting " + request.threadGroup().name() + " on " + runnerUrl);
     // TODO idempotent?
 
     final URI requestUri = URI.create(runnerUrl + "thread_groups");
     try {
       final HttpRequest.BodyPublisher requestBody =
-          HttpRequest.BodyPublishers.ofString(
-              objectMapper.writeValueAsString(request), StandardCharsets.UTF_8);
+          HttpRequest.BodyPublishers.ofString(jsonb.toJson(request), StandardCharsets.UTF_8);
       final HttpRequest httpRequest = HttpRequest.newBuilder(requestUri).PUT(requestBody).build();
       final HttpResponse<String> response =
           client.send(httpRequest, HttpResponse.BodyHandlers.ofString());

@@ -160,22 +160,21 @@ public class Spive implements SpiveInstance {
     process.instances.add(newInstance);
     platform.instancesById.put(event.instanceId(), newInstance);
 
-    final RunThreadGroupRequest request = new RunThreadGroupRequest();
-    request.threadGroup = new ThreadGroupDescriptor();
-    request.threadGroup.name = event.instanceId().toString();
     // FIXME superfluous? Prefer one canonical way for launching a jar, one for Docker image, etc?
     final String[] parts = process.artifact.split(";mainClass=");
-    request.threadGroup.artifactUrl = parts[0];
-    request.threadGroup.mainClass = parts[1];
-    // FIXME
-    request.threadGroup.args =
-        List.of(
-            "io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=bigtable-emulator;port=8086",
-            "2c543574-f3ac-4b4c-8a5b-a5e188b9bc94",
-            "io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=bigtable-emulator;port=8086",
-            "2c543574-f3ac-4b4c-8a5b-a5e188b9bc94",
-            "dev-1",
-            "*");
+    final RunThreadGroupRequest request =
+        new RunThreadGroupRequest(
+            new ThreadGroupDescriptor(
+                event.instanceId().toString(),
+                parts[0],
+                parts[1],
+                List.of(
+                    "io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=bigtable-emulator;port=8086",
+                    "2c543574-f3ac-4b4c-8a5b-a5e188b9bc94",
+                    "io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=bigtable-emulator;port=8086",
+                    "2c543574-f3ac-4b4c-8a5b-a5e188b9bc94",
+                    "dev-1",
+                    "*")));
 
     runner.startInstance(request, event.runnerUrl());
   }
@@ -278,7 +277,7 @@ public class Spive implements SpiveInstance {
     }
 
     private class ApiHandler implements HttpHandler {
-      private final Jsonb jsonb = new JsonbBuilder.create();
+      private final Jsonb jsonb = JsonbBuilder.create();
       private final Processes processes = new Processes(platform);
 
       public void handle(HttpExchange exchange) throws IOException {

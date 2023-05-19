@@ -21,7 +21,6 @@ public class Platform {
     this.name = name;
   }
 
-  // TODO recordify
   @Override
   public String toString() {
     return "Platform{"

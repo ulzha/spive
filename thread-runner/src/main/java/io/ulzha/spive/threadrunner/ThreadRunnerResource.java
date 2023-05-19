@@ -146,12 +146,12 @@ class ThreadRunnerResource implements RouteProvider {
       return Response.forStatus(Status.BAD_REQUEST).withPayload(e.getMessage());
     }
 
-    final ThreadGroup threadGroup = new ThreadGroup(request.threadGroup.name);
-    final ThreadGroupRecord record = new ThreadGroupRecord(threadGroup, request.threadGroup);
+    final ThreadGroup threadGroup = new ThreadGroup(request.threadGroup().name());
+    final ThreadGroupRecord record = new ThreadGroupRecord(threadGroup, request.threadGroup());
 
-    if (records.putIfAbsent(request.threadGroup.name, record) == null) {
+    if (records.putIfAbsent(request.threadGroup().name(), record) == null) {
       final Thread thread =
-          new Thread(threadGroup, () -> runMain(record), request.threadGroup.name + "-main");
+          new Thread(threadGroup, () -> runMain(record), request.threadGroup().name() + "-main");
       // dunno if we need an uncaught exception handler, things are caught alright by
       // runMain
 
@@ -162,7 +162,7 @@ class ThreadRunnerResource implements RouteProvider {
       return Response.forStatus(Status.ACCEPTED)
           .withPayload(
               "http://somethingsomething/api/v0/thread_groups/"
-                  + request.threadGroup.name
+                  + request.threadGroup().name()
                   + "/heartbeat");
     } else {
       // already exists
@@ -174,9 +174,9 @@ class ThreadRunnerResource implements RouteProvider {
     final ThreadGroupDescriptor descriptor = record.threadGroupDescriptor;
     try {
       final File jarFile;
-      jarFile = Jars.getJar(descriptor.artifactUrl);
-      final String[] args = descriptor.args.toArray(new String[0]);
-      Jars.runJar(jarFile, descriptor.mainClass, "main", record.umbilical, args);
+      jarFile = Jars.getJar(descriptor.artifactUrl());
+      final String[] args = descriptor.args().toArray(new String[0]);
+      Jars.runJar(jarFile, descriptor.mainClass(), "main", record.umbilical, args);
     } catch (Exception e) {
       LOG.error(
           "Caught exception in "
@@ -199,7 +199,7 @@ class ThreadRunnerResource implements RouteProvider {
   /** Lists the currently running thread groups. */
   private Response<String> getThreadGroups() {
     GetThreadGroupsResponse threadGroups =
-        GetThreadGroupsResponse.create(
+        new GetThreadGroupsResponse(
             records.values().stream()
                 .map(record -> record.threadGroupDescriptor)
                 .collect(Collectors.toList()));
