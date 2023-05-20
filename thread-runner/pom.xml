@@ -10,6 +10,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
+  <!-- app-server? -->
   <artifactId>spive-thread-runner</artifactId>
   <description>
     Runs and tracks Spīve applications, a thread group per process instance, inside the current JVM.

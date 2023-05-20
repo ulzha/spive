@@ -52,7 +52,6 @@ export default component$(() => {
         <ServiceWorkerRegister />
         <script type="text/javascript" src="/d3.v6.min.js" />
         <script type="text/javascript" src="/timeline.js" />
-        <script type="text/javascript" src="/spive.js" />
       </body>
     </QwikCityProvider>
   );

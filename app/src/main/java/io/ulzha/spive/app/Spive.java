@@ -185,6 +185,8 @@ public class Spive implements SpiveInstance {
     Process.Instance instance = platform.instancesById.remove(event.instanceId());
     instance.process.instances.remove(instance);
     // runner.stopInstance(...);
+    // for idempotency, the runner perhaps can enumerate all instances it has running, and count
+    // absence as success
   }
 
   @Override
@@ -229,6 +231,7 @@ public class Spive implements SpiveInstance {
       httpServer.createContext("/static", new StaticHandler());
       httpServer.start();
       // FIXME use something (Jetty?) that allows to monitor or join the server thread
+      // Netty? Has websockets too
       try {
         while (true) {
           Thread.sleep(1000 * 3600 * 24);

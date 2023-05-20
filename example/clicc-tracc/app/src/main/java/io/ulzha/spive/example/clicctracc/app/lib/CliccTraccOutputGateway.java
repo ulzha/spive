@@ -80,6 +80,7 @@ public class CliccTraccOutputGateway extends Gateway {
    *
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
    * Otherwise the event time is the same as for the input event currently handled. FIXME
+   * (TODO exhaust edge cases that may lead to impossibility of tiebreaking)
    * (TODO non-simultaneous version?)
    */
   public boolean emitConsequential(Clicc payload) {
@@ -94,12 +95,13 @@ public class CliccTraccOutputGateway extends Gateway {
    * appends, or until the check returns false.
    * (TODO possible to provide fairer guarantees than indefinitely?)
    * (TODO a version with deadline? For predictable response time in server scenarios)
+   * (TODO emitWhen version that evaluates check on every transition? Or is that a higher level API)
    */
-  public boolean emitWhen(Supplier<Boolean> check, Clicc payload) {
-    return emitWhen(check, cliccType, payload);
+  public boolean emitIf(Supplier<Boolean> check, Clicc payload) {
+    return emitIf(check, cliccType, payload);
   }
 
-  private <T> boolean emitWhen(Supplier<Boolean> check, Type type, T payload) {
+  private <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload) {
     try {
       while (true) {
         final EventTime eventTime = awaitAdvancing();
@@ -133,7 +135,7 @@ public class CliccTraccOutputGateway extends Gateway {
    *
    * <p>Blocks until either successfully appended (which may be preempted by a burst of competing
    * appends, even if at call time all events in the log have time < eventTime), or until a
-   * competing prior append has been positively detected (the latest event read from the log has
+   * winning prior append has been positively detected (the latest event read from the log has
    * time >= eventTime), or until the check returns false.
    * (TODO possible to provide fairer guarantees than haphazard competition?)
    */

@@ -107,9 +107,7 @@ public interface CopyInstance {
         throws InterruptedException, ExecutionException {
       // yolo, not sure which ExecutorService is best API-wise or if we should or should not pass
       // them into workloads
-      // (we might benefit from knowing about thread fanout, and from having a consistent
-      // UncaughtExceptionHandler FIXME)
-      // Have as few threadpools as possible, and preferably only use ForkJoinPool.commonPool?
+      // (we might benefit from knowing about thread fanout, also CPU or IO boundness... TODO)
       final ExecutorService executorService = Executors.newCachedThreadPool();
       final CompletionService<Runnable> lifetimeService =
           new ExecutorCompletionService<>(executorService);
