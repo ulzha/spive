@@ -12,7 +12,8 @@ public class Platform {
   public Set<Type> types = new HashSet<>();
   public Set<Gateway> gateways = new HashSet<>();
   public Map<UUID, Process> processesById = new HashMap<>();
-  public Set<Stream> streams = new HashSet<>();
+  public Map<String, Map<String, Process>> processesByApplicationAndVersion = new HashMap<>();
+  public Map<UUID, Stream> streamsById = new HashMap<>();
 
   // indexes
   public Map<UUID, Process.Instance> instancesById = new HashMap<>();
@@ -33,8 +34,8 @@ public class Platform {
         + gateways
         + ", processesById="
         + processesById
-        + ", streams="
-        + streams
+        + ", streamsById="
+        + streamsById
         + ", instancesById="
         + instancesById
         + '}';

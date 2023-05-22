@@ -8,7 +8,7 @@ public record CreateProcess(
     UUID processId,
     String name,
     String version,
-    String artifact,
+    String artifactUrl,
     // String runner, // apollonetes or springbootio, or dataflow, or ...
     // encodes runtimes? runner gateway classes? clusters? pools? discovery names?
     List<String> availabilityZones,

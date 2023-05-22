@@ -65,7 +65,9 @@ public class Process {
   // (Type 5 UUID?)
   public UUID id;
 
-  public String artifact; // handle to application code package. E.g. a Docker image with a digest
+  // handle to application code package. E.g. a Docker image with a digest
+  public String artifactUrl;
+
   public List<String> availabilityZones;
 
   public Set<Stream> inputStreams = new HashSet<>();
@@ -85,8 +87,8 @@ public class Process {
         + '\''
         + ", id="
         + id
-        + ", artifact='"
-        + artifact
+        + ", artifactUrl='"
+        + artifactUrl
         + '\''
         + ", availabilityZones="
         + availabilityZones
@@ -216,7 +218,20 @@ public class Process {
   // input stream, unless the intent is to process only a subset of Partitions.
   public Set<Instance> instances = new HashSet<>();
 
-  public Process(String artifact) {
-    this.artifact = artifact;
+  public Process(
+      String name,
+      String version,
+      UUID id,
+      String artifactUrl,
+      List<String> availabilityZones,
+      Set<Stream> inputStreams,
+      Set<Stream> outputStreams) {
+    this.name = name;
+    this.version = version;
+    this.id = id;
+    this.artifactUrl = artifactUrl;
+    this.availabilityZones = availabilityZones;
+    this.inputStreams = inputStreams;
+    this.outputStreams = outputStreams;
   }
 }

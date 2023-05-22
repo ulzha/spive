@@ -1,6 +1,7 @@
 package io.ulzha.spive.app.lib;
 
 import io.ulzha.spive.app.events.CreateInstance;
+import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
 import io.ulzha.spive.app.events.InstanceProgress;
@@ -93,6 +94,10 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
         throw new RuntimeException(e);
       }
     }
+  }
+
+  public boolean emitIf(Supplier<Boolean> check, CreateProcess payload) {
+    return emitIf(check, createProcessType, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateType payload) {

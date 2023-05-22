@@ -36,12 +36,13 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * Provides the basic backend, web UI and API for managing applications on the Spīve platform,
@@ -78,6 +79,8 @@ public class Spive implements SpiveInstance {
     // TODO be a bit smart about runners disappearing en masse in the case of a network-wide event,
     // don't exhaust the available pool by reprovisioning all lost instances immediately, involve
     // humans in that case
+    // Have some sort of well-defined cap, and take care to prioritize upstreams in the DAG (will
+    // necessitate some elaborate modeling)
     // TODO cleanup orphaned stuff, optional. Perhaps runners should do that
 
     Process.Instance instance = platform.getInstanceById(event.instanceId());
@@ -131,7 +134,8 @@ public class Spive implements SpiveInstance {
     System.out.println("Accepting " + event);
     assert ("local".equals(event.eventStore())); // assert it's a class that exists?
     // TODO ensure (upon emitting) that name-version and id are not duplicated
-    platform.streams.add(new Stream(event.name()));
+    final Stream stream = new Stream(event.name(), event.streamId());
+    platform.streamsById.put(stream.id, stream);
   }
 
   //  @Override
@@ -141,14 +145,27 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final CreateProcess event) {
-    Process newProcess = new Process(event.artifact());
-    newProcess.name = event.name();
-    newProcess.id = event.processId();
-    newProcess.availabilityZones = event.availabilityZones();
-    platform.processesById.put(event.processId(), newProcess);
+    final Process process =
+        new Process(
+            event.name(),
+            event.version(),
+            event.processId(),
+            event.artifactUrl(),
+            event.availabilityZones(),
+            event.inputStreamIds().stream()
+                .map(platform.streamsById::get)
+                .collect(Collectors.toSet()),
+            event.outputStreamIds().stream()
+                .map(platform.streamsById::get)
+                .collect(Collectors.toSet()));
+    platform.processesById.put(process.id, process);
+    platform
+        .processesByApplicationAndVersion
+        .computeIfAbsent(process.name, name -> new HashMap<>())
+        .put(process.version, process);
     // TODO ensure (upon emitting) that name-version and id are not duplicated
     // TODO ensure (upon emitting) that the output stream exists
-    // TODO decide initial sharding and emit CreateInstance events... 1000 as a sensible default?
+    // TODO decide initial sharding and emit CreateInstance events...
     // TODO validate artifact (upon emitting? async?) - ensure that all the event handlers are
     // implemented, etc.
     // TODO ensure its consistency is validated to some extent in each runner internally as well
@@ -162,7 +179,7 @@ public class Spive implements SpiveInstance {
     platform.instancesById.put(event.instanceId(), newInstance);
 
     // FIXME superfluous? Prefer one canonical way for launching a jar, one for Docker image, etc?
-    final String[] parts = process.artifact.split(";mainClass=");
+    final String[] parts = process.artifactUrl.split(";mainClass=");
     final RunThreadGroupRequest request =
         new RunThreadGroupRequest(
             new ThreadGroupDescriptor(
@@ -191,7 +208,12 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final DeleteProcess event) {
-    platform.processesById.remove(event.processId());
+    final Process process = platform.processesById.get(event.processId());
+    platform.processesById.remove(process.id);
+    platform.processesByApplicationAndVersion.get(process.name).remove(process.version);
+    if (platform.processesByApplicationAndVersion.get(process.name).isEmpty()) {
+      platform.processesByApplicationAndVersion.remove(process.name);
+    }
   }
 
   // TODO not start this one until caught up
@@ -232,6 +254,7 @@ public class Spive implements SpiveInstance {
       httpServer.start();
       // FIXME use something (Jetty?) that allows to monitor or join the server thread
       // Netty? Has websockets too
+      // Armeria - "Brought to you by the creator of Netty". HTTP/2, Server Sent Events (y)
       try {
         while (true) {
           Thread.sleep(1000 * 3600 * 24);
@@ -280,37 +303,94 @@ public class Spive implements SpiveInstance {
       }
     }
 
+    public record CreateProcessRequest(
+        String artifactUrl,
+        List<String> availabilityZones,
+        List<UUID> inputStreamIds,
+        List<UUID> outputStreamIds) {}
+
     private class ApiHandler implements HttpHandler {
       private final Jsonb jsonb = JsonbBuilder.create();
       private final Processes processes = new Processes(platform);
 
       public void handle(HttpExchange exchange) throws IOException {
+        try {
+          rest(exchange);
+        } catch (Exception e) {
+          e.printStackTrace();
+
+          exchange.sendResponseHeaders(500, 0);
+          try (OutputStream body = exchange.getResponseBody()) {
+            body.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
+          }
+
+          throw e;
+        }
+      }
+
+      private void rest(HttpExchange exchange) throws IOException {
         System.out.println(
             "ApiHandler " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
         final String method = exchange.getRequestMethod();
         final String path = exchange.getRequestURI().getPath();
-        if (path.equals("/api/applications") && method.equals("GET")) {
+        // FIXME
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        if (method.equals("OPTIONS")) {
+          exchange
+              .getResponseHeaders()
+              .put(
+                  "Access-Control-Allow-Headers",
+                  exchange.getRequestHeaders().get("Access-Control-Request-Headers"));
+          exchange
+              .getResponseHeaders()
+              .put(
+                  "Access-Control-Allow-Methods",
+                  List.of("DELETE", "GET", "OPTIONS", "POST", "PUT"));
+          exchange.getResponseHeaders().add("Access-Control-Max-Age", "300");
+          exchange.sendResponseHeaders(204, -1);
+        } else if (path.equals("/api/applications") && method.equals("GET")) {
           exchange.sendResponseHeaders(200, 0);
           try (OutputStream body = exchange.getResponseBody()) {
             // List of all applications (on this instance), for displaying on a dashboard.
             String applicationsJson = jsonb.toJson(processes.list());
             body.write(applicationsJson.getBytes(StandardCharsets.UTF_8));
           }
-        } else if (path.equals("/api/applications") && method.equals("PUT")) {
-          exchange.sendResponseHeaders(200, 0);
-          try (OutputStream body = exchange.getResponseBody()) {
-            // TODO prevent duplicate creation events by design...
-            //  Does that require generation of GUIDs here in handlers?
+        } else if (path.startsWith("/api/applications/") && method.equals("PUT")) {
+          final String[] pathParts = path.split("/");
+          final CreateProcessRequest request =
+              jsonb.fromJson(exchange.getRequestBody(), CreateProcessRequest.class);
+          // FIXME prevent duplicate creation events by design...
+          //  Does that require generation of GUIDs here in handlers?
 
-            // emitRandom
-            // emitSpontaneous
-            if (output.emitIf(
-                () -> true,
-                new CreateType(
-                    // FIXME
-                    UUID.randomUUID(), "VeryGoodType", Map.of()))) {
+          final UUID uuid = UUID.randomUUID();
+          final String name = pathParts[3];
+          final String version = pathParts[4];
+          final CreateProcess event =
+              new CreateProcess(
+                  uuid,
+                  name,
+                  version,
+                  request.artifactUrl(),
+                  request.availabilityZones(),
+                  request.inputStreamIds(),
+                  request.outputStreamIds());
+          System.out.println("Emitting " + event);
+          if (output.emitIf(
+              () ->
+                  !(platform.processesByApplicationAndVersion.containsKey(name)
+                          && platform
+                              .processesByApplicationAndVersion
+                              .get(name)
+                              .containsKey(version))
+                      && !platform.processesById.containsKey(uuid),
+              event)) {
+            exchange.sendResponseHeaders(201, 0);
+            try (OutputStream body = exchange.getResponseBody()) {
               body.write("OK".getBytes(StandardCharsets.UTF_8));
-            } else {
+            }
+          } else {
+            exchange.sendResponseHeaders(409, 0);
+            try (OutputStream body = exchange.getResponseBody()) {
               body.write("Not ok, retry yourself".getBytes(StandardCharsets.UTF_8));
             }
           }

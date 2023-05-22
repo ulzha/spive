@@ -14,6 +14,7 @@ import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -33,7 +34,15 @@ class PollLoopTest {
   @BeforeEach
   void setUp() {
     // annoyingly hairy. Should create a cleaner harness
-    process = new Process("foo-artifact");
+    process =
+        new Process(
+            "foo",
+            "0.0.1",
+            UUID.fromString("3-2-3-2-3"),
+            "foo-artifact",
+            List.of(),
+            Set.of(),
+            Set.of());
     instance = new Process.Instance(UUID.fromString("1-2-3-4-5"), process);
 
     instance.timeoutMillis = 15000;

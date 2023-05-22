@@ -10,8 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-// import java.security.AccessController;
-// import java.security.PrivilegedAction;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,13 +126,8 @@ public class Jars {
               + "to URL - should never happen unless toURI does weird things",
           e);
     }
-    // AccessController.doPrivileged(
-    //     (PrivilegedAction<?>)
-    //         () -> {
     URLClassLoader loader = new URLClassLoader(urls);
     runInClassLoader(loader, className, methodName, umbilical, args);
-    //           return null;
-    //         });
   }
 
   private static void runInClassLoader(

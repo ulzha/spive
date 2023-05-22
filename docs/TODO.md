@@ -14,6 +14,7 @@
 - [ ] Have UI quickly filter/query streams by time span or key/partition (tour de force - generate code example for doing the same thing as UI does in CLI, Scio, BigQuery, etc)
 - [ ] KubernetesRunner, InProcessThreadRunner
 - [ ] 5 minute "Getting Started" guide + a HelloWorld app - how to generate app.lib, develop and run locally. (Cookiecutter kind of thing but able to function offline, once cached)
+- [ ] Example of deploy of a self-contained offline-produced jar (probably an IDE extension can expand app.lib); infer I/O streams interactively incl. new types; visual UI to connect to existing ones or otherwise
 - [ ] Have UI provide debugging instructions (locally, remotely)
 - [ ] Examples of tests (event definition language, named snapshots as JUnit rules, capturers, matchers... git inspired from d3) - some examples of likely and non-obvious bugs included
 - [ ] Example with best-effort graceful shutdown for workloads and gateways (just to clarify the extent of non-guarantee)

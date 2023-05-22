@@ -3,7 +3,7 @@ import { MUIButton, MUICard, MUICardHeader, MUICardContent } from "~/integration
 import type { DocumentHead } from "@builder.io/qwik-city";
 import ApplicationGrid from "~/components/application/grid";
 import Legend from "~/components/application/timeline/legend";
-import { responsiveFontSizes } from "@mui/material";
+import { MUICreateNewApplicationForm } from "~/integrations/react/mui-dialog";
 
 export default component$(() => {
   // const meta = useStore({ platformUrl: });
@@ -21,7 +21,9 @@ export default component$(() => {
     state.rows = [...state.rows, { id: n, rank: n, ...dummy_applications[n % 3] }];
   });
 
-  const applicationsResource = useResource$<any>(async ({ cleanup }) => {
+  const applicationsResource = useResource$<any>(async ({ track, cleanup }) => {
+    track(() => state.rows);
+    console.log("Oh here we go again");
     const abortController = new AbortController();
     cleanup(() => abortController.abort("cleanup"));
 
@@ -35,16 +37,33 @@ export default component$(() => {
       return response.json() as Promise<any[]>;
     });
 
-    state.rows = res.map((app: any, i: number) => ({ rank: i, ...app }));
+    return res.map((app: any, i: number) => ({ rank: i, ...app }));
+  });
+
+  const deployApplication = $((fields: any) => {
+    console.log("Deploying", fields);
+
+    const requestOptions = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(fields),
+    };
+    fetch(
+      platformUrl + "/api/applications/" +
+        encodeURIComponent(fields.name) +
+        "/" +
+        encodeURIComponent(fields.version),
+      requestOptions
+    )
+      .then(() => state.rows = [...state.rows, {id: 123}]) // just notify applicationsResource. TODO show spinner instead and have SSE notify
+      .catch((error) => console.log(error));
   });
 
   return (
     <div class="padding">
       <div class="titlebar">
-        <h2>Platform: {platformUrl}</h2>
-        <MUIButton client:hover variant="outlined" onClick$={pushApp}>
-          Create new
-        </MUIButton>
+        <h2>Platform: io.ulzha.dev ({platformUrl})</h2>
+        <MUICreateNewApplicationForm onCreate$={deployApplication} />
       </div>
       <MUICard elevation={1}>
         {/* action={[<Legend />]} failed with "Objects are not valid as a React child (found: object with keys {type, props, immutableProps, children, flags, key, dev})" */}
@@ -54,7 +73,11 @@ export default component$(() => {
           <Resource
             value={applicationsResource}
             onResolved={(applications) => {
+              state.rows = applications;
               return <ApplicationGrid rows={state.rows} />;
+            }}
+            onRejected={(reason) => {
+              return reason;
             }}
           />
         </MUICardContent>
