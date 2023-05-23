@@ -81,8 +81,8 @@ Backend and application examples are currently developed as a Maven project usin
     curl -s "https://get.sdkman.io" | bash
     source ~/.sdkman/bin/sdkman-init.sh
     sdk install java 19.0.2-open
-    sdk install maven 3.9.2
-    mvn verify
+    sdk install mvnd
+    mvnd verify
 
 Frontend uses Qwik, D3 and Material UI. See the respective README.md file for instructions.
 

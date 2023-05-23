@@ -6,21 +6,25 @@ set -euxo pipefail
 [[ $(which curl) ]] || { echo "To start dev-0 environment, you need curl installed"; exit 1; }
 [[ $(which docker) ]] || { echo "To start dev-0 environment, you need docker installed"; exit 1; }
 [[ $(which jq) ]] || { echo "To start dev-0 environment, you need jq installed"; exit 1; }
+[[ $(which mvnd) ]] || { echo "To start dev-0 environment, you need mvnd installed"; exit 1; }
+
+# speed up Maven
+MVN="mvnd -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dfmt.skip=true"
 
 # 0. clean up
 # (in case lingering pieces are running already)
-mvn clean
+$MVN clean
 rm -r event-store || true
 
 # 1. build app as a jar
-mvn package -am -pl app
+$MVN package -am -pl app
 
 # 2. prepare runners and event stores
 # (initialize local filesystem)
 # (alt. structure the logs so they are mountable directly)
 mkdir -p event-store
 # (launch docker compose with all the right images)
-mvn package -am -pl thread-runner
+$MVN package -am -pl thread-runner
 export THREAD_RUNNER_IMAGE_NAME=$(cat $PWD/thread-runner/target/docker/image-name)
 docker compose -f tools/dev-0/docker-compose.yml up --abort-on-container-exit &
 DOCKER_COMPOSE_PID=$!
@@ -55,7 +59,7 @@ docker compose -f tools/dev-0/docker-compose.yml pause dev-bootstrap
 # (alt. clone some subset of prod-2 or prod-3)
 mkdir -p event-store/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94
 cp tools/SpiveDev0.jsonl event-store/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94/events.jsonl
-mvn compile exec:java@copy-event-log -am -pl tools \
+$MVN compile exec:java@copy-event-log -am -pl tools \
   -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN \
   -Dexec.args="io.ulzha.spive.core.LocalFileSystemEventStore; 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94 io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=localhost;port=8086 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94 2021-11-15T12:00:00.000Z#3"
 # FIXME that dep issue when running without compile
