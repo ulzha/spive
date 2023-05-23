@@ -12,5 +12,7 @@ jobs:
         with:
           java-version: '19'
           distribution: 'temurin'
+      # - name: mvn dependency:analyze
+      #   run: mvn dependency:analyze -DfailOnWarning=true
       - name: mvn package
         run: mvn --batch-mode --update-snapshots package

@@ -100,7 +100,6 @@
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>default</id>
             <phase>prepare-package</phase>
             <goals>
               <goal>copy-dependencies</goal>
@@ -136,7 +135,6 @@
         <version>1.4.13</version>
         <executions>
           <execution>
-            <id>default</id>
             <goals>
               <goal>build</goal>
               <goal>push</goal>
