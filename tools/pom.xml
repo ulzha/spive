@@ -9,7 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>tools</artifactId>
+  <artifactId>spive-tools</artifactId>
 
   <dependencies>
     <dependency>
@@ -28,11 +28,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <configuration>
-          <skip>false</skip>
-          <cleanupDaemonThreads>false</cleanupDaemonThreads>
-        </configuration>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>copy-event-log</id>
@@ -41,6 +37,9 @@
             </configuration>
           </execution>
         </executions>
+        <configuration>
+          <cleanupDaemonThreads>false</cleanupDaemonThreads>
+        </configuration>
       </plugin>
     </plugins>
   </build>

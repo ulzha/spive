@@ -8,26 +8,23 @@ set -euxo pipefail
 [[ $(which jq) ]] || { echo "To start dev-0 environment, you need jq installed"; exit 1; }
 [[ $(which mvnd) ]] || { echo "To start dev-0 environment, you need mvnd installed"; exit 1; }
 
+DC="docker compose -f tools/dev-0/docker-compose.yml"
 # speed up Maven
-MVN="mvnd -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dfmt.skip=true"
+MVN="mvnd -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dsurefire.skip=true -Dfmt.skip=true"
 
-# 0. clean up
-# (in case lingering pieces are running already)
-$MVN clean
-rm -r event-store || true
-
-# 1. build app as a jar
-$MVN package -am -pl app
+# 1. build app as a jar, and more
+$MVN clean package dependency:go-offline -am -pl app,thread-runner,tools
 
 # 2. prepare runners and event stores
 # (initialize local filesystem)
 # (alt. structure the logs so they are mountable directly)
+rm -r event-store || true
 mkdir -p event-store
 # (launch docker compose with all the right images)
-$MVN package -am -pl thread-runner
 export THREAD_RUNNER_IMAGE_NAME=$(cat $PWD/thread-runner/target/docker/image-name)
-docker compose -f tools/dev-0/docker-compose.yml up --abort-on-container-exit &
-DOCKER_COMPOSE_PID=$!
+$DC down -v
+$DC up --abort-on-container-exit &
+DC_PID=$!
 # (might want to wait here until healthy, for less confusing intermingled console output, dunno)
 # (initialize bigtable emulator)
 export BIGTABLE_EMULATOR_HOST=localhost:8086
@@ -52,17 +49,16 @@ until
 do echo "retrying in 1 s"; sleep 1; done
 
 # 6. incapacitate dev-bootstrap
-docker compose -f tools/dev-0/docker-compose.yml pause dev-bootstrap
+$DC pause dev-bootstrap
 
 # 7. initialize SpiveDev0 inventory by copying logs into Bigtable
 # (alt. call SpiveDev0 API instead of copying logs, when API is usable)
 # (alt. clone some subset of prod-2 or prod-3)
 mkdir -p event-store/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94
 cp tools/SpiveDev0.jsonl event-store/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94/events.jsonl
-$MVN compile exec:java@copy-event-log -am -pl tools \
+$MVN exec:java@copy-event-log -pl tools \
   -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN \
   -Dexec.args="io.ulzha.spive.core.LocalFileSystemEventStore; 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94 io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=localhost;port=8086 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94 2021-11-15T12:00:00.000Z#3"
-# FIXME that dep issue when running without compile
 
 # 8. expect SpiveDev0 to checkpoint ahead
 # (alt. expect API calls to succeed)
@@ -74,4 +70,4 @@ do echo "retrying in 1 s"; sleep 1; done
 # 9. print instructions, keep following the output of each container
 echo "Press Ctrl+C to stop"
 # TODO tear down if anything fails
-wait $DOCKER_COMPOSE_PID
+wait $DC_PID

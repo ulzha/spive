@@ -120,26 +120,6 @@
         <artifactId>versions-maven-plugin</artifactId>
         <version>2.7</version>
       </plugin>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.4.1</version>
-        <executions>
-          <execution>
-            <id>enforce-maven-3</id>
-            <goals>
-              <goal>enforce</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>3.0.5</version>
-                </requireMavenVersion>
-              </rules>
-              <fail>true</fail>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
 
     <pluginManagement>
@@ -156,19 +136,11 @@
             </execution>
           </executions>
         </plugin>
-        <!-- This is here to permit mvn exec:java in submodules.
-             https://stackoverflow.com/a/26448447/674506 -->
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <version>1.6.0</version>
-          <configuration>
-            <skip>true</skip>
-            <mainClass>none</mainClass>
-          </configuration>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
           <configuration>
