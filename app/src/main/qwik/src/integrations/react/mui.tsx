@@ -2,7 +2,17 @@
 
 import { memo, useLayoutEffect, useRef } from "react";
 import { qwikify$ } from "@builder.io/qwik-react";
-import { Button, Card, CardContent, CardHeader, FormControl, Input, InputAdornment, Popover } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  FormControl,
+  Input,
+  InputAdornment,
+  LinearProgress,
+  Popover,
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpIcon from "@mui/icons-material/Help";
 import SearchIcon from "@mui/icons-material/Search";
@@ -65,7 +75,7 @@ export const MUIDataGrid = qwikify$((props: any) => {
         .map((c: MUIGridColDef) => (c.renderCellDOM ? { ...c, renderCell: renderMemoizedCell(c.renderCellDOM) } : c))
         .map((c: MUIGridColDef) => ({
           ...c,
-          colSpan: ({ row }: GridCellParams) => (row.id.toString().endsWith(".span") ? props.columns.length : null),
+          colSpan: ({ row }: GridCellParams) => (row.id.toString().includes(".") ? props.columns.length : null),
         }))}
       getRowHeight={getRowHeight}
       rowSelection={false}
@@ -75,11 +85,12 @@ export const MUIDataGrid = qwikify$((props: any) => {
       // }}
       rowCount={props.rows.length}
       getRowClassName={({ row }: GridRowClassNameParams) =>
-        row.id.toString().endsWith(".span") ? "span" : row.id % 2 ? "even" : "odd"
+        row.id.toString().split(".")[1] || (Math.floor(row.rank) % 2 ? "even" : "odd")
       }
     />
   );
 });
+export const MUILinearProgress = qwikify$(LinearProgress);
 export const MUISearchForm = qwikify$(() => {
   return (
     <FormControl variant="standard">

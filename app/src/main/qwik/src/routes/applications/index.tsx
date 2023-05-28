@@ -1,14 +1,25 @@
-import { $, Resource, component$, useResource$, useStore } from "@builder.io/qwik";
+import { $, Resource, component$, useResource$, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
 import { MUICard, MUICardHeader, MUICardContent } from "~/integrations/react/mui";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import ApplicationGrid from "~/components/application/grid";
 import Legend from "~/components/application/timeline/legend";
 import { MUICreateNewApplicationForm } from "~/integrations/react/mui-dialog";
 
+const platformUrl = "http://localhost:8040";
+
 export default component$(() => {
   // const meta = useStore({ platformUrl: });
-  const platformUrl = "http://localhost:8040";
+  const applicationsSse = useSignal(1);
   const state = useStore<any>({ rows: [] });
+
+  useVisibleTask$(() => {
+    const eventSource = new EventSource(`${platformUrl}/sse`);
+
+    eventSource.onmessage = (event) => {
+      applicationsSse.value++;
+      console.log(event, applicationsSse.value);
+    };
+  });
 
   const dummy_applications = [
     { uuid: 1, name: "VitrumNostrumGloriosum", version: "1.2.74" },
@@ -21,8 +32,13 @@ export default component$(() => {
     state.rows = [...state.rows, { id: n, rank: n, ...dummy_applications[n % 3] }];
   });
 
+  const pushSpinner = $((id: string) => {
+    state.rows = [{ id: id + ".spin", rank: -state.rows.length }, ...state.rows];
+  });
+
   const applicationsResource = useResource$<any>(async ({ track, cleanup }) => {
-    track(() => state.rows);
+    track(() => applicationsSse.value);
+
     console.log("Oh here we go again");
     const abortController = new AbortController();
     cleanup(() => abortController.abort("cleanup"));
@@ -40,7 +56,7 @@ export default component$(() => {
     return res.map((app: any, i: number) => ({ rank: i, ...app }));
   });
 
-  const deployApplication = $(({name, version, ...fields}: {name: string, version: string}) => {
+  const deployApplication = $(({ name, version, ...fields }: { name: string; version: string }) => {
     console.log("Deploying", fields);
 
     const requestOptions = {
@@ -49,13 +65,11 @@ export default component$(() => {
       body: JSON.stringify(fields),
     };
     fetch(
-      platformUrl + "/api/applications/" +
-        encodeURIComponent(name) +
-        "/" +
-        encodeURIComponent(version),
+      platformUrl + "/api/applications/" + encodeURIComponent(name) + "/" + encodeURIComponent(version),
       requestOptions
     )
-      .then(() => state.rows = [...state.rows, {id: 123}]) // just notify applicationsResource. TODO show spinner instead and have SSE notify
+      .then((response) => response.json())
+      .then((id) => pushSpinner(id))
       .catch((error) => console.log(error));
   });
 

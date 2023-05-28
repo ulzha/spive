@@ -1,5 +1,5 @@
 import { component$, $, render, useStore } from "@builder.io/qwik";
-import { MUIDataGrid } from "~/integrations/react/mui";
+import { MUIDataGrid, MUILinearProgress } from "~/integrations/react/mui";
 import type { MUIGridColDef } from "~/integrations/react/mui";
 import EventGrid from "~/components/event/grid";
 
@@ -9,7 +9,7 @@ const renderTimelineDOM = $((el: Element) => {
   render_timeline(el, 1, 0, "#1db855");
 });
 
-const renderEventsDOM = $((el: Element, id: string) => {
+const renderSpanDOM = $((el: Element, id: string) => {
   const dummy_events = [
     {
       uuid: 1,
@@ -47,7 +47,9 @@ const renderEventsDOM = $((el: Element, id: string) => {
     rows.push({ id: i, ...dummy_events[i % dummy_events.length] });
   }
 
-  if (id.toString().endsWith(".span")) {
+  if (id.endsWith(".spin")) {
+    render(el, <MUILinearProgress />);
+  } else if (id.endsWith(".span")) {
     render(el, <EventGrid rows={rows} />);
   }
 });
@@ -61,13 +63,13 @@ export default component$<GridProps>(({ rows }: GridProps) => {
 
   const toggleEventsRow = $(({ id }: { id: string }) => {
     console.debug("Row clicked", id, state.eventsRows);
-    if (id.toString().endsWith(".span")) {
+    if (id.includes(".")) {
       return;
     }
     if (id in state.eventsRows) {
       delete state.eventsRows[id];
     } else {
-      state.eventsRows[id] = { id: id + ".span", rank: id + 0.5 };
+      state.eventsRows[id] = { id: id + ".span", rank: rows.find((r: any) => r.id == id).rank + 0.5 };
     }
   });
 
@@ -87,7 +89,7 @@ export default component$<GridProps>(({ rows }: GridProps) => {
       resizable: false,
       minWidth: 0,
       maxWidth: 0,
-      renderCellDOM: renderEventsDOM,
+      renderCellDOM: renderSpanDOM,
     },
     { field: "uuid", headerName: "UUID", width: 50 },
     { field: "name", headerName: "Name", width: 200 },

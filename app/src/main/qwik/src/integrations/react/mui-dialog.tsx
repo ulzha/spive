@@ -11,7 +11,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 export const MUICreateNewApplicationForm = qwikify$(
-  ({ onCreate }: { onCreate: ({}: {name: string, version: string}) => any }) => {
+  ({ onCreate }: { onCreate: ({}: { name: string; version: string }) => any }) => {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("");
     const [version, setVersion] = useState("");

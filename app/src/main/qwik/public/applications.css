@@ -20,12 +20,8 @@
   border-bottom: 1px solid #d9d9d9;
 }
 
-.applications .span > .MuiDataGrid-cell {
-  align-items: start;
-}
-
 /* come on */
-.applications .span .MuiDataGrid-cell > div {
+.applications .MuiDataGrid-cell > div {
   width: 100%;
 }
 

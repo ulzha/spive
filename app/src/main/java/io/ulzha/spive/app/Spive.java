@@ -2,7 +2,11 @@ package io.ulzha.spive.app;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.linecorp.armeria.common.HttpMethod;
+import com.linecorp.armeria.common.sse.ServerSentEvent;
 import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.cors.CorsService;
+import com.linecorp.armeria.server.streaming.ServerSentEvents;
 import io.ulzha.spive.app.events.CreateEventLog;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
@@ -26,11 +30,13 @@ import io.ulzha.spive.threadrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.threadrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.threadrunner.api.ThreadRunnerGateway;
 import io.ulzha.spive.util.InterruptableSchedulable;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
 
 /**
  * Provides the basic backend, web UI and API for managing applications on the Spīve platform,
@@ -225,13 +231,29 @@ public class Spive implements SpiveInstance {
   public class Api implements Runnable {
     @Override
     public void run() {
+      final var corsService =
+          CorsService.builderForAnyOrigin()
+              .allowRequestMethods(
+                  HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)
+              .allowAllRequestHeaders(true)
+              .maxAge(Duration.ofSeconds(300))
+              .newDecorator();
       // FIXME port determined from the control plane or random via runner decision?
       final Server server =
           Server.builder()
               .http(8040)
               .annotatedService("/api", new ApiService(platform, output))
+              .service(
+                  "/sse",
+                  (ctx, req) -> {
+                    ctx.setRequestTimeout(Duration.ofMinutes(5));
+                    return ServerSentEvents.fromPublisher(
+                        Flux.interval(Duration.ofSeconds(5))
+                            .map(sequence -> ServerSentEvent.ofData(Long.toString(sequence))));
+                  })
+              .decoratorUnder("/", corsService)
               .build();
-      server.closeOnJvmShutdown(() -> System.out.println("Stopping API server"));
+      server.closeOnJvmShutdown(() -> System.out.println("Server closing gracefully"));
       server.start().join();
 
       try {
@@ -239,8 +261,6 @@ public class Spive implements SpiveInstance {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         throw new RuntimeException(e);
-      } finally {
-        System.out.println("Bff.run exiting");
       }
     }
   }

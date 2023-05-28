@@ -101,3 +101,5 @@ A [TODO list](TODO.md) full of wishes.
 ## Name
 
 "Spīve" (/spiːve/) is a very underused Latvian word that means roughly "fierceness" or "incisiveness".
+
+Herein it will be spelled as Spīve when referring to the platform at a conceptual level, and as Spive when it is the literal name of an implementation artifact, such as [Spive](../app/src/main/java/io/ulzha/spive/app/Spive.java) class.
