@@ -167,7 +167,7 @@ public interface SpiveInstance
       if (workloads.equals("event loop only")) {
         return ImmutableList.of();
       } else {
-        return ImmutableList.of(spive.new Watchdog(), spive.new Frontend());
+        return ImmutableList.of(spive.new Watchdog(), spive.new Api());
       }
     }
 

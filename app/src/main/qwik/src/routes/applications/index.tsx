@@ -1,5 +1,5 @@
 import { $, Resource, component$, useResource$, useStore } from "@builder.io/qwik";
-import { MUIButton, MUICard, MUICardHeader, MUICardContent } from "~/integrations/react/mui";
+import { MUICard, MUICardHeader, MUICardContent } from "~/integrations/react/mui";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import ApplicationGrid from "~/components/application/grid";
 import Legend from "~/components/application/timeline/legend";
@@ -40,7 +40,7 @@ export default component$(() => {
     return res.map((app: any, i: number) => ({ rank: i, ...app }));
   });
 
-  const deployApplication = $((fields: any) => {
+  const deployApplication = $(({name, version, ...fields}: {name: string, version: string}) => {
     console.log("Deploying", fields);
 
     const requestOptions = {
@@ -50,9 +50,9 @@ export default component$(() => {
     };
     fetch(
       platformUrl + "/api/applications/" +
-        encodeURIComponent(fields.name) +
+        encodeURIComponent(name) +
         "/" +
-        encodeURIComponent(fields.version),
+        encodeURIComponent(version),
       requestOptions
     )
       .then(() => state.rows = [...state.rows, {id: 123}]) // just notify applicationsResource. TODO show spinner instead and have SSE notify

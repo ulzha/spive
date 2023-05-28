@@ -2,9 +2,7 @@ package io.ulzha.spive.app;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
+import com.linecorp.armeria.server.Server;
 import io.ulzha.spive.app.events.CreateEventLog;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
@@ -21,25 +19,15 @@ import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.app.model.Stream;
 import io.ulzha.spive.app.model.Type;
-import io.ulzha.spive.app.workloads.frontend.Processes;
+import io.ulzha.spive.app.workloads.api.ApiService;
 import io.ulzha.spive.app.workloads.watchdog.WatchLoop;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.threadrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.threadrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.threadrunner.api.ThreadRunnerGateway;
 import io.ulzha.spive.util.InterruptableSchedulable;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -234,172 +222,25 @@ public class Spive implements SpiveInstance {
     }
   }
 
-  public class Frontend implements Runnable {
+  public class Api implements Runnable {
     @Override
     public void run() {
-      final HttpServer httpServer;
+      // FIXME port determined from the control plane or random via runner decision?
+      final Server server =
+          Server.builder()
+              .http(8040)
+              .annotatedService("/api", new ApiService(platform, output))
+              .build();
+      server.closeOnJvmShutdown(() -> System.out.println("Stopping API server"));
+      server.start().join();
 
       try {
-        // FIXME port determined from the control plane or random via runner decision?
-        httpServer = HttpServer.create(new InetSocketAddress(8040), 10);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-
-      final ExecutorService executorService = Executors.newCachedThreadPool();
-      httpServer.setExecutor(executorService);
-      httpServer.createContext("/", new RootHandler());
-      httpServer.createContext("/api", new ApiHandler());
-      httpServer.createContext("/static", new StaticHandler());
-      httpServer.start();
-      // FIXME use something (Jetty?) that allows to monitor or join the server thread
-      // Netty? Has websockets too
-      // Armeria - "Brought to you by the creator of Netty". HTTP/2, Server Sent Events (y)
-      try {
-        while (true) {
-          Thread.sleep(1000 * 3600 * 24);
-        }
+        server.blockUntilShutdown();
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         throw new RuntimeException(e);
       } finally {
-        httpServer.stop(1);
-      }
-    }
-
-    private class RootHandler implements HttpHandler {
-      public void handle(HttpExchange exchange) throws IOException {
-        System.out.println(
-            "RootHandler " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-        exchange.sendResponseHeaders(404, 0);
-        try (OutputStream body = exchange.getResponseBody()) {
-          body.write("<h1>404 Not Found</h1>Off by a wide margin".getBytes(StandardCharsets.UTF_8));
-        }
-      }
-    }
-
-    private class StaticHandler implements HttpHandler {
-      public void handle(HttpExchange exchange) throws IOException {
-        System.out.println(
-            "StaticHandler " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-        URI uri = exchange.getRequestURI();
-        final InputStream is =
-            Spive.class.getClassLoader().getResourceAsStream(uri.getPath().substring(1));
-        if (is == null) {
-          exchange.sendResponseHeaders(404, 0);
-          try (OutputStream body = exchange.getResponseBody()) {
-            body.write("<h1>404 Not Found</h1>Resource not found".getBytes(StandardCharsets.UTF_8));
-          }
-        } else {
-          try {
-            exchange.sendResponseHeaders(200, 0);
-            try (OutputStream body = exchange.getResponseBody()) {
-              is.transferTo(body);
-            }
-          } finally {
-            is.close();
-          }
-        }
-      }
-    }
-
-    public record CreateProcessRequest(
-        String artifactUrl,
-        List<String> availabilityZones,
-        List<UUID> inputStreamIds,
-        List<UUID> outputStreamIds) {}
-
-    private class ApiHandler implements HttpHandler {
-      private final Jsonb jsonb = JsonbBuilder.create();
-      private final Processes processes = new Processes(platform);
-
-      public void handle(HttpExchange exchange) throws IOException {
-        try {
-          rest(exchange);
-        } catch (Exception e) {
-          e.printStackTrace();
-
-          exchange.sendResponseHeaders(500, 0);
-          try (OutputStream body = exchange.getResponseBody()) {
-            body.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
-          }
-
-          throw e;
-        }
-      }
-
-      private void rest(HttpExchange exchange) throws IOException {
-        System.out.println(
-            "ApiHandler " + exchange.getRequestMethod() + " " + exchange.getRequestURI());
-        final String method = exchange.getRequestMethod();
-        final String path = exchange.getRequestURI().getPath();
-        // FIXME
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        if (method.equals("OPTIONS")) {
-          exchange
-              .getResponseHeaders()
-              .put(
-                  "Access-Control-Allow-Headers",
-                  exchange.getRequestHeaders().get("Access-Control-Request-Headers"));
-          exchange
-              .getResponseHeaders()
-              .put(
-                  "Access-Control-Allow-Methods",
-                  List.of("DELETE", "GET", "OPTIONS", "POST", "PUT"));
-          exchange.getResponseHeaders().add("Access-Control-Max-Age", "300");
-          exchange.sendResponseHeaders(204, -1);
-        } else if (path.equals("/api/applications") && method.equals("GET")) {
-          exchange.sendResponseHeaders(200, 0);
-          try (OutputStream body = exchange.getResponseBody()) {
-            // List of all applications (on this instance), for displaying on a dashboard.
-            String applicationsJson = jsonb.toJson(processes.list());
-            body.write(applicationsJson.getBytes(StandardCharsets.UTF_8));
-          }
-        } else if (path.startsWith("/api/applications/") && method.equals("PUT")) {
-          final String[] pathParts = path.split("/");
-          final CreateProcessRequest request =
-              jsonb.fromJson(exchange.getRequestBody(), CreateProcessRequest.class);
-          // FIXME prevent duplicate creation events by design...
-          //  Does that require generation of GUIDs here in handlers?
-
-          final UUID uuid = UUID.randomUUID();
-          final String name = pathParts[3];
-          final String version = pathParts[4];
-          final CreateProcess event =
-              new CreateProcess(
-                  uuid,
-                  name,
-                  version,
-                  request.artifactUrl(),
-                  request.availabilityZones(),
-                  request.inputStreamIds(),
-                  request.outputStreamIds());
-          System.out.println("Emitting " + event);
-          if (output.emitIf(
-              () ->
-                  !(platform.processesByApplicationAndVersion.containsKey(name)
-                          && platform
-                              .processesByApplicationAndVersion
-                              .get(name)
-                              .containsKey(version))
-                      && !platform.processesById.containsKey(uuid),
-              event)) {
-            exchange.sendResponseHeaders(201, 0);
-            try (OutputStream body = exchange.getResponseBody()) {
-              body.write("OK".getBytes(StandardCharsets.UTF_8));
-            }
-          } else {
-            exchange.sendResponseHeaders(409, 0);
-            try (OutputStream body = exchange.getResponseBody()) {
-              body.write("Not ok, retry yourself".getBytes(StandardCharsets.UTF_8));
-            }
-          }
-        } else {
-          exchange.sendResponseHeaders(404, 0);
-          try (OutputStream body = exchange.getResponseBody()) {
-            body.write("KRAKEN".getBytes(StandardCharsets.UTF_8));
-          }
-        }
+        System.out.println("Bff.run exiting");
       }
     }
   }

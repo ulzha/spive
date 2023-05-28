@@ -69,5 +69,5 @@ do echo "retrying in 1 s"; sleep 1; done
 
 # 9. print instructions, keep following the output of each container
 echo "Press Ctrl+C to stop"
-# TODO tear down if anything fails
+# TODO keep stdout and stderr attached till the end? Now we don't see workload shutdown messages, just Docker's "Aborting on container exit..."
 wait $DC_PID
