@@ -1,29 +1,29 @@
 package io.ulzha.spive.app.workloads.watchdog;
 
 import io.ulzha.spive.app.model.Process;
+import io.ulzha.spive.basicrunner.api.BasicRunnerClient;
+import io.ulzha.spive.basicrunner.api.GetThreadGroupHeartbeatResponse;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.HeartbeatSample;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
-import io.ulzha.spive.threadrunner.api.GetThreadGroupHeartbeatResponse;
-import io.ulzha.spive.threadrunner.api.ThreadRunnerClient;
 import java.net.http.HttpClient;
 import java.util.List;
 import java.util.TreeMap;
 
 /**
- * A counterpart to c.s.s.threadrunner.api.Umbilical.Umbilicus.
+ * A counterpart to i.u.s.basicrunner.api.Umbilical.Umbilicus.
  *
  * <p>A "fat" client containing helper functionality to splice heartbeat samples from umbilical into
  * a longer history.
  */
 // UmbilicalChannel? Refactor into core.lib?
 public class Placenta implements UmbilicalReader {
-  private final ThreadRunnerClient client;
+  private final BasicRunnerClient client;
   private TreeMap<EventTime, List<ProgressUpdate>> accumulatedHeartbeat = new TreeMap<>();
 
   public Placenta(final HttpClient httpClient, final Process.Instance instance) {
-    this.client = new ThreadRunnerClient(httpClient, instance.umbilicalUri);
+    this.client = new BasicRunnerClient(httpClient, instance.umbilicalUri);
   }
 
   @Override

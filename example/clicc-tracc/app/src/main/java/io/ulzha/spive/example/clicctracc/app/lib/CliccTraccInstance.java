@@ -10,7 +10,7 @@ import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InternalSpiveException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
-import io.ulzha.spive.threadrunner.api.Umbilical;
+import io.ulzha.spive.basicrunner.api.Umbilical;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.ArrayList;

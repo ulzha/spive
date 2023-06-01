@@ -13,7 +13,7 @@ DC="docker compose -f tools/dev-0/docker-compose.yml"
 MVN="mvnd -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dsurefire.skip=true -Dfmt.skip=true"
 
 # 1. build app as a jar, and more
-$MVN clean package dependency:go-offline -am -pl app,thread-runner,tools
+$MVN clean package dependency:go-offline -am -pl app,basic-runner,tools
 
 # 2. prepare runners and event stores
 # (initialize local filesystem)
@@ -21,7 +21,7 @@ $MVN clean package dependency:go-offline -am -pl app,thread-runner,tools
 rm -r event-store || true
 mkdir -p event-store
 # (launch docker compose with all the right images)
-export THREAD_RUNNER_IMAGE_NAME=$(cat $PWD/thread-runner/target/docker/image-name)
+export BASIC_RUNNER_IMAGE_NAME=$(cat $PWD/basic-runner/target/docker/image-name)
 $DC down -v
 $DC up --abort-on-container-exit &
 DC_PID=$!
@@ -35,7 +35,7 @@ until
 do echo "retrying in 1 s"; sleep 1; done
 
 # 4. launch SpiveDevBootstrap with local log
-# (alt. run SpiveInstance$Main.main with local log, no need to run thread-runner? Doesn't matter much if chicken first or egg first)
+# (alt. run SpiveInstance$Main.main with local log, no need to run basic-runner? Doesn't matter much if chicken first or egg first)
 mkdir -p event-store/93ff4295-5a8c-4181-b50b-3d7345643581
 cp tools/SpiveDevBootstrap.jsonl event-store/93ff4295-5a8c-4181-b50b-3d7345643581/events.jsonl
 until

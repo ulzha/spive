@@ -28,12 +28,12 @@
 
   <modules>
     <module>app</module>
+    <module>basic-runner</module>
     <module>common</module>
     <module>core</module>
     <module>example/clicc-tracc</module>
     <module>example/copy</module>
     <module>scaler</module>
-    <module>thread-runner</module>
     <module>tools</module>
   </modules>
 

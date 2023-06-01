@@ -25,10 +25,10 @@ import io.ulzha.spive.app.model.Stream;
 import io.ulzha.spive.app.model.Type;
 import io.ulzha.spive.app.workloads.api.ApiService;
 import io.ulzha.spive.app.workloads.watchdog.WatchLoop;
+import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
+import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
+import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.threadrunner.api.RunThreadGroupRequest;
-import io.ulzha.spive.threadrunner.api.ThreadGroupDescriptor;
-import io.ulzha.spive.threadrunner.api.ThreadRunnerGateway;
 import io.ulzha.spive.util.InterruptableSchedulable;
 import java.time.Duration;
 import java.util.HashMap;
@@ -58,11 +58,11 @@ public class Spive implements SpiveInstance {
   // perhaps ProcessContext.output and ProcessContext.sideOutput a la Beam?
   // https://beam.apache.org/blog/2017/02/13/stateful-processing.html
   private final SpiveOutputGateway output;
-  private final ThreadRunnerGateway runner;
+  private final BasicRunnerGateway runner;
 
   private final Platform platform;
 
-  public Spive(SpiveOutputGateway output, ThreadRunnerGateway runner) {
+  public Spive(SpiveOutputGateway output, BasicRunnerGateway runner) {
     this.output = output;
     this.runner = runner;
     platform = new Platform("io.ulzha.dev");
@@ -73,6 +73,8 @@ public class Spive implements SpiveInstance {
     // TODO be a bit smart about runners disappearing en masse in the case of a network-wide event,
     // don't exhaust the available pool by reprovisioning all lost instances immediately, involve
     // humans in that case
+    // Also don't upgrade OS for an entire deployment rapidly.
+    // https://newsletter.pragmaticengineer.com/p/inside-the-datadog-outage
     // Have some sort of well-defined cap, and take care to prioritize upstreams in the DAG (will
     // necessitate some elaborate modeling)
     // TODO cleanup orphaned stuff, optional. Perhaps runners should do that

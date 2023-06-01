@@ -140,7 +140,7 @@ public class Process {
 
     public volatile InstanceStatus status;
 
-    // The link to our control plane ThreadRunnerGateway which launches and tracks this instance.
+    // The link to our control plane BasicRunnerGateway which launches and tracks this instance.
     public URI umbilicalUri;
 
     @Override

@@ -22,7 +22,7 @@
     <!-- don't really want this - want UmbilicalReader and UmbilicalWriter from core? -->
     <dependency>
       <groupId>io.ulzha</groupId>
-      <artifactId>spive-thread-runner</artifactId>
+      <artifactId>spive-basic-runner</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>

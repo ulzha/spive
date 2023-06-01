@@ -61,6 +61,7 @@ interface GridProps {
 export default component$<GridProps>(({ rows }: GridProps) => {
   const state = useStore<any>({ eventsRows: {} });
 
+  // FIXME frontend UX for when dollar fails. Perhaps all KTLO JS needs to be bulk loaded
   const toggleEventsRow = $(({ id }: { id: string }) => {
     console.debug("Row clicked", id, state.eventsRows);
     if (id.includes(".")) {

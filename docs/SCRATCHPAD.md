@@ -6,7 +6,9 @@ Some Docker-inspired slogan like "event sourcing for the masses"?
 
 Borne out of daily frustrations and repetitiveness in software engineer occupation, marred by all flavors of [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) from RDBMS to NoSQL to NuSQL, mired in nightmares of prospects of death by a thousand YAML files.
 
-Answer to the question: "What's the smallest amount of effort to get robust observability and scalability?" How to get there as cheaply as possible, with the least cognitive overhead. In my application code I would prefer to not write any retry loops or metrics emitters ~ever again.
+Answer to the question: "What's the smallest amount of effort to get robust observability and scalability?" How to get there as cheaply as possible, with the least cognitive overhead.
+* In my application code I would prefer to not write any retry loops or metrics emitters ~ever again.
+* Slack "monitoring" channels being capable of only showing ~5-10 happenings at once before you have to scroll - that is so much inferior compared to a <abbr title="&quot;Single pane of glass&quot;">SPOG</abbr> that can summarize thousands or millions of events in a couple square centimeters.
 
 There are only two kinds of errors - hardware breaking, and bugs (programmer logic lapses, code reaching illegal/unanticipated state).
 
@@ -14,7 +16,8 @@ There is only one kind of warning - timeout.
 
 Quasi-durable execution? Is this structured scalability? (By analogy to structured concurrency)
 
-S3 - Serverless Structured Scalability? (Friends with D3 - Data Driven Documents)
+S3 - Serviceless Structured Scalability? (Friends with D3 - Data Driven Documents)
+S<SS
 
 We taught sand to think, but then it got sidetracked with all those nondeterministic ideas... Sand, get back in line
 
@@ -52,7 +55,7 @@ Build-test-deploy cycle goal of ~15 minutes:
 * darkload canaries
 * couple of minutes for zero downtime DNS swap
 
-`Runner` (`RuntimeAgent`? `InstanceHost`? `Outstance`? `CapacityProvider`?)
+`Runner` (`RuntimeAgent`? `InstanceHost`? `Outstance`? `CapacityProvider`? `AppServer`?)
 
 Highlight in ARCHITECTURE.md some coupling that is intentional in order to keep the mental model simple?
 * Runners coupled with security domains

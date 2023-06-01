@@ -27,7 +27,7 @@
     </dependency>
     <dependency>
       <groupId>io.ulzha</groupId>
-      <artifactId>spive-thread-runner</artifactId>
+      <artifactId>spive-basic-runner</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
