@@ -4,11 +4,18 @@ Need lots of education.
 
 Some Docker-inspired slogan like "event sourcing for the masses"?
 
+Also well suited for ML pipelines and model serving? Haven't tried
+
+Also well suited for online game backends? Haven't tried
+
+Make algorithms and data structures great again
+
 Borne out of daily frustrations and repetitiveness in software engineer occupation, marred by all flavors of [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) from RDBMS to NoSQL to NuSQL, mired in nightmares of prospects of death by a thousand YAML files.
 
 Answer to the question: "What's the smallest amount of effort to get robust observability and scalability?" How to get there as cheaply as possible, with the least cognitive overhead.
-* In my application code I would prefer to not write any retry loops or metrics emitters ~ever again.
+* In my application code I would prefer to not write any retry loops or basic health metrics emitters ~ever again.
 * Slack "monitoring" channels being capable of only showing ~5-10 happenings at once before you have to scroll - that is so much inferior compared to a <abbr title="&quot;Single pane of glass&quot;">SPOG</abbr> that can summarize thousands or millions of events in a couple square centimeters.
+* Cut down on the number of IaC concepts involved, too. 100+ distinct AWS CF resources for a single application seems generally too much.
 
 There are only two kinds of errors - hardware breaking, and bugs (programmer logic lapses, code reaching illegal/unanticipated state).
 

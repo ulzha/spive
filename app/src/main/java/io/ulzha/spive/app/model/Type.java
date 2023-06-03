@@ -1,8 +1,8 @@
 package io.ulzha.spive.app.model;
 
+import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 /**
  * Relevant to maintain first class understanding of partition keys among event fields.

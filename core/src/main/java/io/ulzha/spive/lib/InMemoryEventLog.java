@@ -1,11 +1,11 @@
 package io.ulzha.spive.lib;
 
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.jetbrains.annotations.NotNull;
 
 /** For testing and debugging. */
 public class InMemoryEventLog implements EventLog {
@@ -42,8 +42,8 @@ public class InMemoryEventLog implements EventLog {
   @Override
   public void close() {}
 
-  @NotNull
   @Override
+  @Nonnull
   public Iterator<EventEnvelope> iterator() {
     return list.iterator();
   }

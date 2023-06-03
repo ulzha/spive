@@ -1,8 +1,8 @@
 package io.ulzha.spive.lib.umbilical;
 
 import io.ulzha.spive.lib.EventTime;
+import jakarta.annotation.Nullable;
 import java.util.List;
-import javax.annotation.Nullable;
 
 public record HeartbeatSample(
     @Nullable EventTime eventTime,

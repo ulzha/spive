@@ -11,7 +11,7 @@
 
   <artifactId>spive</artifactId>
   <description>
-    Provides the basic backend, web UI and API for managing applications on the Spīve platform.
+    Provides a sleek web UI, scalable backend + API essentials for managing applications in Spīve ecosystem.
   </description>
 
   <dependencies>

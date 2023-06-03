@@ -41,7 +41,7 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
   private static EventStore getEventStore(final String connectionString) {
     try {
       if (connectionString.startsWith("io.ulzha.spive.core.LocalFileSystemEventStore;")) {
-        return new LocalFileSystemEventStore(System.getProperty("user.dir") + "/event-store");
+        return new LocalFileSystemEventStore(connectionString);
       } else if (connectionString.startsWith("io.ulzha.spive.core.BigtableEventStore;")) {
         return new BigtableEventStore(connectionString);
         // should validate immediately? (as opposed to validating late, at an openLog attempt)

@@ -18,25 +18,7 @@
     Very minimal functionality. Very minimal dependencies.
   </description>
 
-  <properties>
-    <service.mainClass>io.ulzha.spive.basicrunner.Main</service.mainClass>
-  </properties>
-
   <dependencies>
-    <dependency>
-      <groupId>com.spotify</groupId>
-      <artifactId>apollo-http-service</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-    </dependency>
     <dependency>
       <groupId>jakarta.json</groupId>
       <artifactId>jakarta.json-api</artifactId>
@@ -46,17 +28,8 @@
       <artifactId>jakarta.json.bind-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse</groupId>
-      <artifactId>yasson</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
     </dependency>
     <dependency>
       <groupId>io.ulzha</groupId>
@@ -66,10 +39,8 @@
     <dependency>
       <groupId>io.github.resilience4j</groupId>
       <artifactId>resilience4j-circularbuffer</artifactId>
-      <version>1.6.1</version>
     </dependency>
 
-    <!-- test scope -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -81,14 +52,20 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.spotify</groupId>
       <artifactId>hamcrest-pojo</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse</groupId>
+      <artifactId>yasson</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
@@ -105,27 +82,12 @@
           </execution>
         </executions>
         <configuration>
-          <useBaseVersion>false</useBaseVersion>
-          <overWriteIfNewer>true</overWriteIfNewer>
-          <overWriteReleases>false</overWriteReleases>
-          <overWriteSnapshots>false</overWriteSnapshots>
           <includeScope>runtime</includeScope>
-          <outputDirectory>${project.build.directory}/lib</outputDirectory>
-          <ignoreNonCompile>true</ignoreNonCompile>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>${service.mainClass}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>com.spotify</groupId>

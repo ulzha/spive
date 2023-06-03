@@ -1,9 +1,9 @@
 package io.ulzha.spive.lib;
 
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Manages the lock used for synchronizing spontaneous emitIf from workloads.
@@ -31,7 +31,7 @@ public class LockableEventLog implements EventLog {
   }
 
   @Override
-  @NotNull
+  @Nonnull
   public Iterator<EventEnvelope> iterator() {
     return delegate.iterator();
   }

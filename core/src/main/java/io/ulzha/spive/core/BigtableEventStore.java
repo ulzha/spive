@@ -28,14 +28,18 @@ import java.util.regex.Pattern;
  * `<logId>:<lastActualEventTime>`.
  */
 public final class BigtableEventStore implements EventStore {
+  private static final Pattern CONNECTION_STRING_RE =
+      Pattern.compile(
+          ".+"
+              + ";projectId=([a-z0-9_-]{0,63})"
+              + ";instanceId=([a-z0-9_-]+)"
+              + "(?:;hostname=([a-z0-9_-]+);port=([0-9]+))?"
+              + "$");
+
   // clients are expensive, so an instance only creates one per store (i.e. one per connection
   // string)
   private final BigtableDataClient dataClient;
   private final Map<UUID, BigtableEventLog> eventLogs = new ConcurrentHashMap<>();
-
-  static final Pattern CONNECTION_STRING_RE =
-      Pattern.compile(
-          ".*;projectId=([a-z0-9_-]{0,63});instanceId=([a-z0-9_-]+)(?:;hostname=([a-z0-9_-]+);port=([0-9]+))?$");
 
   /**
    * Two formats supported:
@@ -67,7 +71,7 @@ public final class BigtableEventStore implements EventStore {
     builder.setProjectId(projectId);
     builder.setInstanceId(instanceId);
 
-    dataClient = BigtableDataClient.create(builder.build());
+    this.dataClient = BigtableDataClient.create(builder.build());
   }
 
   @Override

@@ -8,16 +8,17 @@ services:
   dev-0:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:
-    - "$PWD/app/target:/app/target"
+    - "$PWD/app/target:/mnt/app/target"
     ports:
-    - "8040:8040"
-    - "8080:8080"
+    - "8430:8430"
+    - "8440:8440"
+    # - "8480:80" TODO Vite
     environment:
     - "BIGTABLE_EMULATOR_HOST=bigtable-emulator:8086"
   dev-bootstrap:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:
-    - "$PWD/app/target:/app/target"
-    - "$PWD/event-store:/event-store"
+    - "$PWD/app/target:/mnt/app/target"
+    - "$PWD/event-store:/mnt/event-store"
     ports:
-    - "8079:8080"
+    - "8429:8430"

@@ -1,9 +1,9 @@
 package io.ulzha.spive.app.events;
 
 import io.ulzha.spive.lib.EventTime;
+import jakarta.annotation.Nullable;
 import java.time.Instant;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 /**
  * Captures instance status changes from an instance.

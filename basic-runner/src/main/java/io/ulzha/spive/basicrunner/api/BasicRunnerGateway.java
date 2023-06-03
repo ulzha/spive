@@ -59,27 +59,27 @@ public class BasicRunnerGateway extends Gateway {
     System.out.println("Starting " + request.threadGroup().name() + " on " + runnerUrl);
     // TODO idempotent?
 
-    final URI requestUri = URI.create(runnerUrl + "thread_groups");
+    final URI requestUri = URI.create(runnerUrl + "/thread_groups").normalize();
     try {
       final HttpRequest.BodyPublisher requestBody =
           HttpRequest.BodyPublishers.ofString(jsonb.toJson(request), StandardCharsets.UTF_8);
-      final HttpRequest httpRequest = HttpRequest.newBuilder(requestUri).PUT(requestBody).build();
+      final HttpRequest httpRequest = HttpRequest.newBuilder(requestUri).POST(requestBody).build();
       final HttpResponse<String> response =
           client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-      if (response.statusCode() != 202) {
-        // FIXME retry forever
-        throw new InternalSpiveException("HTTP " + response.statusCode() + ": " + response.body());
-      }
       // TODO RunThreadGroupResponse.class?
       // TODO return and assert deterministic umbilicalUri?
       LOG.info("RunThreadGroupResponse: " + response.body());
+      if (response.statusCode() != 201) {
+        // FIXME retry forever
+        throw new RuntimeException("Expected HTTP 201 Created, got " + response.statusCode());
+      }
     } catch (IOException e) {
       // FIXME retry forever (unless permanent)
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
       // FIXME probably need to sprinkle accept() methods with `throws InterruptedException`
       Thread.currentThread().interrupt();
-      throw new InternalSpiveException("Gateway interrupted", e);
+      throw new RuntimeException("Gateway interrupted", e);
     }
   }
 

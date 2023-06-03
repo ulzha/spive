@@ -1,8 +1,9 @@
 package io.ulzha.spive.lib.umbilical;
 
-import com.google.common.base.Throwables;
+import jakarta.annotation.Nullable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
-import javax.annotation.Nullable;
 
 /** TODO neaten up as SuccessUpdate, WarningUpdate, ErrorUpdate? */
 public record ProgressUpdate(
@@ -16,11 +17,17 @@ public record ProgressUpdate(
   }
 
   public static ProgressUpdate createWarning(final Throwable warning) {
-    return new ProgressUpdate(
-        Instant.now(), false, Throwables.getStackTraceAsString(warning), null);
+    return new ProgressUpdate(Instant.now(), false, getStackTraceAsString(warning), null);
   }
 
   public static ProgressUpdate createError(final Throwable error) {
-    return new ProgressUpdate(Instant.now(), false, null, Throwables.getStackTraceAsString(error));
+    return new ProgressUpdate(Instant.now(), false, null, getStackTraceAsString(error));
+  }
+
+  private static String getStackTraceAsString(final Throwable throwable) {
+    final StringWriter sw = new StringWriter();
+    final PrintWriter pw = new PrintWriter(sw);
+    throwable.printStackTrace(pw);
+    return sw.toString();
   }
 }

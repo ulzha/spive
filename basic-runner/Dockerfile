@@ -1,7 +1,10 @@
 FROM openjdk:19-jdk-alpine3.15
 
-ENTRYPOINT ["/usr/bin/spive-basic-runner.sh"]
+ENTRYPOINT ["java", \
+  "--add-opens=java.base/java.util.regex=ALL-UNNAMED", \
+  "io.ulzha.spive.basicrunner.BasicRunner"]
 
-COPY bin/spive-basic-runner.sh /usr/bin/spive-basic-runner.sh
-COPY target/lib /usr/share/spive-basic-runner/lib
-COPY target/spive-basic-runner.jar /usr/share/spive-basic-runner/service.jar
+WORKDIR /opt/spive/spive-basic-runner
+ENV CLASSPATH=./*
+COPY target/dependency .
+COPY target/spive-basic-runner.jar .

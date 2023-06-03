@@ -2,10 +2,10 @@ package io.ulzha.spive.basicrunner.api;
 
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.HeartbeatSample;
+import jakarta.annotation.Nullable;
 import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
-import javax.annotation.Nullable;
 
 @JsonbNillable(true)
 @JsonbPropertyOrder({"heartbeat", "checkpoint"})

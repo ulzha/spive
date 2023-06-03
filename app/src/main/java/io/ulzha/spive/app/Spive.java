@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 import reactor.core.publisher.Flux;
 
 /**
- * Provides the basic backend, web UI and API for managing applications on the Spīve platform,
+ * Scalable, bootstrapped backend + API essentials for managing applications on the Spīve platform,
  * providing the minimum viable KTLO functionality, i.e. turning failed instances off and on again,
  * in the same availability zone.
  *
@@ -243,7 +243,7 @@ public class Spive implements SpiveInstance {
       // FIXME port determined from the control plane or random via runner decision?
       final Server server =
           Server.builder()
-              .http(8040)
+              .http(8440)
               .annotatedService("/api", new ApiService(platform, output))
               .service(
                   "/sse",

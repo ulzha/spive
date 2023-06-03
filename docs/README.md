@@ -47,9 +47,9 @@ Another upside is that the persisted events are easily available for offline ana
 
 Spīve can be thought of as a workflow engine, akin to e.g. [AWS SWF](https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-welcome.html), [Temporal](https://github.com/temporalio/temporal) or [Infinitic](https://github.com/infiniticio/infinitic), yet centers on a different, lower level of abstraction, in terms of concepts supported by its SDK.
 
-Spīve UX, on the other hand, strives to achieve new heights in coherent orchestration of interconnected applications, with joy-sparking reliability and manageability. DevOps-friendly and microservices-friendly, preserves maintainability of codebases small and large, especially such that evolve in a distributed fashion, touched by any number of autonomous contributing teams.
+Spīve UX, on the other hand, strives to achieve new heights in coherent orchestration of interconnected applications, with joy-sparking reliability and manageability. DevOps-friendly and microservices-friendly, it caters for maintainability of codebases small and large, especially codebases that evolve in a modular fashion, touched by any number of autonomous contributing teams.
 
-Use-case wise, Spīve most readily works for backend services serving low write volumes, and any read volumes. State machines, workflows and sagas are common patterns. Moreover, near-real time pipelines and batch processes that ship data in and out of the backend are very efficient to write and test, and deploy alongside the services, in a greatly unified development experience.
+Use-case wise, Spīve most readily works for backend services serving low write volumes, and quite arbitrary read volumes. State machines, workflows and sagas are common patterns. Moreover, near-real time pipelines and batch processes that ship data in and out of the backend are very efficient to write and test, and deploy alongside the services, in a greatly unified development experience.
 
 On a scale from "a highly optimized query engine for detecting near-Earth asteroids on a specialized astronomy mainframe" to "keep shipping and tweaking features our users value, and don't break the Jenga tower", quite a lot of software systems belong in the latter end, the "long, fat tail" of smallish but business critical systems. Recognizing the significant engineering overhead and accidental complexity present in this area, the design of Spīve platform readily trades off processor cycles in favor of cutting engineering toil, tightening the development feedback loop, and reducing mean time to incident resolution.
 
@@ -82,7 +82,7 @@ Backend and application examples are currently developed as a Maven project usin
     source ~/.sdkman/bin/sdkman-init.sh
     sdk install java 19.0.2-open
     sdk install mvnd 1.0-m6-m40
-    mvnd verify
+    mvnd clean verify
 
 Frontend uses Qwik, D3 and Material UI. See the respective README.md file for instructions.
 

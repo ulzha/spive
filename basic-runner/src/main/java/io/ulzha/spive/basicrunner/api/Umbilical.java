@@ -5,6 +5,7 @@ import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.HeartbeatSample;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
+import jakarta.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +19,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 /**
  * Facilitates the tiny bit of asynchronous bidirectional communication needed between control plane
@@ -155,8 +155,13 @@ public class Umbilical {
   }
 
   /**
-   * Helper to make predictable heartbeat sizes. TODO allow a few k, just protect against
-   * stackoverflow
+   * Helper to make predictable heartbeat sizes.
+   *
+   * <p>TODO allow a few k, just protect against stackoverflow. Peel off
+   * java.util.concurrent.ExecutionException and Caused by:
+   * java.lang.reflect.InvocationTargetException and potentially java.lang.RuntimeException
+   * (especially "RuntimeException: Application failure", and all the other cruft that wraps
+   * InvocationTargetException in EventLoop)
    *
    * <p>Eventually, with firsts per partition, multiple stacktraces may have to fit in one
    * heartbeat.

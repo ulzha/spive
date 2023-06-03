@@ -5,7 +5,7 @@ import ApplicationGrid from "~/components/application/grid";
 import Legend from "~/components/application/timeline/legend";
 import { MUICreateNewApplicationForm } from "~/integrations/react/mui-dialog";
 
-const platformUrl = "http://localhost:8040";
+const platformUrl = "http://localhost:8440";
 
 export default component$(() => {
   // const meta = useStore({ platformUrl: });

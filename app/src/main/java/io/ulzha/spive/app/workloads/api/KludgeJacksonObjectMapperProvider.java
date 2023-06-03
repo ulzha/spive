@@ -6,11 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.linecorp.armeria.common.JacksonObjectMapperProvider;
 
-// A kludge to stop Server.start() from crashing with java.util.ServiceConfigurationError:
-// com.fasterxml.jackson.databind.Module:
-// com.spotify.ffwd.http.fasterxml.jackson.datatype.jdk8.Jdk8Module not a subtype
-// I don't want any Jackson
-// https://github.com/line/armeria/issues/1959
+/**
+ * A kludge to stop Server.start() from crashing with java.util.ServiceConfigurationError.
+ *
+ * <p>I don't want any Jackson. Jsonb seems quite usable and is supposedly "standard"...
+ * https://github.com/line/armeria/issues/1959
+ */
 public final class KludgeJacksonObjectMapperProvider implements JacksonObjectMapperProvider {
   @Override
   public ObjectMapper newObjectMapper() {

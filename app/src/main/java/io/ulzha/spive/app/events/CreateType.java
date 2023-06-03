@@ -1,8 +1,8 @@
 package io.ulzha.spive.app.events;
 
+import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.Nullable;
 
 // Should manage in SpiveInventory land? KTLO does not need type creation...
 public record CreateType(
