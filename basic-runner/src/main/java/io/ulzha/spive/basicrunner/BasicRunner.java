@@ -7,9 +7,11 @@ import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.basicrunner.api.Umbilical;
 import io.ulzha.spive.basicrunner.util.Http;
+import io.ulzha.spive.basicrunner.util.Http.StatusCode;
 import io.ulzha.spive.basicrunner.util.Jars;
 import io.ulzha.spive.basicrunner.util.Rest;
-import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,6 +53,7 @@ public final class BasicRunner {
     Http.startServer(
         8430,
         Rest.handler(
+            Http.fourOhFourHandler(),
             Rest.get("^/ping$", Http.jsonHandler(BasicRunner::ping, String.class)),
             Rest.post(
                 "^/api/v0/thread_groups$",
@@ -72,14 +75,16 @@ public final class BasicRunner {
 
     // FIXME uncaught handler... And/or how to join the background thread to confirm that it really
     // started
-    // Maybe also mark all umbilicals with warnings if such shenanigans occur
+    // Maybe also mark all umbilicals with warnings if such shenanigans occur... Not all if the
+    // crashing thread is from a particular Process' thread group
+    // runMain catches on the Process main thread, workload executor also catches, so those oughtn't
+    // be "unhandled"
     LOG.info("Runner started");
   }
 
   /** Healthcheck endpoint. */
-  private static String ping(HttpExchange exchange) throws IOException {
-    exchange.sendResponseHeaders(200, 0);
-    return "pong";
+  private static Http.Response<String> ping(HttpExchange exchange) {
+    return Http.response(StatusCode.OK, "pong");
   }
 
   /**
@@ -87,33 +92,32 @@ public final class BasicRunner {
    *
    * <p>TODO The request includes last EventTime up till which to replay without side effects.
    */
-  private static String runThreadGroup(HttpExchange exchange, RunThreadGroupRequest request)
-      throws IOException {
+  private static Http.Response<String> runThreadGroup(
+      HttpExchange exchange, RunThreadGroupRequest request) {
     final ThreadGroup threadGroup = new ThreadGroup(request.threadGroup().name());
     final ThreadGroupRecord record = new ThreadGroupRecord(threadGroup, request.threadGroup());
 
     if (RECORDS.putIfAbsent(request.threadGroup().name(), record) == null) {
       final Thread thread =
           new Thread(threadGroup, () -> runMain(record), request.threadGroup().name() + "-main");
-      // dunno if we need an uncaught exception handler, things are caught alright by runMain
 
       // TODO not start arbitrarily many on a single machine
       thread.start();
 
       // TODO with deterministic umbilicalUri
-      exchange.sendResponseHeaders(201, 0);
-      return "http://somethingsomething/api/v0/thread_groups/"
-          + request.threadGroup().name()
-          + "/heartbeat";
+      return Http.response(
+          StatusCode.ACCEPTED,
+          "http://somethingsomething/api/v0/thread_groups/%s/heartbeat"
+              .formatted(URLEncoder.encode(request.threadGroup().name(), StandardCharsets.UTF_8)));
     } else {
       // already exists
-      exchange.sendResponseHeaders(409, 0);
-      return "";
+      return Http.response(StatusCode.CONFLICT);
     }
   }
 
   private static void runMain(final ThreadGroupRecord record) {
     final ThreadGroupDescriptor descriptor = record.threadGroupDescriptor;
+
     try {
       Jars.runJar(
           Jars.getJar(descriptor.artifactUrl()),
@@ -138,9 +142,8 @@ public final class BasicRunner {
    * future - one example where it could be useful is performing a best effort graceful handover to
    * a new instance.
    */
-  private static String signalThreadGroup(HttpExchange exchange) throws IOException {
-    exchange.sendResponseHeaders(501, 0);
-    return "";
+  private static Http.Response<String> signalThreadGroup(HttpExchange exchange) {
+    return Http.response(StatusCode.NOT_IMPLEMENTED);
   }
 
   /**
@@ -148,12 +151,13 @@ public final class BasicRunner {
    *
    * <p>TODO Includes metadata about who deployed them.
    */
-  private static GetThreadGroupsResponse getThreadGroups(HttpExchange exchange) throws IOException {
-    exchange.sendResponseHeaders(200, 0);
-    return new GetThreadGroupsResponse(
-        RECORDS.values().stream()
-            .map(record -> record.threadGroupDescriptor)
-            .collect(Collectors.toList()));
+  private static Http.Response<GetThreadGroupsResponse> getThreadGroups(HttpExchange exchange) {
+    return Http.response(
+        StatusCode.OK,
+        new GetThreadGroupsResponse(
+            RECORDS.values().stream()
+                .map(record -> record.threadGroupDescriptor)
+                .collect(Collectors.toList())));
   }
 
   /**
@@ -162,18 +166,16 @@ public final class BasicRunner {
    * <p>The thread group is not fully guaranteed to get stopped, but it will not be returned from
    * the API in subsequent calls. TODO block until the thread is not found any more? Or force via OS
    */
-  private static String deleteThreadGroup(HttpExchange exchange) throws IOException {
+  private static Http.Response<String> deleteThreadGroup(HttpExchange exchange) {
     final ThreadGroupRecord record = RECORDS.get(Rest.pathParam(exchange, "name"));
 
     if (record == null) {
-      exchange.sendResponseHeaders(404, 0);
+      return Http.response(StatusCode.NOT_FOUND);
     } else {
       record.threadGroup.interrupt();
       RECORDS.remove(Rest.pathParam(exchange, "name"));
-
-      exchange.sendResponseHeaders(204, 0);
+      return Http.response(StatusCode.NO_CONTENT);
     }
-    return "";
   }
 
   /**
@@ -195,14 +197,15 @@ public final class BasicRunner {
    * observability stack to retain extensive amount of debug information, generate metrics, do
    * ad-hoc analysis, etc.
    */
-  private static GetThreadGroupHeartbeatResponse getThreadGroupHeartbeat(HttpExchange exchange)
-      throws IOException {
+  private static Http.Response<GetThreadGroupHeartbeatResponse> getThreadGroupHeartbeat(
+      HttpExchange exchange) {
     final ThreadGroupRecord record = RECORDS.get(Rest.pathParam(exchange, "name"));
+
     if (record == null) {
-      exchange.sendResponseHeaders(404, 0);
-      return new GetThreadGroupHeartbeatResponse(List.of(), null);
+      return Http.response(
+          StatusCode.NOT_FOUND, new GetThreadGroupHeartbeatResponse(List.of(), null));
+    } else {
+      return Http.response(StatusCode.OK, GetThreadGroupHeartbeatResponse.create(record.umbilical));
     }
-    exchange.sendResponseHeaders(200, 0);
-    return GetThreadGroupHeartbeatResponse.create(record.umbilical);
   }
 }

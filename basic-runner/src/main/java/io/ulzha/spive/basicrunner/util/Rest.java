@@ -16,45 +16,36 @@ import org.slf4j.LoggerFactory;
 /** Convenience HttpHandler with routing and parameter parsing helpers. */
 public class Rest {
   private static final Logger LOG = LoggerFactory.getLogger(Rest.class);
-  private static final String PATH_PARAMS = "REST_PATH_PARAMS";
+
+  private enum ExchangeAttribute {
+    REST_PATH_PARAMS,
+  }
 
   public record Route(Pattern methodRegex, Pattern pathRegex, HttpHandler handler) {}
 
-  public static HttpHandler handler(Route... routes) {
+  public static HttpHandler handler(HttpHandler fallbackHandler, Route... routes) {
     // could be done more composably (?) with filters. Not craving the bloat for now though:
     // ClosingFilter, LoggingFilter, RoutingFilter, ParsingFilter...
     return (exchange) -> {
-      try {
-        final String method = exchange.getRequestMethod();
-        final String path = exchange.getRequestURI().getPath();
-        for (Route route : routes) {
-          final Matcher methodMatcher = route.methodRegex().matcher(method);
-          final Matcher pathMatcher = route.pathRegex().matcher(path);
-          if (methodMatcher.matches() && pathMatcher.matches()) {
-            LOG.info(
-                "{} {} matched route {}",
-                exchange.getRequestMethod(),
-                exchange.getRequestURI(),
-                route.pathRegex());
-            setPathParams(exchange, pathMatcher);
-            route.handler().handle(exchange);
-            return;
-          }
+      // try {
+      final String method = exchange.getRequestMethod();
+      final String path = exchange.getRequestURI().getPath();
+      for (Route route : routes) {
+        final Matcher methodMatcher = route.methodRegex().matcher(method);
+        final Matcher pathMatcher = route.pathRegex().matcher(path);
+        if (methodMatcher.matches() && pathMatcher.matches()) {
+          LOG.info(
+              "{} {} matched route {}",
+              exchange.getRequestMethod(),
+              exchange.getRequestURI(),
+              route.pathRegex());
+          setPathParams(exchange, pathMatcher);
+          route.handler().handle(exchange);
+          return;
         }
-        LOG.info("{} {} matched no route", exchange.getRequestMethod(), exchange.getRequestURI());
-        exchange.sendResponseHeaders(404, 0);
-      } catch (Exception e) {
-        // HttpServer itself doesn't log
-        LOG.error(
-            "{} {} caused Internal Server Error",
-            exchange.getRequestMethod(),
-            exchange.getRequestURI(),
-            e);
-        exchange.sendResponseHeaders(500, 0);
-        throw e;
-      } finally {
-        exchange.close();
       }
+      LOG.info("{} {} matched no route", exchange.getRequestMethod(), exchange.getRequestURI());
+      fallbackHandler.handle(exchange);
     };
   }
 
@@ -107,12 +98,13 @@ public class Rest {
             URLDecoder.decode(pathMatcher.group(entry.getValue()), StandardCharsets.UTF_8));
       }
     }
-    exchange.setAttribute(PATH_PARAMS, pathParams);
+    exchange.setAttribute(ExchangeAttribute.REST_PATH_PARAMS.name(), pathParams);
   }
 
   @SuppressWarnings("unchecked")
   public static String pathParam(HttpExchange exchange, String name) {
-    final Map<String, String> pathParams = (Map<String, String>) exchange.getAttribute(PATH_PARAMS);
+    final Map<String, String> pathParams =
+        (Map<String, String>) exchange.getAttribute(ExchangeAttribute.REST_PATH_PARAMS.name());
     return pathParams.get(name);
   }
 }
