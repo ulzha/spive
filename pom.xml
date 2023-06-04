@@ -16,11 +16,8 @@
   <properties>
     <java.version>19</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
-    <license.skipCheckLicense>true</license.skipCheckLicense>
-    <spotbugs.excludeFilterFile>spotbugsexclude.xml</spotbugs.excludeFilterFile>
   </properties>
 
   <modules>
@@ -127,11 +124,6 @@
         <version>2.22.2</version>
       </plugin>
       <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.7.2.1</version>
-      </plugin>
-      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.5</version>
@@ -178,6 +170,16 @@
             </compilerArgs>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>4.7.3.4</version>
+          <configuration>
+            <effort>Max</effort>
+            <threshold>Low</threshold>
+            <failThreshold>Medium</failThreshold>
           </configuration>
         </plugin>
       </plugins>

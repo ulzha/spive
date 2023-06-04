@@ -109,6 +109,7 @@ public class Json {
               if (progressUpdates != null) {
                 throw new JsonException("Duplicate key: \"progressUpdates\"");
               }
+              // https://javaee.github.io/jsonb-spec/docs/user-guide.html#mapping-a-generic-collection
               progressUpdates =
                   ctx.deserialize(
                       new ArrayList<ProgressUpdate>() {}.getClass().getGenericSuperclass(), parser);

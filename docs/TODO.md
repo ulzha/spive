@@ -63,7 +63,7 @@
 - [ ] Expand all automatic maintenance done - retry bursts, error pattern analysis, history of sharding decisions, history of scaling/throttling (non)decisions with human-readable reasons (visualize expected effects ahead of time, as annotations on graphs in the future - important because scaling takes time), history of sanity checks, history of profiling runs, history of storage and runtime optimizations
 - [ ] Expand with the control plane timeline filtered to a particular process, color coded by version (overlay with cost & performance histograms)
 - [ ] Sharding heuristics: hot key set (for independent scaling), erroring key set and its complement (though this maybe doesn't need to result in a sharding change), ...
-- [ ] Sanity heuristics: any lagging instance always crashing despite the application purportedly being active-active HA? Spawning new threads in event handlers? Statical analysis of the jar/deployable artifact (alert and reject applications using EventLog or other IO sidestepping the generated interface)? Event time is in distant future or distant past? Threads crashing in oblivion (default UncaughtExceptionHandler)?
+- [ ] Sanity heuristics: any lagging instance always crashing despite the application purportedly being active-active HA? Spawning new threads in event handlers? Statical analysis of the jar/deployable artifact (alert and reject applications using EventLog or other IO sidestepping the generated interface)? Event time is in distant future or distant past (clock drift)? Threads crashing in oblivion (default UncaughtExceptionHandler)?
 - [ ] Search the dashboard (not just process names, also codesearch and even event data)
 - [ ] Visualize dependencies between processes and streams in the dashboard
 - [ ] Visualize groups of related processes as entities, and relations between them
@@ -93,6 +93,4 @@
 
 ### Undecided problems
 
-- [ ] Error pattern heuristics: noisy neighbors, clock drift, ...
-- [ ] Collect at least basic resource saturation stats like CPU, IO, take into account to avoid noisy neighbors and misguided scaling decisions.
 - [ ] Coordinate read rate and gateway backoff, to not have thundering herds when new cold instances join, and to not have overly sleepy herd either, whenever downstream recovery is sensed... Does this require a lot of inventory awareness? Should inventory formalize contention relations between gateways, so that on certain resource errors Spīve knows to back off the entire contended pool? (Generalized noisy neighbors)
