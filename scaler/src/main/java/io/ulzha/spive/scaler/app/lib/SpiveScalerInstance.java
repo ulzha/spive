@@ -7,7 +7,7 @@ import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import io.ulzha.spive.scaler.app.SpiveScaler;
@@ -187,7 +187,7 @@ public interface SpiveScalerInstance {
           } catch (NoSuchMethodException | IllegalAccessException e) {
             // umbilical.addFailure(currentEventTime.get(), e); the throw ought to reach
             // runWorkloads. TODO test
-            throw new InternalSpiveException(
+            throw new InternalException(
                 "Error invoking "
                     + app.getClass().getCanonicalName()
                     + ".accept() on "

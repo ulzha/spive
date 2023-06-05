@@ -1,7 +1,7 @@
 package io.ulzha.spive.basicrunner.util;
 
 import io.ulzha.spive.basicrunner.api.Umbilical;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +40,7 @@ public class Jars {
     final Matcher matcher = MAVEN_CENTRAL_RE.matcher(artifactUrl);
 
     if (!matcher.matches()) {
-      throw new InternalSpiveException("Unexpected artifactUrl: " + artifactUrl);
+      throw new InternalException("Unexpected artifactUrl: " + artifactUrl);
     }
 
     final MatchResult matchResult = matcher.toMatchResult();
@@ -49,12 +49,11 @@ public class Jars {
     final String jarFileName = matchResult.group(4);
 
     if (VERSION_RE.matcher(artifactVersion).matches()) {
-      throw new InternalSpiveException(
-          "Unexpected version " + artifactVersion + " in " + artifactUrl);
+      throw new InternalException("Unexpected version " + artifactVersion + " in " + artifactUrl);
     }
 
     if (jarFileName.equals(artifactId + '-' + artifactVersion + ".jar")) {
-      throw new InternalSpiveException("Unexpected file name in " + artifactUrl);
+      throw new InternalException("Unexpected file name in " + artifactUrl);
     }
 
     return jarFileName;
@@ -120,7 +119,7 @@ public class Jars {
       urls = new URL[] {jarFile.toURI().toURL()};
     } catch (MalformedURLException e) {
       // ought to reach the uncaught exception handler. TODO test
-      throw new InternalSpiveException(
+      throw new InternalException(
           "Error converting "
               + jarFile
               + "to URL - should never happen unless toURI does weird things",
@@ -142,7 +141,7 @@ public class Jars {
           .invoke(null, umbilical, args);
     } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
       // ought to reach the uncaught exception handler. TODO test
-      throw new InternalSpiveException(
+      throw new InternalException(
           "Error invoking "
               + className
               + "."
@@ -151,7 +150,7 @@ public class Jars {
           e);
     } catch (InvocationTargetException e) {
       if (e.getCause() != null && umbilical.addError(null, e.getCause())) {
-        throw new InternalSpiveException(
+        throw new InternalException(
             "Erroneous return from "
                 + className
                 + "."

@@ -155,7 +155,9 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   A CreateFireball event handler would be expected to open the fuel valve and ignite it in some sequence, and exit with success when the ball is ablaze. An ExtinguishFireball event handler would close the fuel valve and exit with success when the fire has been put out.
 
-  This is not to preclude emitting additional events of the kind "FireballCreated" and "FireballExtinguished", but as per the above example, often it is enough to just have events that initiate side effects. By convention, name events in imperative tense.
+  You can add code in your event handler to flag successful completion in application state, too, if you desire that your application's workloads receive such feedback (thus a <abbr title="Backend for Fireworks Frontend">BFF</abbr> can notify user's browser to replace the spinner with a fire emoji, for example).
+
+  This is not to preclude emitting additional events of the kind "FireballCreated" and "FireballExtinguished", but as per the above, often it is enough to just have events that initiate side effects. By convention, name these events in imperative tense.
 
 #### Application versioning
 

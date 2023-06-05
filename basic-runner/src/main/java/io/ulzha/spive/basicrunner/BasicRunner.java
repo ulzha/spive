@@ -10,6 +10,9 @@ import io.ulzha.spive.basicrunner.util.Http;
 import io.ulzha.spive.basicrunner.util.Http.StatusCode;
 import io.ulzha.spive.basicrunner.util.Jars;
 import io.ulzha.spive.basicrunner.util.Rest;
+import io.ulzha.spive.lib.HandledException;
+import io.ulzha.spive.lib.OpaqueException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -50,6 +53,8 @@ public final class BasicRunner {
   }
 
   public static void main(final String... args) {
+    Thread.setDefaultUncaughtExceptionHandler(new RootExceptionHandler());
+
     Http.startServer(
         8430,
         Rest.handler(
@@ -73,13 +78,50 @@ public final class BasicRunner {
                 "^/api/v0/thread_groups/(?<name>[^/]*)$",
                 Http.jsonHandler(BasicRunner::deleteThreadGroup, String.class))));
 
-    // FIXME uncaught handler... And/or how to join the background thread to confirm that it really
-    // started
-    // Maybe also mark all umbilicals with warnings if such shenanigans occur... Not all if the
-    // crashing thread is from a particular Process' thread group
-    // runMain catches on the Process main thread, workload executor also catches, so those oughtn't
-    // be "unhandled"
+    // TODO Join the background thread to confirm that it really started? Just for truthful logging.
+    // Otherwise might be unnecessary - Gateways talking to runners must be prepared to check health
+    // and disappearance anyway.
     LOG.info("Runner started");
+    // sleep until interrupted?
+  }
+
+  /**
+   * Ensures that we mark all affected umbilicals with warnings, for visibility.
+   *
+   * <p>Also does singular consistent logging for all errors that propagate. (LOG.error with
+   * stacktrace is likely redundant to do anywhere else)
+   */
+  private static class RootExceptionHandler implements UncaughtExceptionHandler {
+    private String addWarnings(Thread thread, Throwable t) {
+      for (ThreadGroup tg = thread.getThreadGroup(); tg != null; tg = tg.getParent()) {
+        final ThreadGroupRecord record = RECORDS.get(tg.getName());
+        if (record != null) {
+          // mark the particular application's umbilical with a warning
+          // interruption by platform ecosystem should bubble up here, and not be opaque TODO test
+          record.umbilical.addWarning(null, t);
+          return "Uncaught exception from {} belonging to "
+              + record.threadGroupDescriptor.toString();
+        }
+      }
+      // might be relevant to any application on this runner, but we shouldn't disclose internals
+      // across applications
+      for (ThreadGroupRecord record : RECORDS.values()) {
+        record.umbilical.addWarning(null, new OpaqueException(t));
+      }
+      return "Uncaught exception from {} - runner might be unstable";
+    }
+
+    @Override
+    public void uncaughtException(Thread thread, Throwable t) {
+      final String message;
+      if (t instanceof HandledException) {
+        // specific feedback must've already been sent as a best effort
+        message = "Propagated from {}";
+      } else {
+        message = addWarnings(thread, t);
+      }
+      LOG.error(message, thread, t);
+    }
   }
 
   /** Healthcheck endpoint. */
@@ -128,7 +170,7 @@ public final class BasicRunner {
     } catch (Exception e) {
       LOG.warn("Failed to run " + descriptor + " - reporting " + e.getMessage());
       record.umbilical.addError(null, e);
-      throw new RuntimeException(e);
+      throw new HandledException(e);
     }
     // Long running requests ok? Or will we have STARTING state? Rather NOMINAL while
     // awaiting workload heartbeat, subject to a runner-specific startup timeout?

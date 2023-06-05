@@ -62,7 +62,8 @@ public class ApiService {
             request.availabilityZones(),
             request.inputStreamIds(),
             request.outputStreamIds());
-    System.out.println("Emitting " + event);
+    System.out.println("Maybe emitting " + event);
+    System.out.println("Map: " + platform.processesByApplicationAndVersion);
     if (output.emitIf(
         () ->
             !(platform.processesByApplicationAndVersion.containsKey(name)

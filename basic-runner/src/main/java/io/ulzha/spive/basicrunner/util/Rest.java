@@ -2,7 +2,7 @@ package io.ulzha.spive.basicrunner.util;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -85,7 +85,7 @@ public class Rest {
       namedGroupsField.setAccessible(true);
       namedGroups = (Map<String, Integer>) namedGroupsField.get(pathMatcher.pattern());
     } catch (Exception e) {
-      throw new InternalSpiveException(
+      throw new InternalException(
           "Could not access named capturing groups of a Pattern - our non-public API hack may need fixing",
           e);
     }

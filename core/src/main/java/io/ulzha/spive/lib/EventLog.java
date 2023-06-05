@@ -47,7 +47,7 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
         // should validate immediately? (as opposed to validating late, at an openLog attempt)
         // throw new RuntimeException("Failed to connect to event store", e);
       } else {
-        throw new InternalSpiveException(
+        throw new InternalException(
             "No such event store: "
                 + connectionString
                 + " - should never happen in operation, as Spive should correctly specify one of its supported event stores upon creation of a stream");

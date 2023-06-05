@@ -30,7 +30,7 @@ public class Http {
   /** HttpServer itself doesn't log */
   private static HttpHandler rootHandler(HttpHandler delegate) {
     return (exchange) -> {
-      IllegalStateException illegalState = null;
+      RuntimeException e = null;
 
       exchange.setAttribute(
           ExchangeAttribute.HTTP_START_TIME.name(), Long.valueOf(System.currentTimeMillis()));
@@ -40,19 +40,18 @@ public class Http {
           throw new IllegalStateException(
               "No HTTP status code sent despite normal return - make sure the exchange is thoroughly handled");
         }
-      } catch (Throwable e) {
-        illegalState = new IllegalStateException("Internal server error", e);
+      } catch (Throwable t) {
+        e = new RuntimeException("Internal server error", t);
         int prevCode = exchange.getResponseCode();
         if (prevCode == -1) {
           try {
             exchange.sendResponseHeaders(StatusCode.INTERNAL_SERVER_ERROR.value, -1);
-          } catch (Throwable e2) {
-            illegalState.addSuppressed(
-                new IllegalStateException("Spuriously failed to send response headers", e2));
+          } catch (Throwable t2) {
+            e.addSuppressed(new RuntimeException("Failed to send response headers", t2));
           }
         } else {
-          illegalState.addSuppressed(
-              new IllegalStateException(
+          e.addSuppressed(
+              new RuntimeException(
                   "Exception after HTTP status code %d was already sent - make sure body serialization and return from handlers is robust"
                       .formatted(prevCode)));
         }
@@ -70,18 +69,17 @@ public class Http {
             duration);
         // dunno if this can be slow too
         exchange.close();
-      } catch (Throwable e) {
-        final IllegalStateException illegalStateLate =
-            new IllegalStateException("Internal server error but late", e);
-        if (illegalState != null) {
-          illegalState.addSuppressed(e);
+      } catch (Throwable t) {
+        final RuntimeException eLate = new RuntimeException("Internal server error but late", t);
+        if (e != null) {
+          e.addSuppressed(eLate);
         } else {
-          illegalState = illegalStateLate;
+          e = eLate;
         }
       }
 
-      if (illegalState != null) {
-        throw illegalState;
+      if (e != null) {
+        throw e;
       }
     };
   }

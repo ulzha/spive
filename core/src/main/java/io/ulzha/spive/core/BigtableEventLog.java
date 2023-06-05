@@ -12,7 +12,7 @@ import com.google.cloud.bigtable.data.v2.models.RowCell;
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.util.Json;
 import java.io.IOException;
 import java.util.Iterator;
@@ -154,7 +154,7 @@ public final class BigtableEventLog implements EventLog {
           if (previousEvent != null
               && nextEvent != null
               && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
-            throw new InternalSpiveException(
+            throw new InternalException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
                     previousEvent.time(), nextEvent.time(), logId));

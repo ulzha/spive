@@ -17,7 +17,7 @@ import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -274,7 +274,7 @@ public interface SpiveInstance
             throw new RuntimeException("Application failure", ite);
           } catch (NoSuchMethodException | IllegalAccessException e) {
             umbilical.addError(currentEventTime.get(), e);
-            throw new InternalSpiveException(
+            throw new InternalException(
                 "Error invoking "
                     + spive.getClass().getCanonicalName()
                     + ".accept() on "

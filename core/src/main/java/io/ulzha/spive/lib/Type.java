@@ -50,10 +50,10 @@ public class Type {
         Class<?> programmingLanguageFormat = Class.forName(name);
         return new Type(name, programmingLanguageFormat);
       } catch (ClassNotFoundException e) {
-        throw new InternalSpiveException(String.format("Unknown format: %s", name), e);
+        throw new InternalException(String.format("Unknown format: %s", name), e);
       }
     } else {
-      throw new InternalSpiveException(String.format("Unknown type tag: %s", tag));
+      throw new InternalException(String.format("Unknown type tag: %s", tag));
     }
   }
 
@@ -69,7 +69,7 @@ public class Type {
     try {
       return jsonb.toJson(payload, programmingLanguageFormat);
     } catch (Exception e) {
-      throw new InternalSpiveException("Failed to serialize event payload " + this, e);
+      throw new InternalException("Failed to serialize event payload " + this, e);
     }
   }
 
@@ -77,7 +77,7 @@ public class Type {
     try {
       return jsonb.fromJson(s, programmingLanguageFormat);
     } catch (Exception e) {
-      throw new InternalSpiveException("Failed to deserialize event payload " + this, e);
+      throw new InternalException("Failed to deserialize event payload " + this, e);
     }
   }
 }

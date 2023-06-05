@@ -6,14 +6,14 @@ package io.ulzha.spive.lib;
  *
  * <p>As such the exception should always propagate to alert the maintainers of the platform.
  */
-public class InternalSpiveException extends RuntimeException {
+public class InternalException extends RuntimeException {
   static final long serialVersionUID = 42L;
 
-  public InternalSpiveException(String message) {
+  public InternalException(String message) {
     super(message);
   }
 
-  public InternalSpiveException(String message, Throwable cause) {
+  public InternalException(String message, Throwable cause) {
     super(message, cause);
   }
 }

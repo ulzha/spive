@@ -1,7 +1,7 @@
 package io.ulzha.spive.basicrunner.api;
 
 import io.ulzha.spive.lib.Gateway;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
@@ -36,7 +36,7 @@ public class BasicRunnerGateway extends Gateway {
    */
   public String lookup(final String availabilityZone) {
     if (!availabilityZones.contains(availabilityZone)) {
-      throw new InternalSpiveException(
+      throw new InternalException(
           "Unknown availability zone: "
               + availabilityZone
               + " - should not happen, the set of zones should be managed by Spive and static per process");

@@ -3,7 +3,7 @@ package io.ulzha.spive.core;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
 import io.ulzha.spive.lib.EventStore;
-import io.ulzha.spive.lib.InternalSpiveException;
+import io.ulzha.spive.lib.InternalException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -55,7 +55,7 @@ public final class BigtableEventStore implements EventStore {
     final Matcher matcher = CONNECTION_STRING_RE.matcher(connectionString);
 
     if (!matcher.matches()) {
-      throw new InternalSpiveException("Unexpected connectionString: " + connectionString);
+      throw new InternalException("Unexpected connectionString: " + connectionString);
     }
 
     final MatchResult matchResult = matcher.toMatchResult();
