@@ -81,7 +81,8 @@ public class CopyOutputGateway extends Gateway {
    *
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
    * Otherwise the event time is the same as for the input event currently handled. FIXME
-   * (TODO non-simultaneous version?)
+   *
+   * <p>TODO non-simultaneous version?
    */
   public boolean emitConsequential(CreateFoo payload) {
     return emitIf(() -> true, createFooType, payload);

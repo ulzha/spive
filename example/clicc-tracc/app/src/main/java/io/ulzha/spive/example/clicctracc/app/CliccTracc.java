@@ -4,7 +4,6 @@ import io.ulzha.spive.example.clicctracc.app.events.Clicc;
 import io.ulzha.spive.example.clicctracc.app.lib.CliccTraccInstance;
 import io.ulzha.spive.example.clicctracc.app.lib.CliccTraccOutputGateway;
 import io.ulzha.spive.lib.EventTime;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -42,9 +41,10 @@ public class CliccTracc implements CliccTraccInstance {
 
     private void clicc(Instant end) {
       while (output.emitIf(
-              () -> nextClicc(lastClicc, start).isBefore(end),
-              new Clicc(),
-              new EventTime(nextClicc(lastClicc, start)))) ;
+          () -> nextClicc(lastClicc, start).isBefore(end),
+          new Clicc(),
+          new EventTime(nextClicc(lastClicc, start))))
+        ;
     }
 
     @Override
@@ -53,7 +53,8 @@ public class CliccTracc implements CliccTraccInstance {
         start = Instant.now();
         while (true) {
           // TODO pluggable Clock - for testing and offset/scaled time
-          // collaboration may be affected by emitting eventTimes arbitrarily far removed from any predictable clock
+          // collaboration may be affected by emitting eventTimes arbitrarily far removed from any
+          // predictable clock
           Instant now = Instant.now();
           Instant impending = now.truncatedTo(ChronoUnit.HOURS).plus(1, ChronoUnit.HOURS);
           clicc(impending);

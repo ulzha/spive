@@ -4,26 +4,62 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>io.ulzha</groupId>
-    <artifactId>spive-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
-  </parent>
+  <groupId>io.ulzha</groupId>
+  <artifactId>spive-example-copy-parent</artifactId>
+  <description>
+    Example showcasing multimodule project layout. Contains only one module, namely the Copy application.
+  </description>
 
-  <artifactId>spive-example-copy</artifactId>
+  <modules>
+    <module>app</module>
+  </modules>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.ulzha</groupId>
-      <artifactId>spive-core</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <!-- don't really want this - want UmbilicalReader and UmbilicalWriter from core? -->
-    <dependency>
-      <groupId>io.ulzha</groupId>
-      <artifactId>spive-basic-runner</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+  <properties>
+    <java.version>19</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.ulzha</groupId>
+        <artifactId>spive-core</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+      <!-- don't really want this - want UmbilicalReader and UmbilicalWriter from core? -->
+      <dependency>
+        <groupId>io.ulzha</groupId>
+        <artifactId>spive-basic-runner</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <release>${java.version}</release>
+            <compilerArgs>
+              <arg>-Werror</arg>
+              <arg>-Xlint:all</arg>
+              <arg>-Xlint:-path</arg>
+              <arg>-Xlint:-processing</arg>
+              <arg>-Xlint:-try</arg>
+            </compilerArgs>
+            <showDeprecation>true</showDeprecation>
+            <showWarnings>true</showWarnings>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

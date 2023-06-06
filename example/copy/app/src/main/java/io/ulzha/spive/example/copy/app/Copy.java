@@ -1,7 +1,8 @@
 package io.ulzha.spive.example.copy.app;
 
+// TODO dunno if a toy event of specific type, or perhaps a generics mechanism is worthwhile
 import io.ulzha.spive.example.copy.app.events.CreateFoo;
-import io.ulzha.spive.example.copy.app.lib.CopyInstance; // TODO a toy event, perhaps
+import io.ulzha.spive.example.copy.app.lib.CopyInstance;
 import io.ulzha.spive.example.copy.app.lib.CopyOutputGateway;
 
 /**

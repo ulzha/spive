@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>spive-example-clicc-tracc-parent</artifactId>
+    <groupId>io.ulzha</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.ulzha</groupId>
+  <artifactId>spive-example-clicc-tracc</artifactId>
+  <description>
+    A simplistic scheduler process that emits events in regular intervals.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.ulzha</groupId>
+      <artifactId>spive-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.ulzha</groupId>
+      <artifactId>spive-basic-runner</artifactId>
+    </dependency>
+  </dependencies>
+</project>

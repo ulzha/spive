@@ -1,6 +1,7 @@
 package io.ulzha.spive.example.clicctracc.app.lib;
 
 import com.google.common.collect.ImmutableList;
+import io.ulzha.spive.basicrunner.api.Umbilical;
 import io.ulzha.spive.example.clicctracc.app.CliccTracc;
 import io.ulzha.spive.example.clicctracc.app.events.Clicc;
 import io.ulzha.spive.lib.Event;
@@ -10,7 +11,6 @@ import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
-import io.ulzha.spive.basicrunner.api.Umbilical;
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,8 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public interface CliccTraccInstance {
-  default void accept(final Clicc event) {
-  }
+  default void accept(final Clicc event) {}
 
   // Any neater type signature possible? Help ensure that exactly one of the two is implemented?
   default void accept(final Clicc event, final EventTime eventTime) {

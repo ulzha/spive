@@ -8,21 +8,30 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-java@v3
         with:
           java-version: '19'
           distribution: 'temurin'
       # - name: mvn dependency:analyze
       #   run: mvn dependency:analyze -DfailOnWarning=true
+
       - name: Maven
-        run: mvn --batch-mode --update-snapshots verify org.jacoco:jacoco-maven-plugin:report-aggregate
+        run: |
+          checks="com.spotify.fmt:fmt-maven-plugin:check verify"
+          mvn --batch-mode $checks install org.jacoco:jacoco-maven-plugin:report-aggregate
+          mvn --batch-mode $checks -f example/clicc-tracc
+          mvn --batch-mode $checks -f example/copy
+
       - uses: cicirello/jacoco-badge-generator@v2
         id: jacoco-badge-generator
         with:
+          # TODO examples and ecosystem too
           jacoco-csv-file: target/site/jacoco-aggregate/jacoco.csv
           generate-coverage-badge: false
           generate-branches-badge: true
           branches-label: "branch coverage"
+
       - name: Post jacoco-badge-generator
         run: |
           echo "coverage = ${{ steps.jacoco-badge-generator.outputs.coverage }}"

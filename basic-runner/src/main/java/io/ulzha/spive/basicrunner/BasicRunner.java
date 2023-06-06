@@ -96,6 +96,7 @@ public final class BasicRunner {
       for (ThreadGroup tg = thread.getThreadGroup(); tg != null; tg = tg.getParent()) {
         final ThreadGroupRecord record = RECORDS.get(tg.getName());
         if (record != null) {
+          // FIXME collisions can occur; check that tg's parent is main
           // mark the particular application's umbilical with a warning
           // interruption by platform ecosystem should bubble up here, and not be opaque TODO test
           record.umbilical.addWarning(null, t);

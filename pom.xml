@@ -16,8 +16,6 @@
   <properties>
     <java.version>19</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.deploy.skip>true</maven.deploy.skip>
-    <maven.install.skip>true</maven.install.skip>
   </properties>
 
   <modules>
@@ -25,9 +23,7 @@
     <module>basic-runner</module>
     <module>common</module>
     <module>core</module>
-    <module>example/clicc-tracc</module>
-    <module>example/copy</module>
-    <module>scaler</module>
+    <module>scaler/app</module>
     <module>tools</module>
   </modules>
 
@@ -163,7 +159,6 @@
               <arg>-Xlint:-path</arg>
               <arg>-Xlint:-processing</arg>
               <arg>-Xlint:-try</arg>
-              <arg>-implicit:class</arg> <!-- Get rid of "Implicitly compiled files were not subject to annotation processing" warning -->
             </compilerArgs>
             <showDeprecation>true</showDeprecation>
             <showWarnings>true</showWarnings>
