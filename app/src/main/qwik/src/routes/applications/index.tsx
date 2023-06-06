@@ -8,28 +8,16 @@ import { MUICreateNewApplicationForm } from "~/integrations/react/mui-dialog";
 const platformUrl = "http://localhost:8440";
 
 export default component$(() => {
-  // const meta = useStore({ platformUrl: });
-  const applicationsSse = useSignal(1);
+  const sseLastEventId = useSignal(""); // "id" field is updated (with something pseudorandom? Event time?) when Spive progresses through events in dashboard state change stream. Might be debounced a fair bit on the backend, but also track() effectively debounces, I suppose
   const state = useStore<any>({ rows: [] });
 
   useVisibleTask$(() => {
     const eventSource = new EventSource(`${platformUrl}/sse`);
 
     eventSource.onmessage = (event) => {
-      applicationsSse.value++;
-      console.log(event, applicationsSse.value);
+      console.log(sseLastEventId.value, event);
+      sseLastEventId.value = event.lastEventId;
     };
-  });
-
-  const dummy_applications = [
-    { uuid: 1, name: "VitrumNostrumGloriosum", version: "1.2.74" },
-    { uuid: 2, name: "ShakingAmber", version: "2.4.0" },
-    { uuid: 3, name: "DemoDeployElasticsearch", version: "0.0.1_dev_8f779e6" },
-  ];
-
-  const pushApp = $(() => {
-    const n = state.rows.length;
-    state.rows = [...state.rows, { id: n, rank: n, ...dummy_applications[n % 3] }];
   });
 
   const pushSpinner = $((id: string) => {
@@ -37,7 +25,7 @@ export default component$(() => {
   });
 
   const applicationsResource = useResource$<any>(async ({ track, cleanup }) => {
-    track(() => applicationsSse.value);
+    track(() => sseLastEventId.value);
 
     console.log("Oh here we go again");
     const abortController = new AbortController();

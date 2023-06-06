@@ -5,6 +5,9 @@ package io.ulzha.spive.lib;
  * not happen" kind, symptomatic of Spīve bugs.
  *
  * <p>As such the exception should always propagate to alert the maintainers of the platform.
+ *
+ * <p>Always explicitly highlight in message, what is the essential component/design invariant that
+ * is supposed to safeguard against the particular problem, to the best of your understanding.
  */
 public class InternalException extends RuntimeException {
   static final long serialVersionUID = 42L;

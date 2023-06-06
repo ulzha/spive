@@ -136,12 +136,12 @@ public final class BasicRunner {
    */
   private static Http.Response<String> runThreadGroup(
       HttpExchange exchange, RunThreadGroupRequest request) {
-    final ThreadGroup threadGroup = new ThreadGroup(request.threadGroup().name());
+    final String name = request.threadGroup().name();
+    final ThreadGroup threadGroup = new ThreadGroup(name);
     final ThreadGroupRecord record = new ThreadGroupRecord(threadGroup, request.threadGroup());
 
-    if (RECORDS.putIfAbsent(request.threadGroup().name(), record) == null) {
-      final Thread thread =
-          new Thread(threadGroup, () -> runMain(record), request.threadGroup().name() + "-main");
+    if (RECORDS.putIfAbsent(name, record) == null) {
+      final Thread thread = new Thread(threadGroup, () -> runMain(record), "basic-runner-" + name);
 
       // TODO not start arbitrarily many on a single machine
       thread.start();
@@ -150,7 +150,7 @@ public final class BasicRunner {
       return Http.response(
           StatusCode.ACCEPTED,
           "http://somethingsomething/api/v0/thread_groups/%s/heartbeat"
-              .formatted(URLEncoder.encode(request.threadGroup().name(), StandardCharsets.UTF_8)));
+              .formatted(URLEncoder.encode(name, StandardCharsets.UTF_8)));
     } else {
       // already exists
       return Http.response(StatusCode.CONFLICT);

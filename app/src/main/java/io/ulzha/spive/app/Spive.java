@@ -2,11 +2,9 @@ package io.ulzha.spive.app;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.linecorp.armeria.common.HttpMethod;
-import com.linecorp.armeria.common.sse.ServerSentEvent;
+import com.linecorp.armeria.common.logging.LogLevel;
 import com.linecorp.armeria.server.Server;
-import com.linecorp.armeria.server.cors.CorsService;
-import com.linecorp.armeria.server.streaming.ServerSentEvents;
+import com.linecorp.armeria.server.logging.LoggingService;
 import io.ulzha.spive.app.events.CreateEventLog;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
@@ -23,20 +21,20 @@ import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.app.model.Stream;
 import io.ulzha.spive.app.model.Type;
-import io.ulzha.spive.app.workloads.api.ApiService;
+import io.ulzha.spive.app.workloads.api.Cors;
+import io.ulzha.spive.app.workloads.api.Rest;
+import io.ulzha.spive.app.workloads.api.Sse;
 import io.ulzha.spive.app.workloads.watchdog.WatchLoop;
 import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
 import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.util.InterruptableSchedulable;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
-import reactor.core.publisher.Flux;
 
 /**
  * Scalable, bootstrapped backend + API essentials for managing applications on the Spīve platform,
@@ -161,10 +159,16 @@ public class Spive implements SpiveInstance {
         .put(process.version, process);
     // TODO ensure (upon emitting) that name-version and id are not duplicated
     // TODO ensure (upon emitting) that the output stream exists
+    // TODO ensure (upon emitting) that there are no cycles of streams
     // TODO decide initial sharding and emit CreateInstance events...
     // TODO validate artifact (upon emitting? async?) - ensure that all the event handlers are
     // implemented, etc.
     // TODO ensure its consistency is validated to some extent in each runner internally as well
+    platform.processesEtag = process.id.toString();
+    // TODO lock-free
+    synchronized (platform) {
+      platform.notifyAll();
+    }
   }
 
   @Override
@@ -210,6 +214,10 @@ public class Spive implements SpiveInstance {
     if (platform.processesByApplicationAndVersion.get(process.name).isEmpty()) {
       platform.processesByApplicationAndVersion.remove(process.name);
     }
+    platform.processesEtag = "-" + process.id.toString();
+    synchronized (platform) {
+      platform.notifyAll();
+    }
   }
 
   // TODO not start this one until caught up
@@ -233,29 +241,21 @@ public class Spive implements SpiveInstance {
   public class Api implements Runnable {
     @Override
     public void run() {
-      final var corsService =
-          CorsService.builderForAnyOrigin()
-              .allowRequestMethods(
-                  HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)
-              .allowAllRequestHeaders(true)
-              .maxAge(Duration.ofSeconds(300))
-              .newDecorator();
       // FIXME port determined from the control plane or random via runner decision?
       final Server server =
           Server.builder()
               .http(8440)
-              .annotatedService("/api", new ApiService(platform, output))
-              .service(
-                  "/sse",
-                  (ctx, req) -> {
-                    ctx.setRequestTimeout(Duration.ofMinutes(5));
-                    return ServerSentEvents.fromPublisher(
-                        Flux.interval(Duration.ofSeconds(5))
-                            .map(sequence -> ServerSentEvent.ofData(Long.toString(sequence))));
-                  })
-              .decoratorUnder("/", corsService)
+              .annotatedService("/api", new Rest(platform, output))
+              .service("/sse", Sse.service(platform))
+              .decorator(Cors.decorator())
+              .decorator(
+                  LoggingService.builder()
+                      .requestLogLevel(LogLevel.INFO)
+                      .successfulResponseLogLevel(LogLevel.INFO)
+                      .failureResponseLogLevel(LogLevel.INFO)
+                      .newDecorator())
               .build();
-      server.closeOnJvmShutdown(() -> System.out.println("Server closing gracefully"));
+      server.closeOnJvmShutdown(() -> System.out.println("Server closing on JVM shutdown"));
       server.start().join();
 
       try {

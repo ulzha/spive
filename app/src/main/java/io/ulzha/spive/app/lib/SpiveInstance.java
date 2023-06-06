@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -185,7 +186,15 @@ public interface SpiveInstance
       // yolo, not sure which ExecutorService is best API-wise or if we should or should not pass
       // them into workloads
       // (we might benefit from knowing about thread fanout, also CPU or IO boundness... TODO)
-      final ExecutorService executorService = Executors.newCachedThreadPool();
+      final AtomicInteger threadCounter = new AtomicInteger();
+      final ExecutorService executorService =
+          Executors.newCachedThreadPool(
+              (runnable) ->
+                  new Thread(
+                      runnable,
+                      Thread.currentThread().getName()
+                          + "-workload-"
+                          + threadCounter.getAndIncrement()));
       final CompletionService<Runnable> lifetimeService =
           new ExecutorCompletionService<>(executorService);
       final Map<Future<Runnable>, Runnable> workloadsByFuture = new HashMap<>();
@@ -242,7 +251,7 @@ public interface SpiveInstance
 
       @Override
       public void run() {
-        LOG.info("Starting event loop over " + inputEventLog);
+        LOG.info("EventLoop over {} running", inputEventLog);
         for (EventEnvelope envelope : inputEventLog) {
           System.out.println("We have an envelope: " + envelope);
           final Event event = envelope.unwrap();
@@ -254,8 +263,7 @@ public interface SpiveInstance
             // The synchronization here ensures that emitIf runs serially with event handlers, and
             // that it never runs between an input event and its consequential event when emitted to
             // the same log.
-            // For other purposes, workloads could be allowed to consume the reference without
-            // synchronization... API TODO
+            // TODO optimize to forego synchronization when no other workloads are running
             inputEventLog.lock();
             currentEventTime.set(event.time);
             spive
@@ -285,7 +293,7 @@ public interface SpiveInstance
           umbilical.addSuccess(event.time);
           // TODO check umbilical for errors from gateway that may have been swallowed in accept()
         }
-        LOG.info("Stopping the event loop");
+        LOG.info("EventLoop over {} completed", inputEventLog);
         // end of event log, so just exit normally
       }
     }

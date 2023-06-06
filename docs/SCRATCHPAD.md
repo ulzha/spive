@@ -30,6 +30,7 @@ S3 - Serviceless Structured Scalability? (Friends with D3 - Data Driven Document
 S<SS
 
 We taught sand to think, but then it got sidetracked with all those nondeterministic ideas... Sand, get back in line
+Combinatorial implosion
 
 Every low-volume stream - append BecomeIdle event with exponential backoff to ensure it's considered unchanged for collaboration?
 

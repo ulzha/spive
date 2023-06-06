@@ -10,7 +10,7 @@ set -euxo pipefail
 
 DC="docker compose -f tools/dev-0/docker-compose.yml"
 # speed up Maven
-MVN="mvnd -Dfmt.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true"
+MVN="mvnd -Dfmt.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmvnd.connectTimeout=60s"
 
 # 1. build app as a jar, and more
 $MVN clean package dependency:go-offline -am -pl app,basic-runner,tools

@@ -2,13 +2,12 @@ package io.ulzha.spive.app.workloads.api;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
-import com.linecorp.armeria.common.logging.LogLevel;
+import com.linecorp.armeria.server.HttpStatusException;
 import com.linecorp.armeria.server.annotation.ConsumesJson;
 import com.linecorp.armeria.server.annotation.Get;
 import com.linecorp.armeria.server.annotation.Param;
 import com.linecorp.armeria.server.annotation.Put;
 import com.linecorp.armeria.server.annotation.RequestObject;
-import com.linecorp.armeria.server.annotation.decorator.LoggingDecorator;
 import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.Platform;
@@ -16,16 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@LoggingDecorator(requestLogLevel = LogLevel.INFO, successfulResponseLogLevel = LogLevel.INFO)
-public class ApiService {
-  private final Platform platform;
-  private final SpiveOutputGateway output;
-
-  public ApiService(final Platform platform, final SpiveOutputGateway output) {
-    this.platform = platform;
-    this.output = output;
-  }
-
+public record Rest(Platform platform, SpiveOutputGateway output) {
   public record ProcessEntry(String name, UUID id) {}
 
   @Get("/applications")
@@ -72,6 +62,6 @@ public class ApiService {
         event)) {
       return HttpResponse.ofJson(HttpStatus.CREATED, uuid);
     }
-    return HttpResponse.ofJson(HttpStatus.CONFLICT);
+    throw HttpStatusException.of(HttpStatus.CONFLICT);
   }
 }

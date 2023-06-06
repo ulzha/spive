@@ -161,7 +161,7 @@ public class Umbilical {
    * java.util.concurrent.ExecutionException and Caused by:
    * java.lang.reflect.InvocationTargetException and potentially java.lang.RuntimeException
    * (especially "RuntimeException: Application failure", and all the other cruft that wraps
-   * InvocationTargetException in EventLoop)
+   * InvocationTargetException in EventLoop... InterruptedException also interesting)
    *
    * <p>Eventually, with firsts per partition, multiple stacktraces may have to fit in one
    * heartbeat.

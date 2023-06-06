@@ -83,7 +83,7 @@
 - [ ] Example compaction job as a reduce operator in packaged alongside event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
 - [ ] SpiveArchiver as a related infra application
 - [ ] Investigate snapshotting the process memory at a low level... Though this wouldn't work across code versions... (No need to snapshot workloads or gateways, which deal with all the impure things like handles and resources. All the instance state in memory must be completely at rest between events. If we support spill to disk, must capture that too.) https://github.com/google/snappy-start, CRIU
-- [ ] Support Observable state, to notify concurrent workloads when something changes? (Without breaking memory snapshotting?)
+- [ ] Support Observable state, to notify concurrent workloads when something changes (without breaking memory snapshotting). More specific convenience APIs, like observable EventLoop.currentEventTime (doubt)?
 - [ ] Batching of side effects - how to batch also multiple side effects for a single partition while keeping consistency guarantees? Could be a relevant optimization in some use cases
 - [ ] Fluid namespacing, decoupled from view grouping/favoriting (not displayed when unambiguous, trivial adding of a layer, assisted merging)... Coupled with ownership structure?
 - [ ] Seamless rename refactor (trivial to move namespaces when ownership changes? One-commit rename of the application itself?)
