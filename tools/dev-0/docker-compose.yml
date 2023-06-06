@@ -19,6 +19,6 @@ services:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:
     - "$PWD/app/target:/mnt/app/target"
-    - "$PWD/event-store:/mnt/event-store"
+    - "$FS_EVENT_STORE_DIR:/mnt/event-store"
     ports:
     - "8429:8430"

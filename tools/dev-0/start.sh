@@ -18,8 +18,9 @@ $MVN clean package dependency:go-offline -am -pl app,basic-runner,tools
 # 2. prepare runners and event stores
 # (initialize local filesystem)
 # (alt. structure the logs so they are mountable directly)
-rm -r event-store || true
-mkdir -p event-store
+export FS_EVENT_STORE_DIR="$(pwd)/.spive/$USER-dev/dev-0/event-store"
+rm -r "$FS_EVENT_STORE_DIR" || true
+mkdir -p "$FS_EVENT_STORE_DIR"
 # (launch docker compose with all the right images)
 export BASIC_RUNNER_IMAGE_NAME=$(cat $PWD/basic-runner/target/docker/image-name)
 $DC down -v
@@ -36,8 +37,8 @@ do echo "retrying in 1 s"; sleep 1; done
 
 # 4. launch SpiveDevBootstrap with local log
 # (alt. run SpiveInstance$Main.main with local log, no need to run basic-runner? Doesn't matter much if chicken first or egg first)
-mkdir -p event-store/93ff4295-5a8c-4181-b50b-3d7345643581
-cp tools/SpiveDevBootstrap.jsonl event-store/93ff4295-5a8c-4181-b50b-3d7345643581/events.jsonl
+mkdir -p "$FS_EVENT_STORE_DIR/93ff4295-5a8c-4181-b50b-3d7345643581"
+cp tools/SpiveDevBootstrap.jsonl "$FS_EVENT_STORE_DIR/93ff4295-5a8c-4181-b50b-3d7345643581/events.jsonl"
 run_bootstrap_request='{
   "threadGroup": {
     "name": "foo",
@@ -69,10 +70,10 @@ $DC pause dev-bootstrap
 # 7. initialize SpiveDev0 inventory by copying logs into Bigtable
 # (alt. call SpiveDev0 API instead of copying logs, when API is usable)
 # (alt. clone some subset of prod-2 or prod-3)
-mkdir -p event-store/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94
-cp tools/SpiveDev0.jsonl event-store/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94/events.jsonl
+mkdir -p "$FS_EVENT_STORE_DIR/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94"
+cp tools/SpiveDev0.jsonl "$FS_EVENT_STORE_DIR/2c543574-f3ac-4b4c-8a5b-a5e188b9bc94/events.jsonl"
 copy_args=\
-' io.ulzha.spive.core.LocalFileSystemEventStore;basePath=event-store'\
+' io.ulzha.spive.core.LocalFileSystemEventStore;basePath='"$FS_EVENT_STORE_DIR"\
 ' 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94'\
 ' io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=localhost;port=8086'\
 ' 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94'\
