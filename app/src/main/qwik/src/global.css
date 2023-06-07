@@ -1,48 +1,19 @@
 @font-face {
   font-family: "Material Icons";
-  font-style: normal;
-  font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/materialicons/v80/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format("woff2");
+  src: url(https://fonts.gstatic.com/s/materialicons/v140/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format("woff2");
+  font-weight: normal;
 }
 
 @font-face {
-  font-family: Circular;
-  src: url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-light.woff2") format("woff2"),
-    url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-light.woff") format("woff");
-  font-weight: 300;
-  font-style: normal;
+  font-family: LineSeed;
+  src: url("/fonts/LINESeedSans_W_Rg.woff2") format("woff2");
+  font-weight: normal;
 }
 
 @font-face {
-  font-family: Circular;
-  src: url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff2") format("woff2"),
-    url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-book.woff") format("woff");
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: Circular;
-  src: url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff2") format("woff2"),
-    url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-medium.woff") format("woff");
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: Circular;
-  src: url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff2") format("woff2"),
-    url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-bold.woff") format("woff");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: Circular;
-  src: url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-black.woff2") format("woff2"),
-    url("https://sp-bootstrap.global.ssl.fastly.net/8.0.0/fonts/circular-black.woff") format("woff");
-  font-weight: 900;
-  font-style: normal;
+  font-family: LineSeed;
+  src: url("/fonts/LINESeedSans_W_Bd.woff2") format("woff2");
+  font-weight: bold;
 }
 
 html {
@@ -51,10 +22,31 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html,
+html .MuiButton-root,
+html .MuiDataGrid-root,
+html .MuiFormLabel-root,
+html .MuiInputBase-root,
+html .MuiInputBase-root-MuiInput-root,
+html .MuiTypography-root {
+  font-family: LineSeed, sans-serif, Apple Color Emoji;
+}
+
+html .MuiCardHeader-title {
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+html .MuiDataGrid-columnHeaderTitle {
+  color: #cccccc;
+}
+
+html .MuiDataGrid-columnHeader--sorted .MuiDataGrid-columnHeaderTitle {
+  color: #757575;
+}
+
 body {
   margin: 0;
-  font-family: Circular;
-  font-weight: 400;
   background-color: #fafafa;
 }
 
@@ -94,11 +86,6 @@ main .padding {
     padding-left: 24px;
     padding-right: 24px;
   }
-}
-
-strong,
-b {
-  font-weight: 700;
 }
 
 .titlebar {

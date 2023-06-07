@@ -80,8 +80,8 @@ export const MUICreateNewApplicationForm = qwikify$(
                 setArtifactUrl(e.target.value);
               }}
             />
-            Or choose file
-            <TextField margin="dense" id="artifact" label="Artifact" type="file" variant="standard" />
+            Or <label for="artifact">choose file</label>
+            <TextField margin="dense" id="artifact" type="file" variant="standard" />
           </DialogContent>
           <DialogActions>
             <Button onClick={hideDialog}>Cancel</Button>

@@ -13,8 +13,6 @@ export const RouterHead = component$(() => {
       <title>{head.title}</title>
 
       <link rel="canonical" href={loc.url.href} />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="icon" type="image/png" href="/favicon.png" />
 
       {head.meta.map((m) => (
         <meta key={m.key} {...m} />
