@@ -2,6 +2,7 @@
   min-width: 48px;
   height: 100vh;
   background: #171717;
+  position: sticky;
   display: flex;
   flex-flow: column nowrap;
   overflow: auto;

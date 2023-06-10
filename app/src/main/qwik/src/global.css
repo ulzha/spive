@@ -20,6 +20,7 @@ html {
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 html,
@@ -43,6 +44,29 @@ html .MuiDataGrid-columnHeaderTitle {
 
 html .MuiDataGrid-columnHeader--sorted .MuiDataGrid-columnHeaderTitle {
   color: #757575;
+}
+
+html .MuiDialogContentText-root {
+  font-size: 0.875rem;
+  color: #000000df;
+}
+
+/* https://zellwk.com/blog/hide-content-accessibly/ */
+/* .hide-accessibly {
+  position: absolute !important;
+  opacity: 0;
+  pointer-events: none;
+} */
+.hide-accessibly {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: auto;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap;
 }
 
 body {
@@ -71,11 +95,12 @@ main {
   height: 100vh;
   flex: 1;
   overflow: auto;
+  position: relative;
 }
 
 main .padding {
   padding-top: 24px;
-  padding-left: 16px;
+  padding-left: 164px;
   padding-right: 16px;
   padding-bottom: 24px;
   background-color: #f8f8f8;

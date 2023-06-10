@@ -77,6 +77,7 @@ export const MUIDataGrid = qwikify$((props: any) => {
           ...c,
           colSpan: ({ row }: GridCellParams) => (row.id.toString().includes(".") ? props.columns.length : null),
         }))}
+      // FIXME vary when toggling between 5 and 25
       getRowHeight={getRowHeight}
       rowSelection={false}
       // components={{

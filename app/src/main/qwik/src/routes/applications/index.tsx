@@ -3,7 +3,7 @@ import { MUICard, MUICardHeader, MUICardContent } from "~/integrations/react/mui
 import type { DocumentHead } from "@builder.io/qwik-city";
 import ApplicationGrid from "~/components/application/grid";
 import Legend from "~/components/application/timeline/legend";
-import { MUICreateNewApplicationForm } from "~/integrations/react/mui-dialog";
+import CreateNewApplicationForm from "~/components/application/create-new";
 
 const platformUrl = "http://localhost:8440";
 
@@ -65,12 +65,12 @@ export default component$(() => {
     <div class="padding">
       <div class="titlebar">
         <h2>Platform: io.ulzha.dev ({platformUrl})</h2>
-        <MUICreateNewApplicationForm onCreate$={deployApplication} />
+        <CreateNewApplicationForm client:visible onCreate$={deployApplication} />
       </div>
       <MUICard elevation={1}>
         {/* action={[<Legend />]} failed with "Objects are not valid as a React child (found: object with keys {type, props, immutableProps, children, flags, key, dev})" */}
         <MUICardHeader title="Your Event-Driven Applications" />
-        <Legend />
+        <Legend client:visible />
         <MUICardContent>
           <Resource
             value={applicationsResource}
