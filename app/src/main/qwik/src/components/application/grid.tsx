@@ -104,7 +104,7 @@ export default component$<GridProps>(({ rows }: GridProps) => {
       sortable: false,
       flex: 1,
     },
-    { field: "deployLog", headerName: "Deploy Log", width: 130, sortable: false },
+    { field: "deployLogs", headerName: "Deploy Logs", width: 130, sortable: false },
   ];
 
   const spanRows = Object.values(state.eventsRows);

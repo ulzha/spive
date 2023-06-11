@@ -1,12 +1,12 @@
-import { component$ } from "@builder.io/qwik";
-import { MUIButton, MUIHelpIcon } from "~/integrations/react/mui";
-import styles from "./support.module.css";
+/** @jsxImportSource react */
 
-export default component$(() => (
-  <div class={styles.support}>
-    <MUIButton href="#support">
-      <MUIHelpIcon />
+import { Button } from "@mui/material";
+import HelpIcon from "@mui/icons-material/Help";
+
+export default function HelpButton() {
+  return (
+    <Button href="#support" startIcon={<HelpIcon />}>
       Help
-    </MUIButton>
-  </div>
-));
+    </Button>
+  );
+}

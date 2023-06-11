@@ -2,19 +2,8 @@
 
 import { memo, useLayoutEffect, useRef } from "react";
 import { qwikify$ } from "@builder.io/qwik-react";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  FormControl,
-  Input,
-  InputAdornment,
-  LinearProgress,
-  Popover,
-} from "@mui/material";
+import { Button, CardContent, FormControl, Input, InputAdornment, LinearProgress } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import HelpIcon from "@mui/icons-material/Help";
 import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
 import type {
@@ -63,9 +52,7 @@ const getRowHeight = ({ id }: GridRowHeightParams) => (id.toString().endsWith(".
 // 4 -> 280, 24 -> 1000
 
 export const MUIButton = qwikify$(Button);
-export const MUICard = qwikify$(Card);
 export const MUICardContent = qwikify$(CardContent);
-export const MUICardHeader = qwikify$(CardHeader);
 export const MUIDataGrid = qwikify$((props: any) => {
   return (
     <DataGrid
@@ -106,8 +93,6 @@ export const MUISearchForm = qwikify$(() => {
     </FormControl>
   );
 });
-export const MUIPopover = qwikify$(Popover);
 
 export const MUIExpandMoreIcon = qwikify$(ExpandMoreIcon);
-export const MUIHelpIcon = qwikify$(HelpIcon);
 export const MUISearchIcon = qwikify$(SearchIcon);

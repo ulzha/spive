@@ -10,6 +10,8 @@ Also well suited for online game backends? Haven't tried
 
 Make algorithms and data structures great again
 
+Writing a smallish production system should not be much harder than completing a smallish programming tutorial.
+
 Borne out of daily frustrations and repetitiveness in software engineer occupation, marred by all flavors of [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) from RDBMS to NoSQL to NuSQL, mired in nightmares of prospects of death by a thousand YAML files.
 
 Answer to the question: "What's the smallest amount of effort to get robust observability and scalability?" How to get there as cheaply as possible, with the least cognitive overhead.

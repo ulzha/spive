@@ -1,9 +1,9 @@
 import { $, Resource, component$, useResource$, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
-import { MUICard, MUICardHeader, MUICardContent } from "~/integrations/react/mui";
+import { MUICardContent } from "~/integrations/react/mui";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import CommonCard from "~/components/nav/common";
+import Header from "~/components/application/header";
 import ApplicationGrid from "~/components/application/grid";
-import Legend from "~/components/application/timeline/legend";
-import CreateNewApplicationForm from "~/components/application/create-new";
 
 const platformUrl = "http://localhost:8440";
 
@@ -62,29 +62,21 @@ export default component$(() => {
   });
 
   return (
-    <div class="padding">
-      <div class="titlebar">
-        <h2>Platform: io.ulzha.dev ({platformUrl})</h2>
-        <CreateNewApplicationForm client:visible onCreate$={deployApplication} />
-      </div>
-      <MUICard elevation={1}>
-        {/* action={[<Legend />]} failed with "Objects are not valid as a React child (found: object with keys {type, props, immutableProps, children, flags, key, dev})" */}
-        <MUICardHeader title="Your Event-Driven Applications" />
-        <Legend client:visible />
-        <MUICardContent>
-          <Resource
-            value={applicationsResource}
-            onResolved={(applications) => {
-              state.rows = applications;
-              return <ApplicationGrid rows={state.rows} />;
-            }}
-            onRejected={(reason) => {
-              return reason;
-            }}
-          />
-        </MUICardContent>
-      </MUICard>
-    </div>
+    <CommonCard titleText={`Platform: io.ulzha.dev (${platformUrl})`}>
+      <Header client:visible onNew={deployApplication} />
+      <MUICardContent>
+        <Resource
+          value={applicationsResource}
+          onResolved={(applications) => {
+            state.rows = applications;
+            return <ApplicationGrid rows={state.rows} />;
+          }}
+          onRejected={(reason) => {
+            return reason;
+          }}
+        />
+      </MUICardContent>
+    </CommonCard>
   );
 });
 

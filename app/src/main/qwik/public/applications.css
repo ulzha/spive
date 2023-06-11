@@ -30,6 +30,21 @@
   padding: 0;
 }
 
+.titlebar {
+  vertical-align: baseline;
+}
+
+.MuiCardHeader-content {
+  flex: 0 1 auto;
+  margin-right: 20px;
+}
+
+.MuiCardHeader-action {
+  flex: 1;
+  display: flex;
+  /* FIXME stop jumping, or rather instead of ButtonGroup jumping to the left have #legend-toggle jump to the right */
+}
+
 .MuiDialog-paper {
   max-width: 800px;
 }
@@ -82,8 +97,7 @@
 }
 
 #legend-toggle {
-  margin-top: -30px;
-  float: right;
+  margin-left: auto;
   color: #2e77d0;
 }
 

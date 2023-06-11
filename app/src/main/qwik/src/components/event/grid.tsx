@@ -9,7 +9,7 @@ declare const d3: any;
 const renderDetailsDOM = $((el: Element, id: string, value: any) => {
   d3.select(el)
     .append("span")
-    .attr("class", `legend-swatch color-${value ? "error" : "ok"}`);
+    .attr("class", `status color-${value ? "error" : "ok"}`);
   d3.select(el)
     .append("span")
     .text(value || " ");
@@ -24,15 +24,17 @@ export default component$<EventGridProps>(({ rows }: EventGridProps) => {
 
   const columns: MUIGridColDef[] = [
     { field: "uuid", headerName: "UUID", width: 50 },
+    // TODO fit width
+    // TODO #N subscript without encroaching on width
     // TODO light gray 'T'
     // some smart boldening/outlining/gradienting of datetime components can contribute a lot to readability
-    { field: "eventTime", headerName: "Event Time", width: 210 },
+    { field: "eventTime", headerName: "Event Time", width: 220 },
     { field: "event", headerName: "Event", width: 400, flex: 1 },
     { field: "took", headerName: "Took", width: 60, align: "right" },
     // TODO output event(s)?
     // TODO render longest/non-ok rows first, shave some relayout delay off
     { field: "details", headerName: "Details", width: 300, renderCellDOM: renderDetailsDOM },
-    { field: "runtimeLog", headerName: "Runtime Log", width: 100, sortable: false },
+    { field: "logs", headerName: "Logs", width: 20, sortable: false },
   ];
 
   return (

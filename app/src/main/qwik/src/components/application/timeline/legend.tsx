@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { Button, ListItem, ListItemAvatar, ListItemButton, ListItemText, Popover } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { qwikify$ } from "@builder.io/qwik-react";
 
 function Item(props: any) {
   const [open, setOpen] = useState(false);
@@ -88,9 +87,9 @@ const content = (
       collapsibleText={
         <>
           <p>
-            Stalling happens e.g. if a handler deadlocks, or a runner disappears from network. Intermittent failures
-            happen when a gateway fails to perform side effects (such as calling an external system) and reports errors
-            to Spīve, and proceeds to retry.
+            Stalling happens e.g. if a handler deadlocks, or instance's runner disappears from network. Intermittent
+            failures happen when a gateway fails to perform side effects (such as calling an external system) and
+            reports errors to Spīve, and proceeds to retry.
           </p>
           <p>
             The bar stays orange for the lifetime of the process instance associated with the occurrence, even if the
@@ -163,7 +162,7 @@ const content = (
   </div>
 );
 
-export default qwikify$(() => {
+export default function Legend() {
   const [open, setOpen] = useState(false);
   const [el, setEl] = useState<HTMLElement | null>(null);
   const containerRef = useRef();
@@ -180,10 +179,10 @@ export default qwikify$(() => {
           horizontal: "right",
         }}
         transformOrigin={{
-          vertical: "top", // is not obeyed with small screen height... A number isn't either
-          horizontal: 580 + 48 + 24, // gets distorted when container is not matching viewport
+          vertical: "top",
+          horizontal: 580 + 48 + 24, // "right" gets distorted when container is not matching viewport
         }}
-        container={el?.closest(".padding")}
+        container={el?.closest(".padding")} // passepartout? Doesn't seem to stretch it
         onClose={() => {
           setOpen(false);
         }}
@@ -201,4 +200,4 @@ export default qwikify$(() => {
       </Button>
     </>
   );
-});
+}

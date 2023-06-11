@@ -33,6 +33,11 @@ html .MuiTypography-root {
   font-family: LineSeed, sans-serif, Apple Color Emoji;
 }
 
+html .MuiButton-startIcon {
+  margin-right: 4px;
+  margin-left: 0;
+}
+
 html .MuiCardHeader-title {
   font-weight: 500;
   font-size: 1.25rem;
@@ -94,16 +99,15 @@ body::backdrop {
 main {
   height: 100vh;
   flex: 1;
-  overflow: auto;
+  overflow-y: scroll;
   position: relative;
 }
 
 main .padding {
-  padding-top: 24px;
-  padding-left: 164px;
-  padding-right: 16px;
-  padding-bottom: 24px;
+  padding: 0px 16px 4px 164px;
   background-color: #f8f8f8;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 600px) {
@@ -111,6 +115,11 @@ main .padding {
     padding-left: 24px;
     padding-right: 24px;
   }
+}
+
+.passepartout {
+  /* forces credits to the bottom */
+  min-height: calc(100vh - 96px - 42px);
 }
 
 .titlebar {
