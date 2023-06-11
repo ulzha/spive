@@ -57,6 +57,7 @@ export const MUIDataGrid = qwikify$((props: any) => {
   return (
     <DataGrid
       {...props}
+      // FIXME concat dummy rows to round up the last page
       rows={props.rows.concat(props.spanRows)}
       columns={[...props.columns]
         .map((c: MUIGridColDef) => (c.renderCellDOM ? { ...c, renderCell: renderMemoizedCell(c.renderCellDOM) } : c))

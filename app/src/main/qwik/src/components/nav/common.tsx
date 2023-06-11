@@ -17,7 +17,9 @@ export default qwikify$((props) => (
       <HelpButton />
     </div>
     <div className="passepartout">
-      <Card elevation={1}>{props.children}</Card>
+      <Card elevation={1} className={props.class}>
+        {props.children}
+      </Card>
     </div>
     <div className={styles.credits}>
       Built with:

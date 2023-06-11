@@ -13,14 +13,14 @@ const renderSpanDOM = $((el: Element, id: string) => {
   const dummy_events = [
     {
       uuid: 1,
-      eventTime: "2021-03-10T01:39:03.795Z#0",
+      eventTime: "2023-06-10T01:39:03.795Z#0",
       event:
         '{"@type": "type.googleapis.com/company.author.ProfileUpdate", "authorId": "4806a8a9-1b83-47ad-b0ae-e6cd54b49c72"}',
       took: "3 ms",
     },
     {
       uuid: 2,
-      eventTime: "2021-03-10T01:49:03.100Z#0",
+      eventTime: "2023-06-10T01:49:03.100Z#0",
       event:
         '{"@type": "type.googleapis.com/company.lyrics.LyricsEdit", "lyricsId": "b8142cbb-7160-40b7-bf79-1be6562fa243"}',
       took: "3 ms",
@@ -28,14 +28,14 @@ const renderSpanDOM = $((el: Element, id: string) => {
     },
     {
       uuid: 3,
-      eventTime: "2021-03-10T02:09:33.545Z#0",
+      eventTime: "2023-06-10T02:09:33.545Z#0",
       event:
         '{"@type": "type.googleapis.com/company.lyrics.LyricsEdit", "lyricsId": "ca2f6489-08d3-43a6-b840-3db50107cd83"}',
       took: "3 ms",
     },
     {
       uuid: 4,
-      eventTime: "2021-03-10T02:59:31.615Z#0",
+      eventTime: "2023-06-10T02:59:31.615Z#0",
       event:
         '{"@type": "type.googleapis.com/company.author.ProfileUpdate", "authorId": "4c7f179a-070f-404d-aafe-ceacd6033181"}',
       took: "3 ms",
@@ -62,8 +62,8 @@ export default component$<GridProps>(({ rows }: GridProps) => {
   const state = useStore<any>({ eventsRows: {} });
 
   // FIXME frontend UX for when dollar fails. Perhaps all KTLO JS needs to be bulk loaded
-  const toggleEventsRow = $(({ id }: { id: string }) => {
-    console.debug("Row clicked", id, state.eventsRows);
+  const toggleEventsRow = $(({ id }: { id: string }, e) => {
+    e.target.closest(".MuiDataGrid-row").classList.toggle("Mui-selected"); // could alternatively lookup by data-id
     if (id.includes(".")) {
       return;
     }
@@ -110,22 +110,20 @@ export default component$<GridProps>(({ rows }: GridProps) => {
   const spanRows = Object.values(state.eventsRows);
 
   return (
-    <div class="applications">
-      <MUIDataGrid
-        client:visible
-        density="compact"
-        rows={rows}
-        spanRows={spanRows}
-        columns={columns}
-        autoHeight
-        pageSize={rows.length + spanRows.length} // all in one page
-        pageSizeOptions={[rows.length + spanRows.length]}
-        initialState={{
-          columns: { columnVisibilityModel: { uuid: false, version: false } },
-          sorting: { sortModel: [{ field: "rank", sort: "asc" }] },
-        }}
-        onRowClick={toggleEventsRow}
-      />
-    </div>
+    <MUIDataGrid
+      client:visible
+      density="compact"
+      rows={rows}
+      spanRows={spanRows}
+      columns={columns}
+      autoHeight
+      pageSize={rows.length + spanRows.length} // all in one page
+      pageSizeOptions={[rows.length + spanRows.length]}
+      initialState={{
+        columns: { columnVisibilityModel: { uuid: false, version: false } },
+        sorting: { sortModel: [{ field: "rank", sort: "asc" }] },
+      }}
+      onRowClick={toggleEventsRow}
+    />
   );
 });

@@ -4,6 +4,7 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 import CommonCard from "~/components/nav/common";
 import Header from "~/components/application/header";
 import ApplicationGrid from "~/components/application/grid";
+import styles from "~/components/application/application.module.css";
 
 const platformUrl = "http://localhost:8440";
 
@@ -62,7 +63,7 @@ export default component$(() => {
   });
 
   return (
-    <CommonCard titleText={`Platform: io.ulzha.dev (${platformUrl})`}>
+    <CommonCard titleText={`Platform: io.ulzha.dev (${platformUrl})`} class={styles.applications}>
       <Header client:visible onNew={deployApplication} />
       <MUICardContent>
         <Resource

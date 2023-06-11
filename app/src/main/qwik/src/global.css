@@ -130,3 +130,62 @@ main .padding {
 .titlebar h2 {
   margin-right: auto;
 }
+
+#legend {
+  position: absolute;
+  bottom: auto; /* Popover's disableScrollLock={true} doesn't seem to work; I hack the MuiModal-root thing here instead */
+}
+
+#legend .MuiPaper-root {
+  font-size: 0.875rem;
+  width: 580px;
+  padding: 10px;
+  max-height: none;
+}
+
+#legend li {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#legend li ~ p {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+#legend .MuiListItemAvatar-root {
+  min-width: 0;
+}
+
+#legend .MuiListItemButton-root {
+  flex: 0;
+  padding: 8px 28px 8px 4px;
+}
+
+.legend-pin,
+.legend-swatch {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.color-incoming {
+  background-color: rgb(190, 190, 190);
+}
+
+.color-ok {
+  background-color: #1db855;
+}
+
+.color-info {
+  background-color: #4687d6;
+}
+
+.color-warning {
+  background-color: #f49b20;
+}
+
+.color-error {
+  background-color: #ca001b;
+}

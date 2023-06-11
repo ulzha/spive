@@ -8,6 +8,10 @@ render_timeline = function(el, volume, offset, color) {
   const x    = d3.scaleLinear().domain([0, DATA_COUNT]).range([0, WIDTH]);
   const y    = d3.scaleLinear().domain([0, 1]).range([HEIGHT, 0]);
 
+  const rangePicker = d3.select(el)
+    .append('div')
+      .attr('class', 'range-picker');
+
   const svg = d3.select(el)
     .append('svg')
       .attr('width', WIDTH)

@@ -27,6 +27,7 @@
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
 - [ ] Example minor upgrade (involves inspection of diffs)
 - [ ] Example major upgrade flow (must be trivial to add a new field to CreateFoo event, for example. New Stream - copy Types -> edit? Then copy Stream with defaults? When to deploy the process? What to do with partially applied side effects when handlers of the old process are interrupted?)
+- [ ] Dark mode, HTML mode, Zen mode
 - [ ] Support distributed synchronization of snapshot workloads across shards (may fail on network partition. Scheduling in advance increases reliability) (may need to freeze partition layout to deterministically produce dataset files... And have some sort of stable unique identifier)
 - [ ] Pause function ("wait for input" workload shorthand?) in UI to pause a partition/instance/the whole world at a given event time, indefinitely - useful for scheduled maintenance of external systems, debugging, etc.
 - [ ] Example of point-in-time consistent operation on all child entities from app SDK (relies on a synchronization solution in the control plane, as per above)
@@ -50,7 +51,7 @@
 - [ ] An example load tester application (for a gateway)
 - [ ] An example custom environment runner (GPU, Azure, ...)
 - [ ] An example Python application (Trio for async workloads? Requests hopefully support it already? "generally asyncio simply prints and discards unhandled exceptions from Tasks")
-- [ ] An example Scala application
+- [ ] An example Scala application? Go application?
 - [ ] Configurable timeouts/moneyouts, per time interval, and/or per event
 - [ ] Document the [contract](API.md#Contract), a nice two-sided list of what concerns don't exist and what concerns do
 - [ ] Document migration from 3rd party event-sourcing systems, a tutorial/script on how to import change data stored in any ordered/timestamped format of your choice
