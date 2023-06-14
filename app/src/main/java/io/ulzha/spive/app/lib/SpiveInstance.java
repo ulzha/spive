@@ -17,6 +17,7 @@ import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
@@ -137,18 +138,32 @@ public interface SpiveInstance
 
         umbilical.addHeartbeat(null); // marks start of all the workloads
         runWorkloads(workloads);
+        LOG.info("Instance exiting nominally"); // with L stalling partitions, etc...
+      } catch (ExecutionException e) {
+        // TODO not leak ExecutionException here.... Cleanup callback may leak here instead?
+        LOG.info("Workload failed:", e.getCause());
+        umbilical.addError(null, e.getCause());
+        throw new HandledException(e.getCause());
+      } catch (InterruptedException e) {
+        LOG.info("Workload interrupted:", e);
+        umbilical.addError(null, e);
+        Thread.currentThread().interrupt();
+        throw new HandledException(e);
       } catch (Throwable t) {
         // TODO differentiate between errors that propagate from gateways (already appended to the
         // sample) and event handler exceptions, and workload exceptions...?
-        LOG.info("Instance failure", t);
+        LOG.info("Workload failed:", t);
         // Unlike inside event loop, here our best option is to add error at instance level, and not
         // associate it with currentEventTime, because that event may have already been successfully
         // handled, and a success followed by an error would make a confusing sequence of updates.
+        // TODO smth quieter for HandledException
         umbilical.addError(null, t);
         throw t;
-        // TODO proceed with other partitions actually
+        // TODO proceed gracefully actually? If event log stalls, keep serving for a while? Vice
+        // versa as well?
       } finally {
-        LOG.info("Instance exiting");
+        LOG.info(
+            "Instance exiting with K failed partitions, L stalling partitions, and M general workload failures");
       }
     }
 
@@ -206,7 +221,8 @@ public interface SpiveInstance
         workloadsByFuture.put(submittedFuture, workload);
       }
       final Future<Runnable> firstExitedFuture = lifetimeService.take();
-      // TODO test interrupted behavior
+      // TODO test interrupted behavior - InterruptedException should show on umbilical
+      // TODO runWorkloads catchMess... "Workload failed: " with stacktrace should be printed first
 
       LOG.info("Workload exited: {}", workloadsByFuture.get(firstExitedFuture));
       // TODO exit all the threads when instance is deleted (they are daemon already, right?) -
@@ -278,8 +294,8 @@ public interface SpiveInstance
           } catch (InvocationTargetException ite) {
             // cause seems to be in user code... But could be also from a Gateway call
             // TODO sanity check if gateway exceptions are swallowed by user code
-            umbilical.addError(currentEventTime.get(), ite);
-            throw new RuntimeException("Application failure", ite);
+            umbilical.addError(currentEventTime.get(), ite.getCause());
+            throw new HandledException(ite.getCause());
           } catch (NoSuchMethodException | IllegalAccessException e) {
             umbilical.addError(currentEventTime.get(), e);
             throw new InternalException(

@@ -1,6 +1,7 @@
 package io.ulzha.spive.basicrunner.util;
 
 import io.ulzha.spive.basicrunner.api.Umbilical;
+import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.InternalException;
 import java.io.File;
 import java.io.IOException;
@@ -149,18 +150,17 @@ public class Jars {
               + "() - should never happen if, upon creating a process, the jar was reliably checked",
           e);
     } catch (InvocationTargetException e) {
-      if (e.getCause() != null && umbilical.addError(null, e.getCause())) {
+      if (!(e.getCause() instanceof HandledException)
+          || umbilical.addError(null, e.getCause().getCause())) {
         throw new InternalException(
             "Erroneous return from "
                 + className
                 + "."
                 + methodName
-                + "() - umbilical should have captured the error if the jar used Spive generated exception handling code",
+                + "() - umbilical should have captured the error if the jar used Spive generated exception handling code, for which the jar should be reliably (?) checked",
             e);
       }
       // otherwise no further handling needed - cause is captured in umbilical
-      // Maybe log `InternalSpiveException`s specifically as errors anyway, as something useful to
-      // see in the context of runner error logs?
     }
   }
 }

@@ -287,9 +287,7 @@ public class Umbilical {
       if (eventTime == null) {
         if (unknownEventTimeSample.get() == null) {
           final ConcurrentProgressUpdatesList list = mappingFunction.apply(null);
-          if (list != null) {
-            unknownEventTimeSample.compareAndSet(null, list);
-          }
+          unknownEventTimeSample.compareAndSet(null, list);
         }
         return unknownEventTimeSample.get();
       }
@@ -331,9 +329,12 @@ public class Umbilical {
         if (!start.compareAndSet(null, update)) {
           rest.add(update);
         }
-      }
-      if (update.error() != null) {
-        firstError.compareAndSet(null, update);
+      } else if (update.error() != null) {
+        if (!firstError.compareAndSet(null, update)) {
+          rest.add(update);
+        }
+      } else {
+        rest.add(update);
       }
     }
 

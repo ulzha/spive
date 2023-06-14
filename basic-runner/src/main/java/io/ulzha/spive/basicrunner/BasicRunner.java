@@ -12,6 +12,7 @@ import io.ulzha.spive.basicrunner.util.Jars;
 import io.ulzha.spive.basicrunner.util.Rest;
 import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.OpaqueException;
+import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -90,18 +91,21 @@ public final class BasicRunner {
    *
    * <p>Also does singular consistent logging for all errors that propagate. (LOG.error with
    * stacktrace is likely redundant to do anywhere else)
+   *
+   * <p>TODO test suite as patches to the codebase, inserting crashes. Also automated smoke testers
    */
   private static class RootExceptionHandler implements UncaughtExceptionHandler {
+    private static final ThreadGroup MAIN_THREAD_GROUP = Thread.currentThread().getThreadGroup();
+
     private String addWarnings(Thread thread, Throwable t) {
-      for (ThreadGroup tg = thread.getThreadGroup(); tg != null; tg = tg.getParent()) {
+      for (ThreadGroup tg = thread.getThreadGroup(); tg != MAIN_THREAD_GROUP; tg = tg.getParent()) {
         final ThreadGroupRecord record = RECORDS.get(tg.getName());
-        if (record != null) {
-          // FIXME collisions can occur; check that tg's parent is main
+        if (record != null && tg.getParent() == MAIN_THREAD_GROUP) {
           // mark the particular application's umbilical with a warning
-          // interruption by platform ecosystem should bubble up here, and not be opaque TODO test
+          // even RuntimeException and InternalException transparent to application owner...
+          // TODO semi-opaque, without stacktrace?
           record.umbilical.addWarning(null, t);
-          return "Uncaught exception from {} belonging to "
-              + record.threadGroupDescriptor.toString();
+          return record.threadGroupDescriptor.toString();
         }
       }
       // might be relevant to any application on this runner, but we shouldn't disclose internals
@@ -109,19 +113,19 @@ public final class BasicRunner {
       for (ThreadGroupRecord record : RECORDS.values()) {
         record.umbilical.addWarning(null, new OpaqueException(t));
       }
-      return "Uncaught exception from {} - runner might be unstable";
+      return "thread group unknown, runner might be unstable";
     }
 
     @Override
     public void uncaughtException(Thread thread, Throwable t) {
-      final String message;
-      if (t instanceof HandledException) {
-        // specific feedback must've already been sent as a best effort
-        message = "Propagated from {}";
-      } else {
-        message = addWarnings(thread, t);
+      // InternalException must bubble up here for logging, as well as other unchecked exceptions
+      // and errors originating in runner layer. I think system thread group problems also would
+      // (TODO test)
+      if (!(t instanceof HandledException || t instanceof ThreadDeath)) {
+        final String message = addWarnings(thread, t);
+        // make sure the throwing thread's name is logged (with slf4j-simple it is...)
+        LOG.error("Uncaught exception, {}:", message, t);
       }
-      LOG.error(message, thread, t);
     }
   }
 
@@ -168,8 +172,8 @@ public final class BasicRunner {
           "main",
           record.umbilical,
           descriptor.args().toArray(new String[0]));
-    } catch (Exception e) {
-      LOG.warn("Failed to run " + descriptor + " - reporting " + e.getMessage());
+    } catch (IOException e) {
+      // TODO semi-opaque?
       record.umbilical.addError(null, e);
       throw new HandledException(e);
     }

@@ -93,6 +93,7 @@
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>
         <version>1.4.13</version>
+        <!-- FIXME rebuilds too often. Can Maven make repeatable jars or do we crave Bazel? -->
         <executions>
           <execution>
             <goals>
