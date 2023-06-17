@@ -59,8 +59,16 @@
     }
   }
 
-  .MuiDataGrid-row:not(.Mui-selected) .range-picker {
+  .timeline:not(.range-selected) .range-picker {
     display: none;
+  }
+
+  .timeline-axis {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    margin-right: 24px;
+    outline: 1px solid pink;
   }
 
   .MuiCardHeader-content {

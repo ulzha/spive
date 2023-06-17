@@ -75,7 +75,7 @@ const content = (
       collapsibleText={
         <p>
           TODO output events
-          {/* Do they add to height? Do they extend down? Do they sit side by side? Do they form a fronting sparkline with a thin top border? But they must not hide the error and warning colors behind them. */}
+          {/* Do they add to height? Do they extend down? Do they sit side by side? Do they form a fronting sparkline with a thin top border? It's often 100% height though? And they must not hide the error and warning colors behind them. */}
         </p>
       }
     />

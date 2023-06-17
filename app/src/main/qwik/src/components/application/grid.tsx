@@ -3,10 +3,10 @@ import { MUIDataGrid, MUILinearProgress } from "~/integrations/react/mui";
 import type { MUIGridColDef } from "~/integrations/react/mui";
 import EventGrid from "~/components/event/grid";
 
-declare const render_timeline: (el: Element, duration: number, offset: number, color: string) => void;
+declare const renderTimeline: (el: Element, duration: number, offset: number, color: string) => void;
 
 const renderTimelineDOM = $((el: Element) => {
-  render_timeline(el, 1, 0, "#1db855");
+  renderTimeline(el, 1, 0, "#1db855");
 });
 
 const renderSpanDOM = $((el: Element, id: string) => {
@@ -63,15 +63,18 @@ export default component$<GridProps>(({ rows }: GridProps) => {
 
   // FIXME frontend UX for when dollar fails. Perhaps all KTLO JS needs to be bulk loaded
   const toggleEventsRow = $(({ id }: { id: string }, e) => {
-    e.target.closest(".MuiDataGrid-row").classList.toggle("Mui-selected"); // could alternatively lookup by data-id
     if (id.includes(".")) {
       return;
     }
-    if (id in state.eventsRows) {
+    const hasEventsRow = id in state.eventsRows;
+    if (hasEventsRow) {
       delete state.eventsRows[id];
     } else {
       state.eventsRows[id] = { id: id + ".span", rank: rows.find((r: any) => r.id == id).rank + 0.5 };
     }
+    // could alternatively lookup by data-id
+    // toggling on the row itself does not work because MUI meddles with class list
+    e.target.closest(".MuiDataGrid-row").querySelector(".timeline").classList.toggle("range-selected", !hasEventsRow);
   });
 
   console.debug("Rendering grid Qwik");

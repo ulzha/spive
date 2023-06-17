@@ -8,7 +8,7 @@ import styles from "./nav.module.css";
 export default qwikify$((props) => (
   <div className="padding">
     <div className={styles.credits}>
-      <a href="https://github.com/ulzha/spive" target="_blank">
+      <a href="https://github.com/ulzha/spive" title="GitHub" target="_blank">
         <img src="/icons/github.svg" />
       </a>
     </div>
