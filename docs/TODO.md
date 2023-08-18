@@ -27,6 +27,7 @@
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
 - [ ] Example minor upgrade (involves inspection of diffs)
 - [ ] Example major upgrade flow (must be trivial to add a new field to CreateFoo event, for example. New Stream - copy Types -> edit? Then copy Stream with defaults? When to deploy the process? What to do with partially applied side effects when handlers of the old process are interrupted?)
+- [ ] PoC cost visualization (in control plane timeline a.k.a. deploy log, as annotations sourced from a separate app) - cost+trend of each replay, and cost+trend of nominal operation between deploys
 - [ ] Dark mode, HTML mode, Zen mode
 - [ ] Support distributed synchronization of snapshot workloads across shards (may fail on network partition. Scheduling in advance increases reliability) (may need to freeze partition layout to deterministically produce dataset files... And have some sort of stable unique identifier)
 - [ ] Pause function ("wait for input" workload shorthand?) in UI to pause a partition/instance/the whole world at a given event time, indefinitely - useful for scheduled maintenance of external systems, debugging, etc.
