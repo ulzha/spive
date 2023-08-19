@@ -16,12 +16,21 @@ jobs:
       # - name: mvn dependency:analyze
       #   run: mvn dependency:analyze -DfailOnWarning=true
 
-      - name: Maven
+      - name: Code style
         run: |
-          checks="com.spotify.fmt:fmt-maven-plugin:check verify"
-          mvn --batch-mode $checks install -Pjacoco
-          mvn --batch-mode $checks -f example/clicc-tracc
-          mvn --batch-mode $checks -f example/copy
+          flags="--batch-mode"
+          checks="com.spotify.fmt:fmt-maven-plugin:check"
+          mvn $flags $checks
+          mvn $flags $checks -f example/clicc-tracc
+          mvn $flags $checks -f example/copy
+
+      - name: Maven verify
+        run: |
+          flags="--batch-mode -Dfmt.skip=true -Pjacoco"
+          checks="verify"
+          mvn $flags $checks
+          mvn $flags $checks -f example/clicc-tracc
+          mvn $flags $checks -f example/copy
 
       - uses: cicirello/jacoco-badge-generator@v2
         id: jacoco-badge-generator
