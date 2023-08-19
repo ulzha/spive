@@ -2,8 +2,8 @@
 
 Event-sourcing and collaboration platform
 
-![lifecycle: pre-alpha](https://img.shields.io/badge/lifecycle-pre--alpha-a0c3d2.svg)
-![branch coverage](.github/badges/branches.svg)
+![Lifecycle: pre-alpha](https://img.shields.io/badge/lifecycle-pre--alpha-a0c3d2.svg)
+![JaCoCo branch coverage: green is good](../.github/badges/branches.svg)
 
 Danger: very aspirational [README-driven development](https://tom.preston-werner.com/2010/08/23/readme-driven-development.html).
 
