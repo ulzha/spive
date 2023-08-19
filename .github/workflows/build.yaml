@@ -24,13 +24,12 @@ jobs:
           mvn $flags $checks -f example/clicc-tracc
           mvn $flags $checks -f example/copy
 
-      - name: Maven verify
+      - name: Maven
         run: |
           flags="--batch-mode -Dfmt.skip=true -Pjacoco"
-          checks="verify"
-          mvn $flags $checks
-          mvn $flags $checks -f example/clicc-tracc
-          mvn $flags $checks -f example/copy
+          mvn $flags install
+          mvn $flags verify -f example/clicc-tracc
+          mvn $flags verify -f example/copy
 
       - uses: cicirello/jacoco-badge-generator@v2
         id: jacoco-badge-generator
