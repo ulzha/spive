@@ -1,6 +1,7 @@
 .idea
 .vscode
 *.iml
+.flattened-pom.xml
 target/
 
 .spive

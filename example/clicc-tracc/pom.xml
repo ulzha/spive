@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.ulzha</groupId>
@@ -16,10 +16,12 @@
 
   <properties>
     <java.version>19</java.version>
+    <revision>0.0.1-SNAPSHOT</revision>
+    <spive.version>0.0.1-SNAPSHOT</spive.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <version>0.0.1-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
 
   <dependencyManagement>
@@ -27,18 +29,67 @@
       <dependency>
         <groupId>io.ulzha</groupId>
         <artifactId>spive-core</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${spive.version}</version>
       </dependency>
       <!-- don't really want this - want UmbilicalReader and UmbilicalWriter from core? -->
       <dependency>
         <groupId>io.ulzha</groupId>
         <artifactId>spive-basic-runner</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${spive.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
   <build>
+    <plugins>
+      <plugin>
+        <groupId>com.spotify.fmt</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
     <pluginManagement>
       <plugins>
         <plugin>
@@ -66,6 +117,11 @@
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.5.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
