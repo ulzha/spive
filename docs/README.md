@@ -97,7 +97,10 @@ Frontend uses Qwik, D3 and Material UI. See the respective README.md file for in
 
 InterruptedException for (indefinitely) blocking methods... Hardly seeing need for other checked exceptions.
 
-Strongly opinionated that common development iteration UX should be blazingly fast, to not break [flow](https://en.wikipedia.org/wiki/Flow_state). Aspire to gamify common chores, such as deployment, scaling, and verification of code changes. Do precompute views, throw hardware at the problem, get UI to [update in split seconds](http://lawsofux.com/en/doherty-threshold/).
+Strongly opinionated that common development iteration UX should be blazingly fast, to not break [flow](https://en.wikipedia.org/wiki/Flow_state).
+Aspire to gamify common chores, such as deployment, scaling, and verification of code changes.
+Do precompute views, throw hardware at the problem, get UI to [update in split seconds](https://lawsofux.com/doherty-threshold/).
+Key durations guidance, applicable throughout ecosystem: < 400 ms for roundtrip from UI interaction to backend, 5 seconds between status updates, 5 minutes for replay on each instance...
 
 [Hermeticity](https://testing.googleblog.com/2012/10/hermetic-servers.html). Spive app is self-hosting, its code seems self-referential to an extent. Astonishingly self-manipulating as a quine it should be _not_. In the same way that a never-halting program tends to be of diminished usefulness in practice — and same can be said of a program whose halting is _unclear_ — we do not want to contort Spīve architecture into a platform that readily mangles itself out in the field — nor one that is _prone to_ mangling itself if a user happens to click the wrong button.
 

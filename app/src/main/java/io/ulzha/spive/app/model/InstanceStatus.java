@@ -11,7 +11,7 @@ public enum InstanceStatus {
   // already taken longer than the allotted handlerTimeout.
   // This can recover to NOMINAL if the handler eventually succeeds. Nevertheless Spive will spawn
   // a new instance, ready to replace this one if the slowness goes away in the newly spawned one.
-  TIMEOUT, // (WARNING?)
+  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK?)
   // This currently would only detect handler timeout if heartbeat was detected on handler start.
   // TODO track log sizes and issue TIMEOUT if an instance takes too long to even start handling.
 

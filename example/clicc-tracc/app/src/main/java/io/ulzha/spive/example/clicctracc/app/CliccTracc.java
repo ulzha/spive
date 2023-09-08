@@ -52,7 +52,8 @@ public class CliccTracc implements CliccTraccInstance {
       try {
         start = Instant.now();
         while (true) {
-          // TODO pluggable Clock - for testing and offset/scaled time
+          // TODO pluggable Clock and pluggable sleep - for testing and offset/scaled time. Can't
+          // seem to google any off-the-shelf "emulated time" library... emulated.Thread.sleep
           // collaboration may be affected by emitting eventTimes arbitrarily far removed from any
           // predictable clock
           Instant now = Instant.now();

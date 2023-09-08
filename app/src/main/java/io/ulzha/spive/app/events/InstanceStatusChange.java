@@ -11,6 +11,9 @@ import java.util.UUID;
  * <p>Used to make educated decisions to redeploy (and/or tweak the resources for) the affected
  * application, and to capture a summary of the underlying causes.
  *
+ * <p>An InstanceStatusChange event (unlike InstanceProgress) is irregular, triggered by conditions
+ * inherent to instances, such as errors, for example.
+ *
  * <p>(May benefit from compaction.)
  */
 public record InstanceStatusChange(

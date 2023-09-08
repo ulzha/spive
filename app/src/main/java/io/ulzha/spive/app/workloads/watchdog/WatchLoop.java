@@ -20,6 +20,9 @@ public class WatchLoop {
 
   private final ScheduledExecutorService pollExecutor = Executors.newScheduledThreadPool(2);
   private final HttpClient httpClient = HttpClient.newHttpClient();
+  // Could store loop reference in Instance directly as a member... Why not? It slightly pollutes
+  // state for other workloads? Superfluous in a sense that it is unnecessary until caught up?
+  // Unnecessary to snapshot also?
   private final Map<Process.Instance, ScheduledFuture<?>> loops = new HashMap<>();
 
   public WatchLoop(final Platform platform, final SpiveOutputGateway output) {

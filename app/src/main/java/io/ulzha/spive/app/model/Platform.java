@@ -24,6 +24,7 @@ public class Platform {
 
   // hashes and other aggregates
   public String processesEtag;
+  // progressTiles for default scales (minute and up)
 
   public Platform(final String name) {
     this.name = name;
