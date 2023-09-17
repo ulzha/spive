@@ -12,6 +12,7 @@ import io.ulzha.spive.app.events.CreateStream;
 import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
 import io.ulzha.spive.app.events.DeleteProcess;
+import io.ulzha.spive.app.events.InstanceIopw;
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.app.lib.SpiveInstance;
@@ -108,8 +109,14 @@ public class Spive implements SpiveInstance {
   }
 
   @Override
+  public void accept(final InstanceIopw event) {
+
+  }
+
+  @Override
   public void accept(final InstanceProgress event) {
     platform.getInstanceById(event.instanceId()).checkpoint = event.checkpoint();
+
   }
 
   @Override

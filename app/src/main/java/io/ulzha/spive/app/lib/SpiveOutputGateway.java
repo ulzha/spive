@@ -4,6 +4,7 @@ import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
+import io.ulzha.spive.app.events.InstanceIopw;
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.lib.Event;
@@ -47,6 +48,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
       Type.fromTypeTag("pojo:io.ulzha.spive.app.events.DeleteInstance");
   private static final Type deleteProcessType =
       Type.fromTypeTag("pojo:io.ulzha.spive.app.events.DeleteProcess");
+  private static final Type instanceIopwType =
+      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.InstanceIopw");
   private static final Type instanceProgressType =
       Type.fromTypeTag("pojo:io.ulzha.spive.app.events.InstanceProgress");
   private static final Type instanceStatusChangeType =
@@ -106,6 +109,10 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
 
   public boolean emitIf(Supplier<Boolean> check, DeleteInstance payload) {
     return emitIf(check, deleteInstanceType, payload);
+  }
+
+  public boolean emitIf(Supplier<Boolean> check, InstanceIopw payload) {
+    return emitIf(check, instanceIopwType, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, InstanceProgress payload) {

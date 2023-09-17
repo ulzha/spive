@@ -11,7 +11,9 @@ import com.linecorp.armeria.server.annotation.RequestObject;
 import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.Platform;
+import io.ulzha.spive.app.model.agg.Timeline;
 import io.ulzha.spive.lib.EventTime;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -66,46 +68,20 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
     throw HttpStatusException.of(HttpStatus.CONFLICT);
   }
 
-  public record ProgressTile(
-      // Control plane event time. Later tiles supersede earlier ones.
-      EventTime snapshotTime,
-      UUID processId,
-      UUID instanceId, // if null then it's aggregated over all instances
-
-      // Window in application event time.
-      // Lengths currently come from a fixed set:
-      // * per second
-      // * per minute (used at the default dashboard zoom level, 5 pixels per minute)
-      // * per hour
-      // * per day (UTC)
-      // * per year (grr, inconsistent lengths, exotic calendars)
-      // (could generalize into milliseconds or millennia for yet unclear use cases)
-      // A wide screen may hold 10ish hours, so we may want to keep minutely windows to cover that.
-      // Or maybe that's the job of a cache, platform shall only keep 60... And have ability to
-      // reconstruct on demand.
-      // Keep minutely for every lagging instance, so catchup progress is visible.
-      // Compaction effects... Visible when?
-      EventTime windowStart, // inclusive
-      EventTime windowEnd, // exclusive
-      int nInputEventsUnknown, // > 0 would mean blurred
-      int nInputEventsIncoming,
-      // "events in progress" blinking would be just a front-end cheat, rendered from the difference
-      // between newest and preceding tiles
-
-      int nInputEventsOk,
-      int nInputEventsWarning,
-      int nInputEventsError,
-      int nOutputEvents
-      // unsure how output gateway errors would be represented when workloads spontaneously attempt
-      // to emit
-      ) {}
+  public record TileSnapshot(
+    // Control plane event time. Later tiles supersede earlier ones.
+    EventTime snapshotTime,
+    UUID processId,
+    UUID instanceId, // if null then it's aggregated over all instances
+    Timeline.Tile tile) {}
 
   // bulk state fetcher for loading the applications page (TODO later by dashboard id... Or that
   // aggregation happens in a separate DashboardPrecomputer app)
   // subsequent tiles should be filled in by SSE
-  @Get("/progress")
+  // will also need events that invalidate a range of tiles? (As when compacted)
+  @Get("/timeline")
   public HttpResponse progress() {
-    final List<ProgressTile> response = null;
+    final List<TileSnapshot> response = null;
     return HttpResponse.ofJson(response);
   }
 }

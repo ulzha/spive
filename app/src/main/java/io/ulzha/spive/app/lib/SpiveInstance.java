@@ -9,6 +9,7 @@ import io.ulzha.spive.app.events.CreateStream;
 import io.ulzha.spive.app.events.CreateType;
 import io.ulzha.spive.app.events.DeleteInstance;
 import io.ulzha.spive.app.events.DeleteProcess;
+import io.ulzha.spive.app.events.InstanceIopw;
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
@@ -64,10 +65,6 @@ import org.slf4j.LoggerFactory;
 public interface SpiveInstance
 /*BackgroundfulInstance, ServerfulInstance, Supplier<Runnable>*/ {
 
-  void accept(final InstanceStatusChange event);
-
-  void accept(final InstanceProgress event);
-
   void accept(final CreateEventLog event);
 
   void accept(final CreateInstance event);
@@ -81,6 +78,12 @@ public interface SpiveInstance
   void accept(final DeleteInstance event);
 
   void accept(final DeleteProcess event);
+
+  void accept(final InstanceIopw event);
+
+  void accept(final InstanceProgress event);
+
+  void accept(final InstanceStatusChange event);
 
   /**
    * Implements application's interaction boilerplate with a concrete processing runtime and event

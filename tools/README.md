@@ -20,6 +20,7 @@ TODO documentation of the bootstrap process and the hardcoded bootstrap log (Spi
 Aforementioned number of layers is somewhat arbitrary - an educated guess as to what might work well for a web scale enterprise. For small production setups, prod-1 or prod-2 could suffice as the control plane.
 
 The buildup is a bit arbitrary too, meaning the manner in which feature set is expanded and scale is increased from layer to layer.
+TODO actual fanout numbers, to provide a range of sensible examples
 
 For doing development locally, you have the dev-*/start.sh tools to bootstrap test doubles of the production infrastructure (just prod-0 without replication, or other variously stripped-down and customized variants of the stack).
 

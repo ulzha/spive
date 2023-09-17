@@ -95,4 +95,5 @@
 
 ### Undecided problems
 
+- [ ] Visualize stateless applications (view aggregator, no events) in the same interface... Can those be collapsed to just momentary health indication? Do they use event-time axis to display freshness bounds of state being aggregated into responses?
 - [ ] Coordinate read rate and gateway backoff, to not have thundering herds when new cold instances join, and to not have overly sleepy herd either, whenever downstream recovery is sensed... Does this require a lot of inventory awareness? Should inventory formalize contention relations between gateways, so that on certain resource errors Spīve knows to back off the entire contended pool? (Generalized noisy neighbors)

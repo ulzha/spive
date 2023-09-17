@@ -1,5 +1,6 @@
 package io.ulzha.spive.app.model;
 
+import io.ulzha.spive.app.model.agg.Timeline;
 import io.ulzha.spive.lib.EventTime;
 import java.net.URI;
 import java.util.HashSet;
@@ -76,6 +77,10 @@ public class Process {
   public Set<Stream> outputStreams = new HashSet<>();
   public Set<Gateway> gateways = new HashSet<>();
 
+  // aggregate of all the Instances timelines
+  // may have to be preaggregated in groups if we're scaling lots... InstanceGroup, InstanceGroupProgress?
+  public Timeline timeline = new Timeline();
+
   @Override
   public String toString() {
     return "Process{"
@@ -142,6 +147,9 @@ public class Process {
 
     // The link to our control plane BasicRunnerGateway which launches and tracks this instance.
     public URI umbilicalUri;
+
+    // aggregate precomputed for frontend visualization purposes
+    public Timeline timeline = new Timeline();
 
     @Override
     public String toString() {
