@@ -12,7 +12,8 @@
 - [ ] Visualize errors (first occurrence of a blocker, by exception type, and the fraction of partitions affected)
 - [ ] Scroll left to seamlessly pan to a lower resolution historical graph
 - [ ] Have UI quickly filter/query streams by time span or key/partition (tour de force - generate code example for doing the same thing as UI does in CLI, Scio, BigQuery, etc)
-- [ ] KubernetesRunner, InProcessThreadRunner
+- [ ] Regenerate app.lib for examples/ in CI
+- [ ] DockerRunner, QuickBasicRunner (InProcessThreadRunner?)
 - [ ] 5 minute "Getting Started" guide + a HelloWorld app - how to generate app.lib, develop and run locally. (Cookiecutter kind of thing but able to function offline, once cached)
 - [ ] Example of deploy of a self-contained offline-produced jar (probably an IDE extension can expand app.lib); infer I/O streams interactively incl. new types; visual UI to connect to existing ones or otherwise
 - [ ] Have UI provide debugging instructions (locally, remotely)
@@ -96,4 +97,5 @@
 ### Undecided problems
 
 - [ ] Visualize stateless applications (view aggregator, no events) in the same interface... Can those be collapsed to just momentary health indication? Do they use event-time axis to display freshness bounds of state being aggregated into responses?
+- [ ] Default timeout - when is it sensible to attempt to repair, without having to manually configure the threshold/strategy? Be eager, and expect operator to click and say "not delinquent"?
 - [ ] Coordinate read rate and gateway backoff, to not have thundering herds when new cold instances join, and to not have overly sleepy herd either, whenever downstream recovery is sensed... Does this require a lot of inventory awareness? Should inventory formalize contention relations between gateways, so that on certain resource errors Spīve knows to back off the entire contended pool? (Generalized noisy neighbors)

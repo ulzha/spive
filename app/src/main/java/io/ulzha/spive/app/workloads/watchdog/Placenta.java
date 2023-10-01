@@ -4,8 +4,9 @@ import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.basicrunner.api.BasicRunnerClient;
 import io.ulzha.spive.basicrunner.api.GetThreadGroupHeartbeatResponse;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.umbilical.HeartbeatSample;
+import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
+import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
 import java.net.http.HttpClient;
 import java.util.List;
@@ -17,7 +18,8 @@ import java.util.TreeMap;
  * <p>A "fat" client containing helper functionality to splice heartbeat samples from umbilical into
  * a longer history.
  */
-// UmbilicalChannel? Refactor into core.lib?
+// UmbilicalChannel? Refactor into core.lib? Remove and keep only event-sourced state in Spive
+// (Timeline), offload ephemeral best effort histories to SpiveScaler and friends?
 public class Placenta implements UmbilicalReader {
   private final BasicRunnerClient client;
   private TreeMap<EventTime, List<ProgressUpdate>> accumulatedHeartbeat = new TreeMap<>();
@@ -27,15 +29,23 @@ public class Placenta implements UmbilicalReader {
   }
 
   @Override
-  public void updateHeartbeat() throws InterruptedException {
+  public HeartbeatSnapshot updateHeartbeat() throws InterruptedException {
     final GetThreadGroupHeartbeatResponse response = client.getHeartbeat();
 
-    // TODO validate sequences
+    // TODO validate sequences again?
 
-    for (HeartbeatSample sample : response.heartbeat()) {
-      accumulatedHeartbeat.put(sample.eventTime(), sample.progressUpdates());
+    for (ProgressUpdatesList list : response.sample()) {
+      accumulatedHeartbeat.put(list.eventTime(), list.progressUpdates());
       // FIXME accumulate updates instead of replacing
     }
+
+    // maybe a bit silly indirection; keeping HeartbeatSnapshot class (common module as such) clean
+    // of API/serde concerns
+    return new HeartbeatSnapshot(
+        response.sample(),
+        response.checkpoint(),
+        response.nInputEventsTotal(),
+        response.nOutputEventsTotal());
   }
 
   @Override

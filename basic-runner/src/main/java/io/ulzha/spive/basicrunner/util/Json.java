@@ -1,8 +1,8 @@
 package io.ulzha.spive.basicrunner.util;
 
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.umbilical.HeartbeatSample;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
+import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import jakarta.json.JsonException;
 import jakarta.json.JsonObject;
 import jakarta.json.bind.Jsonb;
@@ -31,11 +31,11 @@ public class Json {
         new JsonbConfig()
             .withSerializers(
                 new EventTimeSerializer(),
-                new HeartbeatSampleSerializer(),
+                new ProgressUpdatesListSerializer(),
                 new ProgressUpdateSerializer())
             .withDeserializers(
                 new EventTimeDeserializer(),
-                new HeartbeatSampleDeserializer(),
+                new ProgressUpdatesListDeserializer(),
                 new ProgressUpdateDeserializer()));
   }
 
@@ -58,31 +58,34 @@ public class Json {
     }
   }
 
-  private static class HeartbeatSampleSerializer implements JsonbSerializer<HeartbeatSample> {
+  private static class ProgressUpdatesListSerializer
+      implements JsonbSerializer<ProgressUpdatesList> {
     @Override
     public void serialize(
-        HeartbeatSample heartbeatSample, JsonGenerator generator, SerializationContext ctx) {
+        ProgressUpdatesList list, JsonGenerator generator, SerializationContext ctx) {
       generator.writeStartObject();
-      EventTime eventTime = heartbeatSample.eventTime();
+      EventTime eventTime = list.eventTime();
       if (eventTime == null) {
         generator.writeNull("eventTime");
       } else {
         generator.write("eventTime", eventTime.toString());
       }
-      String partition = heartbeatSample.partition();
+      String partition = list.partition();
       if (partition == null) {
         generator.writeNull("partition");
       } else {
         generator.write("partition", partition);
       }
-      ctx.serialize("progressUpdates", heartbeatSample.progressUpdates(), generator);
+      ctx.serialize("progressUpdates", list.progressUpdates(), generator);
       generator.writeEnd();
     }
   }
 
-  private static class HeartbeatSampleDeserializer implements JsonbDeserializer<HeartbeatSample> {
+  private static class ProgressUpdatesListDeserializer
+      implements JsonbDeserializer<ProgressUpdatesList> {
     @Override
-    public HeartbeatSample deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
+    public ProgressUpdatesList deserialize(
+        JsonParser parser, DeserializationContext ctx, Type rtType) {
       String eventTimeString = null;
       String partitionString = null;
       List<ProgressUpdate> progressUpdates = null;
@@ -129,7 +132,7 @@ public class Json {
       if (progressUpdates == null) {
         throw new JsonException("Missing \"progressUpdates\"");
       }
-      return new HeartbeatSample(
+      return new ProgressUpdatesList(
           (eventTimeString == null ? null : EventTime.fromString(eventTimeString)),
           partitionString,
           progressUpdates);

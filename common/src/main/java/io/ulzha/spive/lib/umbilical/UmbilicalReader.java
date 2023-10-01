@@ -5,13 +5,14 @@ import java.time.Instant;
 import java.util.List;
 
 public interface UmbilicalReader {
-  void updateHeartbeat() throws InterruptedException;
+  HeartbeatSnapshot updateHeartbeat() throws InterruptedException;
 
   List<ProgressUpdate> get(EventTime t);
 
   EventTime getNextEventTime(EventTime t);
 
-  // should refactor these to ProgressUpdateList
+  // should refactor these away to use explicit indicators structure (typed and consistent) from
+  // runner. Pretending we lose it and re-interpreting the sample is premature/pointless
   static boolean isSuccess(List<ProgressUpdate> updates) {
     for (var update : updates) {
       if (update.success()) {

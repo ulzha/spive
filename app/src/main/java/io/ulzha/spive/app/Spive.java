@@ -109,14 +109,11 @@ public class Spive implements SpiveInstance {
   }
 
   @Override
-  public void accept(final InstanceIopw event) {
-
-  }
+  public void accept(final InstanceIopw event) {}
 
   @Override
   public void accept(final InstanceProgress event) {
     platform.getInstanceById(event.instanceId()).checkpoint = event.checkpoint();
-
   }
 
   @Override
@@ -208,6 +205,7 @@ public class Spive implements SpiveInstance {
   public void accept(final DeleteInstance event) {
     Process.Instance instance = platform.instancesById.remove(event.instanceId());
     instance.process.instances.remove(instance);
+    instance.process = null;
     // runner.stopInstance(...);
     // for idempotency, the runner perhaps can enumerate all instances it has running, and count
     // absence as success

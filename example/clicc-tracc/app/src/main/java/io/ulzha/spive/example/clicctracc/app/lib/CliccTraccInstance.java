@@ -11,6 +11,8 @@ import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
+import main.java.io.ulzha.spive.example.clicctracc.app.CliccTracc.Metronome;
+
 import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -91,7 +93,10 @@ public interface CliccTraccInstance {
         LOG.info("Instance failure", t);
         umbilical.addError(currentEventTime.get(), t);
         throw t;
-        // TODO proceed with other partitions actually
+        // TODO proceed gracefully actually? Other partitions can be processed so long as the
+        // crashed one sees no subsequent events? If event log stalls, keep serving read requests
+        // for a while? Vice versa as well? Write requests can even be served against the unaffected
+        // partitions?
       } finally {
         LOG.info("Instance exiting");
       }

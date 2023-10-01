@@ -1,21 +1,27 @@
 package io.ulzha.spive.app.workloads.watchdog;
 
 import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
 public class FakePlacenta implements UmbilicalReader {
+  private HeartbeatSnapshot snapshot;
   private TreeMap<EventTime, List<ProgressUpdate>> accumulatedHeartbeat = new TreeMap<>();
 
-  public void givenHeartbeat(EventTime eventTime, ProgressUpdate update) {
-    accumulatedHeartbeat.computeIfAbsent(eventTime, k -> new ArrayList<>()).add(update);
+  public void givenHeartbeatSnapshot(final HeartbeatSnapshot snapshot) {
+    this.snapshot = snapshot;
   }
 
   @Override
-  public void updateHeartbeat() {}
+  public HeartbeatSnapshot updateHeartbeat() {
+    for (var list : snapshot.sample()) {
+      accumulatedHeartbeat.put(list.eventTime(), list.progressUpdates());
+    }
+    return snapshot;
+  }
 
   @Override
   public List<ProgressUpdate> get(final EventTime t) {

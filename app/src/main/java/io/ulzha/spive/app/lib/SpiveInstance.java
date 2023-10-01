@@ -162,8 +162,10 @@ public interface SpiveInstance
         // TODO smth quieter for HandledException
         umbilical.addError(null, t);
         throw t;
-        // TODO proceed gracefully actually? If event log stalls, keep serving for a while? Vice
-        // versa as well?
+        // TODO proceed gracefully actually? Other partitions can be processed so long as the
+        // crashed one sees no subsequent events? If event log stalls, keep serving read requests
+        // for a while? Vice versa as well? Write requests can even be served against the unaffected
+        // partitions?
       } finally {
         LOG.info(
             "Instance exiting with K failed partitions, L stalling partitions, and M general workload failures");

@@ -1,28 +1,37 @@
 package io.ulzha.spive.basicrunner.api;
 
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.umbilical.HeartbeatSample;
+import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import jakarta.annotation.Nullable;
 import jakarta.json.bind.annotation.JsonbNillable;
 import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 
 @JsonbNillable(true)
-@JsonbPropertyOrder({"heartbeat", "checkpoint"})
+@JsonbPropertyOrder({"sample", "checkpoint", "nInputEventsTotal", "nOutputEventsTotal"})
 public record GetThreadGroupHeartbeatResponse(
-    List<HeartbeatSample> heartbeat, @Nullable EventTime checkpoint) {
-  // Slim this down again, just make sure to include the last successful event in heartbeat?
+    List<ProgressUpdatesList> sample,
+    @Nullable EventTime checkpoint,
+    long nInputEventsTotal,
+    long nOutputEventsTotal) {
 
+  // maybe a bit silly indirection; keeping HeartbeatSnapshot class (common module as such) clean of
+  // API/serde concerns
   public static GetThreadGroupHeartbeatResponse createVerbose(final Umbilical umbilical) {
-    final var heartbeatSnapshot = umbilical.getHeartbeatSnapshot();
+    final var heartbeatSnapshot = umbilical.getHeartbeatSnapshot(true);
     return new GetThreadGroupHeartbeatResponse(
-        heartbeatSnapshot, Umbilical.getLastHandledEventTime(heartbeatSnapshot));
+        heartbeatSnapshot.sample(),
+        heartbeatSnapshot.checkpoint(),
+        heartbeatSnapshot.nInputEventsTotal(),
+        heartbeatSnapshot.nOutputEventsTotal());
   }
 
   public static GetThreadGroupHeartbeatResponse create(final Umbilical umbilical) {
-    final var heartbeatSnapshot = umbilical.getHeartbeatSnapshot();
+    final var heartbeatSnapshot = umbilical.getHeartbeatSnapshot(false);
     return new GetThreadGroupHeartbeatResponse(
-        Umbilical.getFirsts(heartbeatSnapshot),
-        Umbilical.getLastHandledEventTime(heartbeatSnapshot));
+        heartbeatSnapshot.sample(),
+        heartbeatSnapshot.checkpoint(),
+        heartbeatSnapshot.nInputEventsTotal(),
+        heartbeatSnapshot.nOutputEventsTotal());
   }
 }

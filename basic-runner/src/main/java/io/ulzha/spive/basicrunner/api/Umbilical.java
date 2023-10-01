@@ -2,8 +2,9 @@ package io.ulzha.spive.basicrunner.api;
 
 import io.github.resilience4j.circularbuffer.ConcurrentEvictingQueue;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.umbilical.HeartbeatSample;
+import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
+import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import jakarta.annotation.Nullable;
 import java.util.AbstractMap;
@@ -17,7 +18,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +37,8 @@ import java.util.stream.Collectors;
  * and cause repeated side effects, but it must never drop into replay mode inadvertently, as that
  * would cause dropped side effects.)
  *
- * <p>Methods are thread-safe.
+ * <p>Thread-safety is limited: allows snapshotting from API thread(s), concurrently with one event
+ * loop producing updates.
  *
  * <p>(Ugly. Wonder if we can hide BasicRunnerClient and Umbilicus, make it just Umbilical on both
  * ends...)
@@ -93,14 +94,23 @@ public class Umbilical {
   }
 
   /** Asynchronously polled by control plane via Runner API. */
-  public List<HeartbeatSample> getHeartbeatSnapshot() {
-    final List<HeartbeatSample> heartbeatSnapshot = new ArrayList<>();
+  public HeartbeatSnapshot getHeartbeatSnapshot(boolean verbose) {
+    List<ProgressUpdatesList> sample = new ArrayList<>();
 
-    for (var entry : heartbeat.entryListSnapshot()) {
-      heartbeatSnapshot.add(new HeartbeatSample(entry.getKey(), null, entry.getValue().toList()));
+    synchronized (heartbeat) {
+      for (var entry : heartbeat.entryListSnapshot()) {
+        sample.add(new ProgressUpdatesList(entry.getKey(), null, entry.getValue().toList()));
+      }
+      if (!verbose) {
+        sample = getFirsts(sample);
+      }
+
+      return new HeartbeatSnapshot(
+          sample,
+          getLastHandledEventTime(sample),
+          heartbeat.nInputEventsTotal,
+          heartbeat.nOutputEventsTotal);
     }
-
-    return heartbeatSnapshot;
   }
 
   /**
@@ -109,38 +119,37 @@ public class Umbilical {
    * @return a filtered map containing only entries for the first warning (if any), the first error
    *     (if any), and the latest event time. The failure messages are truncated to the first line.
    */
-  public static List<HeartbeatSample> getFirsts(final List<HeartbeatSample> heartbeatSnapshot) {
-    final List<HeartbeatSample> firsts = new ArrayList<>();
-    HeartbeatSample firstWarning = null;
-    HeartbeatSample firstError = null;
-    HeartbeatSample lastSample = null;
+  public static List<ProgressUpdatesList> getFirsts(final List<ProgressUpdatesList> sample) {
+    final List<ProgressUpdatesList> firsts = new ArrayList<>();
+    ProgressUpdatesList firstWarning = null;
+    ProgressUpdatesList firstError = null;
+    ProgressUpdatesList last = null;
 
-    for (var sample : heartbeatSnapshot) {
-      for (var update : sample.progressUpdates()) {
-        boolean added = false; // just to prevent duplicates in the returned list
+    for (var list : sample) {
+      for (var update : list.progressUpdates()) {
+        boolean added = false; // just to prevent duplicates in the returned sample
         if (update.warning() != null && firstWarning == null) {
-          firstWarning = sample;
-          firsts.add(sample);
+          firstWarning = list;
+          firsts.add(list);
           added = true;
         }
         if (update.error() != null && firstError == null) {
-          firstError = sample;
+          firstError = list;
           if (!added) {
-            firsts.add(sample);
+            firsts.add(list);
           }
         }
       }
-      lastSample = sample;
+      last = list;
     }
 
-    if (lastSample != null && lastSample != firstWarning && lastSample != firstError) {
-      firsts.add(lastSample);
+    if (last != null && last != firstWarning && last != firstError) {
+      firsts.add(last);
     }
 
     firsts.replaceAll(
-        sample -> {
-          sample
-              .progressUpdates()
+        list -> {
+          list.progressUpdates()
               .replaceAll(
                   progressUpdate ->
                       new ProgressUpdate(
@@ -148,7 +157,7 @@ public class Umbilical {
                           progressUpdate.success(),
                           truncateStacktrace(progressUpdate.warning()),
                           truncateStacktrace(progressUpdate.error())));
-          return sample;
+          return list;
         });
 
     return firsts;
@@ -182,12 +191,11 @@ public class Umbilical {
    * @return the last successfully handled event time
    */
   public static @Nullable EventTime getLastHandledEventTime(
-      final List<HeartbeatSample> heartbeatSnapshot) {
-    for (int i = heartbeatSnapshot.size() - 1; i >= 0; i--) {
-      final List<ProgressUpdate> progressUpdates = heartbeatSnapshot.get(i).progressUpdates();
-      for (ProgressUpdate update : progressUpdates) {
+      final List<ProgressUpdatesList> sample) {
+    for (int i = sample.size() - 1; i >= 0; i--) {
+      for (ProgressUpdate update : sample.get(i).progressUpdates()) {
         if (update.success()) {
-          return heartbeatSnapshot.get(i).eventTime();
+          return sample.get(i).eventTime();
         }
       }
     }
@@ -240,18 +248,35 @@ public class Umbilical {
   }
 
   private void addHeartbeat(EventTime eventTime, ProgressUpdate update) {
-    heartbeat.truncate(firstErrorEventTime.get());
-    final ConcurrentProgressUpdatesList list =
-        heartbeat.computeIfAbsent(eventTime, keyIgnored -> new ConcurrentProgressUpdatesList());
-    list.add(update);
+    // after start of processing each event, updates list must appear consistently nonempty
+    // after success, input count must appear consistently incremented
+    // after emitting each event, output count must appear uncontradictory with input count
+    // at other times, the updates can be added with less contention
+    final ConcurrentProgressUpdatesList list = heartbeat.get(eventTime);
+    if (list == null) {
+      synchronized (heartbeat) {
+        heartbeat.truncate(firstErrorEventTime.get());
+        heartbeat.put(eventTime, new ConcurrentProgressUpdatesList(update));
+      }
+    } else if (update.success()) {
+      synchronized (heartbeat) {
+        list.add(update);
+        heartbeat.nInputEventsTotal++;
+      }
+    } else {
+      list.add(update);
+    }
   }
 
   /**
-   * A thread safe bookkeeping helper, tracking event times encountered, and the progress updates
-   * for each.
+   * Outbound bookkeeping helper, to allow thread-safe snapshotting by API thread.
+   *
+   * <p>Tracks event time and stats, and the progress updates during each event, in constant space.
    *
    * <p>TODO maintain an even more elaborate sample - the first warning and the eventual error per
-   * partition? Perhaps also keep count of truncated samples.
+   * partition?
+   *
+   * <p>TODO non-constant space buffer for I/O stats. Maybe subsuming some of the warnings/errors ^.
    */
   private static class Heartbeat {
     // ConcurrentSkipListMap doesn't support null keys, but we maintain a convention that null means
@@ -259,17 +284,19 @@ public class Umbilical {
     AtomicReference<ConcurrentProgressUpdatesList> unknownEventTimeSample = new AtomicReference<>();
     private final SortedMap<EventTime, ConcurrentProgressUpdatesList> sample =
         new ConcurrentSkipListMap<>();
+    public long nInputEventsTotal;
+    public long nOutputEventsTotal;
 
     private void truncate(final EventTime eventTimeToKeep) {
-      if (sample.size() >= 10) { // TODO less racy
+      if (sample.size() > 9 || unknownEventTimeSample.get() != null && sample.size() == 9) {
         // Pick something to truncate, but avoid entries that may be of particular interest:
         // * the null eventTime (workload heartbeat before the first event was read)
         // * the first slow event (? maybe sampled slowness is of interest)
         // * the first event with a warning (? maybe recent warnings are of interest)
         // * the first event with an error
         // * the latest event
-        // TODO compute correctly; probably precompute in heartbeatFirsts, so truncating is less
-        // loopy and message sizes are reduced
+        // TODO compute correctly and give proper types; probably precompute in heartbeatFirsts, so
+        // truncating is less loopy and message sizes are reduced
         final var iterator = sample.entrySet().iterator();
         while (iterator.hasNext()) {
           final var entry = iterator.next();
@@ -281,17 +308,19 @@ public class Umbilical {
       }
     }
 
-    private ConcurrentProgressUpdatesList computeIfAbsent(
-        final EventTime eventTime,
-        Function<EventTime, ConcurrentProgressUpdatesList> mappingFunction) {
+    private ConcurrentProgressUpdatesList get(final EventTime eventTime) {
       if (eventTime == null) {
-        if (unknownEventTimeSample.get() == null) {
-          final ConcurrentProgressUpdatesList list = mappingFunction.apply(null);
-          unknownEventTimeSample.compareAndSet(null, list);
-        }
         return unknownEventTimeSample.get();
       }
-      return sample.computeIfAbsent(eventTime, mappingFunction);
+      return sample.get(eventTime);
+    }
+
+    private ConcurrentProgressUpdatesList put(
+        final EventTime eventTime, final ConcurrentProgressUpdatesList value) {
+      if (eventTime == null) {
+        return unknownEventTimeSample.getAndSet(value);
+      }
+      return sample.put(eventTime, value);
     }
 
     /**
@@ -320,27 +349,23 @@ public class Umbilical {
    * updates). Safeguard against clock weirdness causing misinterpretation.
    */
   private static class ConcurrentProgressUpdatesList {
-    AtomicReference<ProgressUpdate> start = new AtomicReference<>();
+    final ProgressUpdate start;
     AtomicReference<ProgressUpdate> firstError = new AtomicReference<>();
     ConcurrentEvictingQueue<ProgressUpdate> rest = new ConcurrentEvictingQueue<>(3);
 
+    public ConcurrentProgressUpdatesList(ProgressUpdate start) {
+      this.start = start;
+    }
+
     void add(ProgressUpdate update) {
-      if (update.error() == null && update.warning() == null) {
-        if (!start.compareAndSet(null, update)) {
-          rest.add(update);
-        }
-      } else if (update.error() != null) {
-        if (!firstError.compareAndSet(null, update)) {
-          rest.add(update);
-        }
-      } else {
+      if (update.error() != null || !firstError.compareAndSet(null, update)) {
         rest.add(update);
       }
     }
 
     List<ProgressUpdate> toList() {
       Set<ProgressUpdate> allUpdates = new HashSet<>();
-      allUpdates.add(start.get());
+      allUpdates.add(start);
       allUpdates.add(firstError.get());
       allUpdates.addAll(rest);
       return allUpdates.stream()

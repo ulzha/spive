@@ -1,10 +1,7 @@
 package io.ulzha.spive.app.model.agg;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
-
-import io.ulzha.spive.app.events.InstanceProgress;
 
 public class Timeline {
   public enum Scale {
@@ -46,8 +43,7 @@ public class Timeline {
 
   public Map<Scale, Map<Instant, Tile>> tiles;
 
-  public void update(InstanceProgress progress) {
-
-    Instant windowStart = progress.checkpoint().instant.truncatedTo(ChronoUnit.MINUTES).minus(1, ChronoUnit.MINUTES);
-  }
+  // public void update(InstanceIopw iopw) {
+  //   Instant windowStart =
+  // }
 }

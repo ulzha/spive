@@ -9,6 +9,7 @@ import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
 import java.time.Instant;
 import java.util.function.Supplier;
@@ -18,7 +19,6 @@ class PollLoop {
 
   // May have some ephemeral state, accumulating fine-grained communication polled from runner.
   private final UmbilicalReader placenta;
-  private final ProgressTracker progressTracker;
   private final StatusTracker statusTracker;
   // sparklineTracker - visualize streaks of timed-out events even when they don't toggle status
   // discardTracker
@@ -32,7 +32,6 @@ class PollLoop {
       final SpiveOutputGateway output) {
     this.instance = instance;
     this.placenta = placenta;
-    this.progressTracker = new ProgressTracker(placenta);
     this.statusTracker = new StatusTracker(placenta, wallClockTime, instance.id);
     this.output = output;
   }
@@ -55,16 +54,17 @@ class PollLoop {
     assert (instance.checkpoint != null);
     assert (instance.status != null);
 
-    placenta.updateHeartbeat();
+    HeartbeatSnapshot snapshot = placenta.updateHeartbeat();
 
-    final EventTime checkpoint = progressTracker.getCheckpoint();
+    final EventTime checkpoint = snapshot.checkpoint();
     output.emitIf(
         () ->
             instance.process != null
                 && checkpoint != null
                 && instance.checkpoint != null
                 && instance.checkpoint.compareTo(checkpoint) < 0,
-        new InstanceProgress(instance.id, checkpoint));
+        new InstanceProgress(
+            instance.id, checkpoint, snapshot.nInputEventsTotal(), snapshot.nOutputEventsTotal()));
 
     final InstanceStatusChange instanceStatusChange =
         statusTracker.getStatus(instance.timeoutMillis);

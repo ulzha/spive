@@ -4,8 +4,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Captures number of events input/output per window in application event time, window sizes
- * ranging from minute and up.
+ * Captures number of events input/output per window in application event time, window sizes ranging
+ * from minute and up.
  *
  * <p>These event counts, exactly aggregated, serve for event volume visualization in UI.
  *
@@ -23,7 +23,4 @@ public record InstanceIopw(
     Instant windowStart,
     Instant windowEnd,
     long nInputEvents,
-    long nOutputEvents
-    // unsure about events emitted from workloads spontaneously, they probably aren't "output";
-    // their observed count can differ from one replica to another as they race
-    ) {}
+    long nOutputEvents) {}

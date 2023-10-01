@@ -10,7 +10,9 @@ import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InMemoryEventLog;
 import io.ulzha.spive.lib.LockableEventLog;
+import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
+import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.List;
@@ -78,15 +80,22 @@ class PollLoopTest {
   void whenFirstSuccessfullyHandledEventInHeartbeat_shouldEmitInstanceProgress()
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t1,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null),
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
-    final List<Object> expected = List.of(new InstanceProgress(instance.id, t1));
+    final List<Object> expected = List.of(new InstanceProgress(instance.id, t1, 1, 0));
     assertIterableEquals(expected, eventLog.asPayloadList());
   }
 
@@ -95,8 +104,15 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
-    fakePlacenta.givenHeartbeat(
-        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t2,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.checkpoint = t1;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -111,26 +127,40 @@ class PollLoopTest {
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
-    fakePlacenta.givenHeartbeat(
-        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
-    fakePlacenta.givenHeartbeat(
-        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), true, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t2,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null),
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:02.111Z"), true, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t2, 2, 0));
 
     instance.checkpoint = t1;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
-    final List<Object> expected = List.of(new InstanceProgress(instance.id, t2));
+    final List<Object> expected = List.of(new InstanceProgress(instance.id, t2, 2, 0));
     assertIterableEquals(expected, eventLog.asPayloadList());
   }
 
   @Test
   void givenDeletedInstance_shouldNotEmitInstanceProgress() throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t1,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null),
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.process = null;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -144,8 +174,15 @@ class PollLoopTest {
   void givenNominalStatus_whenTimeoutInHeartbeat_shouldDetectTimeoutStatus()
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t1,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, null, 0, 0));
 
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
@@ -169,9 +206,17 @@ class PollLoopTest {
     // This test is paranoid to survive a buggy runner that reports non-error heartbeat anyway.
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
-    fakePlacenta.givenHeartbeat(
-        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t2,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
+    instance.checkpoint = t1;
     instance.status = InstanceStatus.ERROR;
     controlPlaneLastEventTime.set(t1);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
@@ -199,9 +244,17 @@ class PollLoopTest {
   void whenNoErrorOrTimeoutInHeartbeat_shouldDetectNominalStatus() throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
-    fakePlacenta.givenHeartbeat(
-        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t2,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
+    instance.checkpoint = t1;
     instance.status = InstanceStatus.TIMEOUT;
     controlPlaneLastEventTime.set(t1);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
@@ -217,8 +270,16 @@ class PollLoopTest {
   void givenNominalStatus_whenErrorInHeartbeat_shouldDetectErrorStatus()
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, "err"));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t1,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.111Z"), false, null, "err"))));
+    fakePlacenta.givenHeartbeatSnapshot(
+        new HeartbeatSnapshot(sample, EventTime.INFINITE_PAST, 0, 0));
 
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
@@ -239,10 +300,17 @@ class PollLoopTest {
   void givenTimeoutStatus_whenRecoveryInHeartbeat_shouldDetectNominalStatus()
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:54:59.999Z"), true, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t1,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null),
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:54:59.999Z"), true, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.status = InstanceStatus.TIMEOUT;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -250,7 +318,7 @@ class PollLoopTest {
 
     final List<Object> expected =
         List.of(
-            new InstanceProgress(instance.id, t1),
+            new InstanceProgress(instance.id, t1, 1, 0),
             new InstanceStatusChange(instance.id, t1, null, InstanceStatus.NOMINAL.name(), null));
     assertIterableEquals(expected, eventLog.asPayloadList());
   }
@@ -259,8 +327,15 @@ class PollLoopTest {
   void givenTimeoutStatus_whenNoRecoveryInHeartbeat_shouldNotEmitInstanceStatusChange()
       throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
-    fakePlacenta.givenHeartbeat(
-        t1, new ProgressUpdate(Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t1,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, null, 0, 0));
 
     instance.status = InstanceStatus.TIMEOUT;
     controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
@@ -275,8 +350,15 @@ class PollLoopTest {
   void givenDeletedInstance_shouldNotEmitInstanceStatusChange() throws InterruptedException {
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
-    fakePlacenta.givenHeartbeat(
-        t2, new ProgressUpdate(Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null));
+    final var sample =
+        List.of(
+            new ProgressUpdatesList(
+                t2,
+                null,
+                List.of(
+                    new ProgressUpdate(
+                        Instant.parse("2021-04-14T10:00:02.111Z"), false, null, null))));
+    fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.process = null;
     instance.status = InstanceStatus.TIMEOUT;

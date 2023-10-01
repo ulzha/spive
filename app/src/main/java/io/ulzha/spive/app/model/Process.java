@@ -77,8 +77,10 @@ public class Process {
   public Set<Stream> outputStreams = new HashSet<>();
   public Set<Gateway> gateways = new HashSet<>();
 
+  // aggregate precomputed for frontend visualization purposes
   // aggregate of all the Instances timelines
-  // may have to be preaggregated in groups if we're scaling lots... InstanceGroup, InstanceGroupProgress?
+  // may have to be preaggregated in groups if we're scaling lots... InstanceGroup,
+  // InstanceGroupProgress?
   public Timeline timeline = new Timeline();
 
   @Override
@@ -116,6 +118,7 @@ public class Process {
   public static class Instance {
     public UUID id;
     public volatile Process process; // null if this instance has been deleted
+    // ^ awkward but it's a convenience, null check equivalent to absence check in process.instances
     // artifact - could benefit from varying runner and packaging per Instance in rare cases?
     // version - varying runner versions and varying library/inventory versions must be recorded?
 

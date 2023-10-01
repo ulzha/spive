@@ -13,7 +13,6 @@ import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.agg.Timeline;
 import io.ulzha.spive.lib.EventTime;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -69,11 +68,11 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
   }
 
   public record TileSnapshot(
-    // Control plane event time. Later tiles supersede earlier ones.
-    EventTime snapshotTime,
-    UUID processId,
-    UUID instanceId, // if null then it's aggregated over all instances
-    Timeline.Tile tile) {}
+      // Control plane event time. Later tiles supersede earlier ones.
+      EventTime snapshotTime,
+      UUID processId,
+      UUID instanceId, // if null then it's aggregated over all instances
+      Timeline.Tile tile) {}
 
   // bulk state fetcher for loading the applications page (TODO later by dashboard id... Or that
   // aggregation happens in a separate DashboardPrecomputer app)

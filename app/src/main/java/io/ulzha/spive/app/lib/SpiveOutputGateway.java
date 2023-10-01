@@ -125,6 +125,10 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
    *
    * <p>Blocks until either an append occurs, which may be indefinitely preempted by competing
    * appends, or until the check returns false.
+   *
+   * <p>TODO non-blocking version to tolerate setbacks and give users immediate UI responses instead
+   * of timeouts... An event handler can be stuck for very long, and then so would be the request
+   * handler using emitIf.
    */
   // `Predicate<Spive> check`? So it's clearer what state is accessible?
   public boolean emitIf(Supplier<Boolean> check, InstanceStatusChange payload) {

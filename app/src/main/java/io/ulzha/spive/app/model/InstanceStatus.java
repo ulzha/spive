@@ -11,7 +11,7 @@ public enum InstanceStatus {
   // already taken longer than the allotted handlerTimeout.
   // This can recover to NOMINAL if the handler eventually succeeds. Nevertheless Spive will spawn
   // a new instance, ready to replace this one if the slowness goes away in the newly spawned one.
-  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK?)
+  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK? HOLD? DELINQUENT?)
   // This currently would only detect handler timeout if heartbeat was detected on handler start.
   // TODO track log sizes and issue TIMEOUT if an instance takes too long to even start handling.
 
@@ -24,8 +24,8 @@ public enum InstanceStatus {
   // errors go away in the newly spawned one.
   ERROR,
 
-  // The end of an input stream was reached, or a workload exited normally.
-  // Spive will shut the instance (and eventually the process) down.
+  // The end of a closed input stream was reached, or a workload exited normally.
+  // Spive will shut the instance down (and eventually the process, if all instances exit).
   EXIT,
   // Unsure also about what if a workload exits normally on one instance but keeps running on
   // other instances. Perhaps EXIT should more appropriately be "notify owner and keep state until

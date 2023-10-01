@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -232,12 +231,15 @@ public final class BasicRunner {
    * UI, geared towards automatic KTLO as well as some extremely common manual troubleshooting
    * scenarios.
    *
-   * <p>Information is structured and includes
+   * <p>TODO slim this down, align more plainly with InstanceProgress event structure? and merely
+   * flag when extra information is available buffered for transmission? and align that with
+   * InstanceIopw and InstanceStatusChange event structure?
    *
    * <ul>
    *   <li>first error and first warning (if any) with stacktraces,
    *   <li>sample of start timings and progress timings of the latest event handlers executed,
-   *   <li>checkpoint, the EventTime of the latest event successfully handled.
+   *   <li>checkpoint, the EventTime of the latest event successfully handled,
+   *   <li>number of events (input and output) up to and including checkpoint.
    * </ul>
    *
    * <p>Production applications would typically additionally log to a commodity asynchronous
@@ -249,8 +251,7 @@ public final class BasicRunner {
     final ThreadGroupRecord record = RECORDS.get(Rest.pathParam(exchange, "name"));
 
     if (record == null) {
-      return Http.response(
-          StatusCode.NOT_FOUND, new GetThreadGroupHeartbeatResponse(List.of(), null));
+      return Http.response(StatusCode.NOT_FOUND);
     } else {
       return Http.response(StatusCode.OK, GetThreadGroupHeartbeatResponse.create(record.umbilical));
     }
