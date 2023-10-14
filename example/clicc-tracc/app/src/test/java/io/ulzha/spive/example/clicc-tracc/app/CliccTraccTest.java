@@ -1,4 +1,3 @@
-import io.ulzha.spive.example.clicctracc.app.CliccTracc;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -6,7 +5,13 @@ class CliccTraccTest {
 
   @BeforeEach
   void setUp() {
-    CliccTracc cliccTracc = new CliccTracc();
+    // final CliccTraccOutputGateway fakeOutput =
+    // new CliccTraccOutputGateway(
+    //     fakeUmbilicus,
+    //     controlPlaneLastEventTime,
+    //     wallClockAutoAdvancingMimickingReads,
+    //     lockableEventLog);
+    // CliccTracc cliccTracc = new CliccTracc(fakeOutput);
   }
 
   @Test
