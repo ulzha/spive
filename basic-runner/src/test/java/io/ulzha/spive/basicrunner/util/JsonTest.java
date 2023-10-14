@@ -3,7 +3,9 @@ package io.ulzha.spive.basicrunner.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.ulzha.spive.basicrunner.api.GetThreadGroupHeartbeatResponse;
+import io.ulzha.spive.basicrunner.api.GetThreadGroupIopwsResponse;
 import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.umbilical.HistoryBuffer;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import jakarta.json.bind.Jsonb;
@@ -68,6 +70,22 @@ public class JsonTest {
         r2,
         "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\"},{\"instant\":\"2021-01-21T19:00:02Z\",\"success\":true}]},{\"eventTime\":\"2021-01-29T12:34:56.789Z#13\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-29T12:34:57.789Z\"},{\"instant\":\"2021-01-29T12:34:58.789Z\",\"error\":\"java.lang.RuntimeException\\n\\tat io.ulzha.spive.Dummy(Dummy.java:42)\"}]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsTotal\":1,\"nOutputEventsTotal\":0}",
         GetThreadGroupHeartbeatResponse.class);
+  }
+
+  @Test
+  void testRoundTripGetThreadGroupIopwsResponse() {
+    final Instant t1 = Instant.parse("2023-10-09T18:59:00Z");
+    final Instant t2 = Instant.parse("2023-10-09T19:00:00Z");
+    final Instant t3 = Instant.parse("2023-10-09T19:01:00Z");
+    final List<HistoryBuffer.Iopw> list =
+        List.of(new HistoryBuffer.Iopw(t1, t2, 13, 6), new HistoryBuffer.Iopw(t2, t3, 11, 4));
+    final GetThreadGroupIopwsResponse r = new GetThreadGroupIopwsResponse(list);
+
+    assertRoundTrip(
+        r,
+        "{\"iopws\":[{\"nInputEvents\":13,\"nOutputEvents\":6,\"windowEnd\":\"2023-10-09T19:00:00Z\",\"windowStart\":\"2023-10-09T18:59:00Z\"},{\"nInputEvents\":11,\"nOutputEvents\":4,\"windowEnd\":\"2023-10-09T19:01:00Z\",\"windowStart\":\"2023-10-09T19:00:00Z\"}]}",
+        // "{\"iopws\":[{\"windowStart\":\"2023-10-09T18:59:00Z\",\"windowEnd\":\"2023-10-09T19:00:00Z\",\"nInputEvents\":13,\"nOutputEvents\":6},{\"windowStart\":\"2023-10-09T19:00:00Z\",\"windowEnd\":\"2023-10-09T19:01:00Z\",\"nInputEvents\":11,\"nOutputEvents\":4}]}",
+        GetThreadGroupIopwsResponse.class);
   }
 
   private <T> void assertRoundTrip(T x, String s, Class<?> xClass) {

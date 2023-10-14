@@ -1,24 +1,22 @@
 package io.ulzha.spive.basicrunner.api;
 
-import io.github.resilience4j.circularbuffer.ConcurrentEvictingQueue;
 import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.umbilical.ConcurrentProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
+import io.ulzha.spive.lib.umbilical.HistoryBuffer;
+import io.ulzha.spive.lib.umbilical.HistoryBuffer.Iopw;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import jakarta.annotation.Nullable;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * Facilitates the tiny bit of asynchronous bidirectional communication needed between control plane
@@ -51,6 +49,7 @@ public class Umbilical {
   // where blockers start, and SpiveScaler can create a dedicated instance, in case they're not
   // overwhelmingly many
   private final Heartbeat heartbeat = new Heartbeat();
+  private final HistoryBuffer buffer = new HistoryBuffer();
   // TODO separate sample for each workload, and dedicated methods. This mishmash will get confusing
   private final AtomicReference<EventTime> firstErrorEventTime = new AtomicReference<>();
   // Used for deduplicating, to not re-report the fatal error needlessly upon instance teardown.
@@ -341,38 +340,8 @@ public class Umbilical {
     }
   }
 
-  /**
-   * A bit like ConcurrentEvictingQueue<ProgressUpdate> but aware of firsts to keep.
-   *
-   * <p>TODO Also should detect contradictory sequences, like a failure before handler start
-   * instant, or a failure after handler end (workloads ATTOW intersperse updates with handler
-   * updates). Safeguard against clock weirdness causing misinterpretation.
-   */
-  private static class ConcurrentProgressUpdatesList {
-    final ProgressUpdate start;
-    AtomicReference<ProgressUpdate> firstError = new AtomicReference<>();
-    ConcurrentEvictingQueue<ProgressUpdate> rest = new ConcurrentEvictingQueue<>(3);
-
-    public ConcurrentProgressUpdatesList(ProgressUpdate start) {
-      this.start = start;
-    }
-
-    void add(ProgressUpdate update) {
-      if (update.error() != null || !firstError.compareAndSet(null, update)) {
-        rest.add(update);
-      }
-    }
-
-    List<ProgressUpdate> toList() {
-      Set<ProgressUpdate> allUpdates = new HashSet<>();
-      allUpdates.add(start);
-      allUpdates.add(firstError.get());
-      allUpdates.addAll(rest);
-      return allUpdates.stream()
-          .filter(Objects::nonNull)
-          .sorted(Comparator.comparing(ProgressUpdate::instant))
-          .collect(Collectors.toList());
-    }
+  public List<Iopw> getIopwsList(final Instant start) {
+    return buffer.getIopwsList(start);
   }
 
   // TODO report performance statistics

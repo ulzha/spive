@@ -2,6 +2,7 @@ package io.ulzha.spive.basicrunner;
 
 import com.sun.net.httpserver.HttpExchange;
 import io.ulzha.spive.basicrunner.api.GetThreadGroupHeartbeatResponse;
+import io.ulzha.spive.basicrunner.api.GetThreadGroupIopwsResponse;
 import io.ulzha.spive.basicrunner.api.GetThreadGroupsResponse;
 import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -74,6 +76,10 @@ public final class BasicRunner {
                 "^/api/v0/thread_groups/(?<name>[^/]*)/heartbeat$",
                 Http.jsonHandler(
                     BasicRunner::getThreadGroupHeartbeat, GetThreadGroupHeartbeatResponse.class)),
+            Rest.get(
+                "^/api/v0/thread_groups/(?<name>[^/]*)/iopws$",
+                Http.jsonHandler(
+                    BasicRunner::getThreadGroupIopws, GetThreadGroupIopwsResponse.class)),
             Rest.delete(
                 "^/api/v0/thread_groups/(?<name>[^/]*)$",
                 Http.jsonHandler(BasicRunner::deleteThreadGroup, String.class))));
@@ -254,6 +260,35 @@ public final class BasicRunner {
       return Http.response(StatusCode.NOT_FOUND);
     } else {
       return Http.response(StatusCode.OK, GetThreadGroupHeartbeatResponse.create(record.umbilical));
+    }
+  }
+
+  /**
+   * Returns historical I/O stats per window.
+   *
+   * <p>(History is kept as a best effort, to not overfill storage available, and is not guaranteed
+   * to be complete. Should be enough, most of the time, to fill in the gaps that occur when control
+   * plane experiences downtime and the runner process outlives it.)
+   *
+   * <p>Paginates return no more than one day (24 * 60) of minutely windows, and their corresponding
+   * larger granularity aggregated windows. More concretely, the first window in the returned list
+   * is the first (known closed) minutely window that ends after @param start, and the rest of the
+   * list consists of all the following (known closed) the windows that end in the same day. Also
+   * note that, from the last entry in the returned list, the endTime is readily usable as
+   * the @param start parameter of your next call.
+   *
+   * <p>TODO same endpoint in streaming fashion usable from UI for eager refresh?
+   */
+  private static Http.Response<GetThreadGroupIopwsResponse> getThreadGroupIopws(
+      HttpExchange exchange) {
+    final Instant start = Instant.parse(Rest.queryParam(exchange, "start"));
+    final ThreadGroupRecord record = RECORDS.get(Rest.pathParam(exchange, "name"));
+
+    if (record == null) {
+      return Http.response(StatusCode.NOT_FOUND);
+    } else {
+      return Http.response(
+          StatusCode.OK, new GetThreadGroupIopwsResponse(record.umbilical.getIopwsList(start)));
     }
   }
 }
