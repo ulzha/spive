@@ -49,6 +49,8 @@ public class Umbilical {
   // where blockers start, and SpiveScaler can create a dedicated instance, in case they're not
   // overwhelmingly many
   private final Heartbeat heartbeat = new Heartbeat();
+  // TODO pass start time and expect iopws contiguous from there (if not ops provided, then infer
+  // from stream metadata or watermark?)
   private final HistoryBuffer buffer = new HistoryBuffer();
   // TODO separate sample for each workload, and dedicated methods. This mishmash will get confusing
   private final AtomicReference<EventTime> firstErrorEventTime = new AtomicReference<>();
@@ -338,6 +340,10 @@ public class Umbilical {
       }
       return list;
     }
+  }
+
+  public void aggregateIopw(Instant instant, long dInputEvents, long dOutputEvents) {
+    buffer.aggregateIopw(instant, dInputEvents, dOutputEvents);
   }
 
   public List<Iopw> getIopwsList(final Instant start) {

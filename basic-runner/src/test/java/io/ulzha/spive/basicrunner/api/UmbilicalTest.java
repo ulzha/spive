@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Test;
 
 public class UmbilicalTest {
@@ -70,4 +73,47 @@ public class UmbilicalTest {
   //  @Test
   //  void givenNominalUpdates_getHeartbeatSnapshotVerbose_shouldReturnFullSnapshot() {
   //  }
+
+  @Test
+  void givenMuchIo_getIopwsList_shouldReturnOneDayAtATime() {
+    final Umbilical sut = new Umbilical();
+
+    final Instant t0 = Instant.parse("2022-12-31T22:53:00Z");
+    final Instant t1 = Instant.parse("2023-01-02T00:07:00Z");
+    for (Instant t = t0; !t.equals(t1); t = t.plus(15, ChronoUnit.SECONDS)) {
+      if (t.atZone(ZoneOffset.UTC).getMinute() % 5 != 0) {
+        sut.aggregateIopw(t, 1, 0);
+      }
+    }
+
+    var l1 = sut.getIopwsList(t0);
+    assertThat(l1.size(), is(7 + 60));
+
+    var l1m = sut.getIopwsList(t0.plus(7, ChronoUnit.MINUTES));
+    assertThat(l1m.size(), is(60));
+
+    final Instant l1End = l1.get(l1.size() - 1).windowEnd();
+    assertThat(l1End, is(Instant.parse("2023-01-01T00:00:00Z")));
+
+    var l2 = sut.getIopwsList(l1End);
+    assertThat(l2.size(), is(24 * 60));
+
+    final Instant l2End = l2.get(l2.size() - 1).windowEnd();
+    assertThat(l2End, is(Instant.parse("2023-01-02T00:00:00Z")));
+
+    var l3 = sut.getIopwsList(l2End);
+    assertThat(l3.size(), is(6));
+
+    final Instant l3End = l3.get(l3.size() - 1).windowEnd();
+    assertThat(l3End, is(Instant.parse("2023-01-02T00:06:00Z")));
+
+    var l4 = sut.getIopwsList(l3End);
+    assertThat(l4.size(), is(0));
+
+    var l = sut.getIopwsList(t0.atZone(ZoneOffset.UTC).minus(1, ChronoUnit.CENTURIES).toInstant());
+    assertIterableEquals(l1, l);
+
+    var lm = sut.getIopwsList(l3End.minus(1, ChronoUnit.MINUTES));
+    assertThat(lm.size(), is(1));
+  }
 }

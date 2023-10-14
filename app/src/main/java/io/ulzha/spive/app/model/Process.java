@@ -79,6 +79,7 @@ public class Process {
 
   // aggregate precomputed for frontend visualization purposes
   // aggregate of all the Instances timelines
+  // TODO recalculate when an instance drops and is replaced with replay
   // may have to be preaggregated in groups if we're scaling lots... InstanceGroup,
   // InstanceGroupProgress?
   public Timeline timeline = new Timeline();

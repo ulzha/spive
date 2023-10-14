@@ -1,7 +1,6 @@
 package io.ulzha.spive.lib.umbilical;
 
 import io.github.resilience4j.circularbuffer.ConcurrentEvictingQueue;
-import io.ulzha.spive.lib.EventTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -25,27 +24,30 @@ public class HistoryBuffer {
   public static record Iopw(
       Instant windowStart, Instant windowEnd, long nInputEvents, long nOutputEvents) {}
 
-  // TODO let spill to disk, and cap
+  // TODO let spill to disk?
   // TODO check the concurrent iteration guarantee
   private final ConcurrentEvictingQueue<List<Iopw>> iopws =
       new ConcurrentEvictingQueue<>(4 * 7 * 24 * 60);
   private IopwCounter currIopw = null;
 
-  public void aggregateIopw(EventTime eventTime, long dInputEvents, long dOutputEvents) {
-    if (currIopw == null || eventTime.instant.compareTo(currIopw.windowEnd) > 0) {
-      if (currIopw != null) {
-        iopws.add(
-            List.of(
-                new Iopw(
-                    currIopw.windowStart,
-                    currIopw.windowEnd,
-                    currIopw.nInputEvents,
-                    currIopw.nOutputEvents)));
-        // TODO coarser granularities as long as we know them
-      }
+  public void aggregateIopw(Instant instant, long dInputEvents, long dOutputEvents) {
+    if (currIopw == null) {
       currIopw = new IopwCounter();
-      currIopw.windowStart = eventTime.instant.truncatedTo(ChronoUnit.MINUTES);
+      currIopw.windowStart = instant.truncatedTo(ChronoUnit.MINUTES);
       currIopw.windowEnd = currIopw.windowStart.plus(1, ChronoUnit.MINUTES);
+    }
+    while (currIopw.windowEnd.compareTo(instant) <= 0) {
+      iopws.add(
+          List.of(
+              new Iopw(
+                  currIopw.windowStart,
+                  currIopw.windowEnd,
+                  currIopw.nInputEvents,
+                  currIopw.nOutputEvents)));
+      final IopwCounter nextIopw = new IopwCounter();
+      nextIopw.windowStart = currIopw.windowEnd;
+      nextIopw.windowEnd = nextIopw.windowStart.plus(1, ChronoUnit.MINUTES);
+      currIopw = nextIopw;
     }
     currIopw.nInputEvents += dInputEvents;
     currIopw.nOutputEvents += dOutputEvents;

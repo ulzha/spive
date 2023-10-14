@@ -270,12 +270,11 @@ public final class BasicRunner {
    * to be complete. Should be enough, most of the time, to fill in the gaps that occur when control
    * plane experiences downtime and the runner process outlives it.)
    *
-   * <p>Paginates return no more than one day (24 * 60) of minutely windows, and their corresponding
-   * larger granularity aggregated windows. More concretely, the first window in the returned list
-   * is the first (known closed) minutely window that ends after @param start, and the rest of the
-   * list consists of all the following (known closed) the windows that end in the same day. Also
-   * note that, from the last entry in the returned list, the endTime is readily usable as
-   * the @param start parameter of your next call.
+   * <p>Paginates return no more than one day (24 * 60) of minutely windows. More concretely, the
+   * first window in the returned list is the first (known closed) minutely window that ends
+   * after @param start, and the rest of the list consists of all the following (known closed) the
+   * windows that end in the same day. Also note that, from the last entry in the returned list, the
+   * endTime is readily usable as the @param start parameter of your next call.
    *
    * <p>TODO same endpoint in streaming fashion usable from UI for eager refresh?
    */
