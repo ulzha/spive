@@ -125,10 +125,10 @@ public class Process {
 
     private Instance() {}
 
-    public Instance(UUID id, Process process) {
+    public Instance(UUID id, Process process, URI umbilicalUri) {
       this.id = id;
       this.process = process;
-      umbilicalUri = URI.create("http://foo");
+      this.umbilicalUri = umbilicalUri;
       timeoutMillis = 15 * 1000;
     }
 

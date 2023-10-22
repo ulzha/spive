@@ -31,6 +31,7 @@ import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.util.InterruptableSchedulable;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -178,7 +179,11 @@ public class Spive implements SpiveInstance {
   @Override
   public void accept(final CreateInstance event) {
     final Process process = platform.processesById.get(event.processId());
-    final Process.Instance newInstance = new Process.Instance(event.instanceId(), process);
+    final Process.Instance newInstance =
+        new Process.Instance(
+            event.instanceId(),
+            process,
+            URI.create(event.runnerUrl()).resolve("/" + event.instanceId()));
     process.instances.add(newInstance);
     platform.instancesById.put(event.instanceId(), newInstance);
 

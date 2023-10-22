@@ -4,7 +4,7 @@
 
 - [ ] Try not to overengineer and reinvent Kubernetes
 - [ ] Weak event time ordering - what to do when event times match across partitions/streams, and get assigned to one instance. Order by partition key - nope, not stable enough if we want to support partition ranges with holes? Maybe combine in a migration process that rewrites with new tiebreaker values (we would need to take care to hide the tiebreaker due to its nondeterministic value)? Force a new minor version of process when changing range assignment to a coarser one for any reason? Force output partitioning finer than the product of input partitionings? Order by lineage (causality) and not merely lexicographical - i.e. some sort of quasi-fixed, "ontological" order component implied between time and tiebreaker when consuming input, and reified into output tiebreaker in emitConsequential?
-- [ ] What stats to collect for ensuring steady progress, so we can compact and archive them? Common aggregation logic, same on runner and in control plane?
+- [ ] What stats to collect for ensuring steady progress, so we can compact and archive them?
 
 ### Exciting problems
 

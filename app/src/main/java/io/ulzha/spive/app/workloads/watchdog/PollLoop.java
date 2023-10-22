@@ -3,6 +3,7 @@ package io.ulzha.spive.app.workloads.watchdog;
 import static io.ulzha.spive.app.model.InstanceStatus.ERROR;
 import static io.ulzha.spive.app.model.InstanceStatus.EXIT;
 
+import io.ulzha.spive.app.events.InstanceIopw;
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.app.lib.SpiveOutputGateway;
@@ -79,5 +80,17 @@ class PollLoop {
     // as a new event? calculate the time contribution to prevent red herrings? identify the cause
     // with profiling even if no gateway explicitly retried a call? trueCauseTracker? on demand
     // only, via frontend?
+
+    // TODO skimp on this and prioritize just progress and status change when in distress
+    for (var iopw : placenta.updateIopws()) {
+      output.emitIf(
+          () -> instance.process != null,
+          new InstanceIopw(
+              instance.id,
+              iopw.windowStart(),
+              iopw.windowEnd(),
+              iopw.nInputEvents(),
+              iopw.nOutputEvents()));
+    }
   }
 }

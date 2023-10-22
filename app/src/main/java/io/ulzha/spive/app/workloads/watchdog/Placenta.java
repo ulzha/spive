@@ -3,12 +3,15 @@ package io.ulzha.spive.app.workloads.watchdog;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.basicrunner.api.BasicRunnerClient;
 import io.ulzha.spive.basicrunner.api.GetThreadGroupHeartbeatResponse;
+import io.ulzha.spive.basicrunner.api.GetThreadGroupIopwsResponse;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
+import io.ulzha.spive.lib.umbilical.HistoryBuffer;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
 import java.net.http.HttpClient;
+import java.time.Instant;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -16,13 +19,20 @@ import java.util.TreeMap;
  * A counterpart to i.u.s.basicrunner.api.Umbilical.Umbilicus.
  *
  * <p>A "fat" client containing helper functionality to splice heartbeat samples from umbilical into
- * a longer history.
+ * a longer history. TODO less fat? Just asynchronous buffering here. Ephemeral aggregation in
+ * watchdog/trackers, and permanent aggregation in event handlers/compactors. Plus archival in
+ * SpiveArchiver.
  */
-// UmbilicalChannel? Refactor into core.lib? Remove and keep only event-sourced state in Spive
-// (Timeline), offload ephemeral best effort histories to SpiveScaler and friends?
+// Common aggregation logic, same on runner and in control plane? Or no aggregation in runner?
+// Potentially meaningless layers of interfaces... Why not BasicRunnerClient implements
+// RunnerClient? UmbilicalChannel? Refactor into core.lib? Remove and keep only event-sourced state
+// in Spive (Timeline), offload ephemeral best effort histories to SpiveScaler and friends?
+// All instance level aggregations including Timeline maybe should live here?
 public class Placenta implements UmbilicalReader {
   private final BasicRunnerClient client;
+  // TODO cap
   private TreeMap<EventTime, List<ProgressUpdate>> accumulatedHeartbeat = new TreeMap<>();
+  private Instant lastIopwEnd = null;
 
   public Placenta(final HttpClient httpClient, final Process.Instance instance) {
     this.client = new BasicRunnerClient(httpClient, instance.umbilicalUri);
@@ -63,4 +73,13 @@ public class Placenta implements UmbilicalReader {
   //    return (entry == null ? List.of() : entry.getValue());
   //  }
 
+  @Override
+  public List<HistoryBuffer.Iopw> updateIopws() throws InterruptedException {
+    final GetThreadGroupIopwsResponse response = client.getIopws(lastIopwEnd);
+    final List<HistoryBuffer.Iopw> iopws = response.iopws();
+    if (iopws.size() > 0) {
+      lastIopwEnd = iopws.get(iopws.size() - 1).windowEnd();
+    }
+    return response.iopws();
+  }
 }

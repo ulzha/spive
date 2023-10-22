@@ -14,6 +14,7 @@ import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +46,8 @@ class PollLoopTest {
             List.of(),
             Set.of(),
             Set.of());
-    instance = new Process.Instance(UUID.fromString("1-2-3-4-5"), process);
+    instance =
+        new Process.Instance(UUID.fromString("1-2-3-4-5"), process, URI.create("http://foo"));
 
     instance.timeoutMillis = 15000;
     instance.checkpoint = EventTime.INFINITE_PAST;

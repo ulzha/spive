@@ -2,6 +2,7 @@ package io.ulzha.spive.app.workloads.watchdog;
 
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
+import io.ulzha.spive.lib.umbilical.HistoryBuffer.Iopw;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
 import java.util.List;
@@ -31,5 +32,11 @@ public class FakePlacenta implements UmbilicalReader {
   @Override
   public EventTime getNextEventTime(final EventTime t) {
     return accumulatedHeartbeat.higherKey(t);
+  }
+
+  @Override
+  public List<Iopw> updateIopws() throws InterruptedException {
+    // TODO
+    return List.of();
   }
 }
