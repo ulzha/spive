@@ -28,9 +28,11 @@ Backpressure is handled by Gateways so that throttling and scaling decisions can
 
 #### Stream
 
-(Streams are managed by the platform, not much to see here.)
+Streams are managed by the platform, they are the persistent storage of events. While they serve as an interface between applications, API is expressed in strongly typed event handlers, and thus application business logic is oblivious of streams per se.
 
-("managed ledgers" a useful term, cf. http://pulsar.apache.org/docs/en/concepts-architecture-overview/#managed-ledgers, except cursors managed as part of a Process, and multiple writers possible?)
+TODO picture/animation of stream versioning
+
+("managed ledgers" a useful term, cf. http://pulsar.apache.org/docs/en/concepts-architecture-overview/#managed-ledgers, except cursors managed as part of a Process, and multiple competing writer replicas possible?)
 
 #### Subscription
 
@@ -169,7 +171,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
 ##### *0. Input*
 
-  In process properties the application version has input stream versions attached to it. These are bumped, without stopping the process, whenever the platform swaps out its underlying input - as is the case when its producing application undergoes version change, or the stream itself undergoes automated maintenance like sharding or compaction. As such, this does not really mark a new version of your application but merely helps risky event visibility.
+  In process properties the application version has input stream version(s), including fork ids, attached to it. These are bumped, without stopping the process, whenever the platform swaps out its underlying input - as is the case when its producing application undergoes version change, or the stream itself undergoes automated maintenance like sharding or compaction. As such, this does not really mark a new version of your application but merely helps risky event visibility.
 
   In the absence of egregious bugs, stream versioning should not break the business contracts of their consuming applications. (Though it must be noted that a minor stream version change is prone to cause operational effects, in the sense that even though business logic of the application stays the same, its inputs do change to a new, corrected, world view.)
 
@@ -204,6 +206,8 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
   This refers to modifying streams (upserting events instead of appending only) or deploying new application code to a preexisting process. This breaks Spīve's assumptions and voids consistency guarantees. Useful perhaps if the application owners have reasoned through and implemented whatever guarantees necessary in their own way.
 
   In particular, stateless applications may freely deploy new versions like this, because they don't have state to be kept consistent with the history of events. (TODO unsure how much of this should be supported, as Spīve's raison d'être is management of stateful applications.)
+
+While two or more versions of given application are run, automatic maintenance can occur to both old and new Stream. The new stream likely has a -dev version suffix or something. Both the old and the new process get their output forked when something like repartitioning happens. Developer-provided version survives, including any suffix that's attached to either major, minor or patch version. Just the fork id becomes different.
 
 #### Infinite retry as opposed to dead-letter queues
 

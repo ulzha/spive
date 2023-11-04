@@ -19,15 +19,15 @@ Teaser trailer (not there yet):
 
 ## Why
 
+Spīve, as a platform, implements a few relatively non-leaky abstractions for managing consistently ordered, partitioned streams of events, and orchestrates [event-sourced](https://martinfowler.com/articles/201701-event-driven.html#Event-sourcing) distributed applications that reliably consume and produce such streams.
+
+(Event-sourcing as a paradigm capitalizes on history retention and thus repeatable behaviors. It uncomplicates effective use of in-memory data structures, to marry simple and easy development work with predictable processing performance. Spīve API is designed to directly assist application developers in successfully leveraging these principles.)
+
 Spīve's primary goal is to boost productivity in software engineering, concretely — simplify development and management of event-driven applications, ranging from near-real time data processing pipelines to microservices, websites and enterprise internal tools.
 
 A secondary goal is to build out a platform where business logic is neatly delineated from infrastructure concerns, such as event storage. This gives you greater power to carry out blanket optimizations across all your owned applications, thus achieving resource economy, as well as strategic capability to hop between vendors.
 
 ## How
-
-Spīve, as a platform, implements a few relatively non-leaky abstractions for managing consistently ordered, partitioned streams of events, and orchestrates [event-sourced](https://www.cqrs.nu/Faq/event-sourcing) distributed applications that reliably consume and produce such streams.
-
-(Event-sourcing as a paradigm capitalizes on history retention and thus repeatable behaviors. It uncomplicates effective use of in-memory data structures, to marry simple and easy development work with predictable processing performance. Spīve API is designed to directly assist application developers in successfully leveraging these principles.)
 
 A few of the orchestration aspects include:
 

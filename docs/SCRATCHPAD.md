@@ -58,7 +58,17 @@ SpiveRegistry?
 
 SpiveScaler ->
 SpiveTuner?
-TuneCore?
+TunerCore?
+
+Process ->
+Sprocess
+Forcess (as something that traverses a Fork)
+Forza
+Proc
+Work
+Front (sounds more like the set of leading instances?)
+Effork
+Procession
 
 In order to make the build and test cycle satisfyingly fast, we facilitate separate code repositories, and avoid requiring a monorepo.
 

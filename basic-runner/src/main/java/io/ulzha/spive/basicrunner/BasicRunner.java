@@ -250,7 +250,7 @@ public final class BasicRunner {
    *
    * <p>Production applications would typically additionally log to a commodity asynchronous
    * observability stack to retain extensive amount of debug information, generate metrics, do
-   * ad-hoc analysis, etc.
+   * ad-hoc analysis, etc. Consider ELK, Logz, Prometheus, Grafana, Datadog, New Relic...
    */
   private static Http.Response<GetThreadGroupHeartbeatResponse> getThreadGroupHeartbeat(
       HttpExchange exchange) {

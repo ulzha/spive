@@ -1,4 +1,5 @@
 package io.ulzha.spive.app.lib;
+// app.gen? app.shell? app.bus? app.scaffold?
 
 import com.google.common.collect.ImmutableList;
 import io.ulzha.spive.app.Spive;

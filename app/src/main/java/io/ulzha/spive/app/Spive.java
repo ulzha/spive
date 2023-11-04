@@ -165,7 +165,11 @@ public class Spive implements SpiveInstance {
     // TODO ensure (upon emitting) that name-version and id are not duplicated
     // TODO ensure (upon emitting) that the output stream exists
     // TODO ensure (upon emitting) that there are no cycles of streams
-    // TODO decide initial sharding and emit CreateInstance events...
+
+    // TODO someone decide initial sharding
+    // TODO emit CreateEventLog (if new) and
+    // TODO emit CreateInstance events...
+
     // TODO validate artifact (upon emitting? async?) - ensure that all the event handlers are
     // implemented, etc.
     // TODO ensure its consistency is validated to some extent in each runner internally as well
