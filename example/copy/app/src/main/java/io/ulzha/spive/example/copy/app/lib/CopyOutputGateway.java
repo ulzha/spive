@@ -110,7 +110,7 @@ public class CopyOutputGateway extends Gateway {
           if (emit(event, lastEventTime.get())) {
             lastEventTimeEmitted.set(eventTime);
             return true;
-          } // FIXME else cikls
+          } // FIXME else loop
         }
         return false;
       } finally {

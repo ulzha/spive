@@ -181,7 +181,7 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
           if (emit(event, lastEventTime.get())) {
             lastEventTimeEmitted.set(eventTime);
             return true;
-          } // FIXME else cikls
+          } // FIXME else loop
         }
         return false;
       } finally {
@@ -229,6 +229,14 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
     return new EventTime(tentativeInstant);
   }
 
+  public void emitConsequential(CreateInstance payload) {
+    emitConsequential(createInstanceType, payload);
+  }
+
+  public void emitConsequential(DeleteInstance payload) {
+    emitConsequential(deleteInstanceType, payload);
+  }
+
   /**
    * Emits an event to the output simultaneous with the event being handled.
    *
@@ -257,17 +265,32 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
   // emitAfter?
   // emitAlso?
   // emitTherefore?
-  public void emitConsequential(CreateInstance payload) {
-    // TODO
-
-    eventLog.lockConsequential();
-    // If emitConsequential gets erroneously invoked from another thread than EventLoop, then this
-    // deadlocks immediately, which points out the problem well... Perhaps should add a descriptive
-    // exception though.
+  private <T> void emitConsequential(Type type, T payload) {
+    try {
+      final EventTime prevEventTime = lastEventTime.get();
+      final EventTime eventTime =
+          new EventTime(prevEventTime.instant, prevEventTime.tiebreaker + 1);
+      try {
+        eventLog.lockConsequential();
+        // If emitConsequential gets erroneously invoked from another thread than EventLoop, then
+        // this deadlocks immediately, which points out the problem well... Perhaps should add a
+        // descriptive exception though.
+        final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+        if (emit(event, prevEventTime)) {
+          System.out.println("Emitted consequential event, wdyt? " + eventTime);
+          lastEventTimeEmitted.set(eventTime);
+        } else {
+          // TODO only throw if something worse than a competing identical append happened...
+          // Already with bootstrap we have to resolve this, jsonl hit with
+          // java.nio.InvalidMarkException
+          throw new RuntimeException("not well thought out");
+        }
+      } finally {
+        eventLog.unlock();
+      }
+    } catch (Throwable t) {
+      umbilicus.addError(t);
+      throw t;
+    }
   }
-
-  public void emitConsequential(DeleteInstance payload) {}
-
-  // Need a way to emit to distinct streams when multiple outputs are supported?
-  // Perhaps not, because it should be trivial to spawn multiple filter processes for such fanout.
 }

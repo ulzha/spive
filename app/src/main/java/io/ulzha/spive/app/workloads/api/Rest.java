@@ -36,6 +36,7 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
       List<UUID> outputStreamIds) {}
 
   @Put("/applications/{name}/{version}")
+  // possible to assume this regardles of header, and avoid "No suitable request converter found"?
   @ConsumesJson
   public HttpResponse applications(
       @Param("name") String name,
@@ -54,8 +55,6 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
             request.availabilityZones(),
             request.inputStreamIds(),
             request.outputStreamIds());
-    System.out.println("Maybe emitting " + event);
-    System.out.println("Map: " + platform.processesByApplicationAndVersion);
     if (output.emitIf(
         () ->
             !(platform.processesByApplicationAndVersion.containsKey(name)

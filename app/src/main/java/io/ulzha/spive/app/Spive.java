@@ -20,6 +20,7 @@ import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
+import io.ulzha.spive.app.model.Process.Shard;
 import io.ulzha.spive.app.model.Stream;
 import io.ulzha.spive.app.model.Type;
 import io.ulzha.spive.app.workloads.api.Cors;
@@ -34,6 +35,7 @@ import io.ulzha.spive.util.InterruptableSchedulable;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -120,6 +122,8 @@ public class Spive implements SpiveInstance {
   @Override
   public void accept(final CreateEventLog event) {
     System.out.println("Accepting " + event + ", start: " + EventTime.fromString(event.start()));
+    final Stream stream = platform.streamsById.get(event.streamId());
+    stream.eventLogIds.put(new Stream.PartitionRange("*"), event.logId());
   }
 
   @Override
@@ -167,8 +171,35 @@ public class Spive implements SpiveInstance {
     // TODO ensure (upon emitting) that there are no cycles of streams
 
     // TODO someone decide initial sharding
-    // TODO emit CreateEventLog (if new) and
-    // TODO emit CreateInstance events...
+    // It should not be up to UI to send explicit `CreateInstance`s? Or to send `ScaleProcess`?
+    // Could build a shortcut into `CreateProcess` itself...
+    // A workload must be capable of recognizing deaths and sending
+    // InstanceStatusChange/DeleteInstance. Creations can happen consequentially maybe, in reaction
+    // to process creation and workload input and Scaler calling Shard creation/deletion API
+    for (var entry : process.shards.entrySet()) {
+      final Shard shard = entry.getKey();
+      for (int i = 0; i < shard.nDesiredInstances(); i++) {
+        // TODO all becomes more complex with multiple inputs
+        List<String> partitionRanges =
+            shard.partitionRanges().values().stream()
+                .map(range -> range.id())
+                .collect(Collectors.toList());
+        List<UUID> logIds =
+            shard.partitionRanges().keySet().stream()
+                .map(stream -> stream.eventLogIds.get(shard.partitionRanges().get(stream)))
+                .collect(Collectors.toList());
+        output.emitConsequential(
+            new CreateInstance(
+                process.id,
+                UUID.randomUUID(),
+                partitionRanges,
+                logIds,
+                "*",
+                "http://dev-1:8431/api/v0"));
+      }
+    }
+
+    // TODO emit CreateEventLog (if new)... actually that should occur before starting a process?
 
     // TODO validate artifact (upon emitting? async?) - ensure that all the event handlers are
     // implemented, etc.
@@ -189,6 +220,8 @@ public class Spive implements SpiveInstance {
             process,
             URI.create(event.runnerUrl()).resolve("/" + event.instanceId()));
     process.instances.add(newInstance);
+    // final Process.Shard shard = somehow lookup shard
+    // process.shards.get(shard).add(newInstance);
     platform.instancesById.put(event.instanceId(), newInstance);
 
     // FIXME superfluous? Prefer one canonical way for launching a jar, one for Docker image, etc?

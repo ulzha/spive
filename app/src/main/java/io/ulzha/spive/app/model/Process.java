@@ -5,8 +5,10 @@ import io.ulzha.spive.lib.EventTime;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * A distributed process. (Not to be confused with a process running on a single computer.)
@@ -31,10 +33,11 @@ import java.util.UUID;
  * <p>Many processes can be consuming from the same Stream; a process can start consumption from the
  * very beginning of the Stream or from an arbitrary position in it.
  *
- * <p>A Process can be split into Slices (? shards? better name? process as an instance group? do we
- * even need this abstraction yet?) for horizontal scaling. Each Slice consumes a different subset
- * of Partitions of the input Stream. (Similar to how Kafka consumers in a consumer group would each
- * receive a subset of messages on the topic.) All the Slices run the same application code.
+ * <p>A Process can be split into Shards for horizontal scaling. Each Shard consumes a different
+ * subset of Partitions of the input Streams. (Similar to how Kafka consumers in a consumer group
+ * would each be asigned a subset of partitions of the topic.) All the Shards run the same
+ * application code. The union of inputPartitionRanges of all the Shards must match the set of
+ * Partitions of the input Streams, unless the intent is to process only a subset of Partitions.
  *
  * <p>An Instance can have multiple identical copies always running as a redundancy measure, too, as
  * a way for an application to have active-active configuration for high availability. The replica
@@ -132,11 +135,12 @@ public class Process {
       timeoutMillis = 15 * 1000;
     }
 
-    public Set<UUID> inputPartitionIds = new HashSet<>();
-    // Descriptor/Role/Assignation perhaps? Also with sliceId and master/slaveness?
+    // a subset of full set of input partitions
+    // public Set<String> inputPartitionRanges = new HashSet<>(); a bit redundant
+    // public volatile Process.Shard shard?
 
-    public Set<Workload> workloads =
-        new HashSet<>(); // a subset of workloads of the respective Process
+    // a subset of workloads of the respective Process
+    public Set<Workload> workloads = new HashSet<>();
 
     /**
      * Configurable by SpiveScaler, possibly varies across instances if some partitions require
@@ -162,8 +166,6 @@ public class Process {
           + id
           + ", process="
           + process
-          + ", inputPartitionIds="
-          + inputPartitionIds
           + ", workloads="
           + workloads
           + ", timeoutMillis="
@@ -207,27 +209,24 @@ public class Process {
     }
   }
 
-  //  public class Slice {
-  //    Set<String> partitionIds;
-  //    int nInstances;
-  //  }
-  //
-  //  // A process is structured into Slices, which each run zero or more replica Instances.
-  //  // The union of all the partitionIds in slices must match the set of Partitions of the input,
-  //  // unless the intent is to ignore some Partitions.
-  //  // The partitionIds are not necessarily disjoint - e.g. during a scaling-up operation there
-  // could
-  //  // be an old slice consuming all Partitions of the input, and two other slices that are
-  // warming
-  //  // up, each consuming half of Partitions.
-  //  // Slice creation is a way to horizontally scale a process. Adjusting nInstances is a way to
-  //  // increase redundancy. Also, in the use case of serving layer, bumping nInstances and having
-  // a
-  //  // load balancer in front is a way to increase the serving throughput for a hot key.
-  //  public Set<Slice> slices;
+  // A process is structured into Shards, which each run zero or more replica Instances.
 
-  // The union of all the inputPartitionIds in instances must match the set of Partitions of the
-  // input stream, unless the intent is to process only a subset of Partitions.
+  // The partitionRanges are not necessarily disjoint - e.g. during a scaling-up operation there
+  // could be an old shard consuming all Partitions of the input, and two other shards whose
+  // instances are warming up, each consuming half of Partitions.
+
+  // Shard creation is a way to horizontally scale a process. Adjusting nInstances is a way to
+  // increase redundancy. Also, in the use case of serving layer, bumping nInstances and having a
+  // load balancer in front is a way to increase the serving throughput for a hot key.
+  public record Shard(Map<Stream, Stream.PartitionRange> partitionRanges, int nDesiredInstances
+      // Map<Workload, n> nDesiredWorkloads
+      ) {}
+
+  // TODO CreateShard/DeleteShard
+  // well, first need to lookup them somehow
+  // Descriptor/Role/Request/Desire/Assignation perhaps? Also with active/standbyness?
+  public Map<Shard, Set<Instance>> shards;
+
   public Set<Instance> instances = new HashSet<>();
 
   public Process(
@@ -245,5 +244,13 @@ public class Process {
     this.availabilityZones = availabilityZones;
     this.inputStreams = inputStreams;
     this.outputStreams = outputStreams;
+
+    final Shard defaultShard =
+        new Shard(
+            inputStreams.stream()
+                .collect(
+                    Collectors.toMap(key -> key, keyIgnored -> new Stream.PartitionRange("*"))),
+            1);
+    this.shards = Map.of(defaultShard, Set.of());
   }
 }

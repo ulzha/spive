@@ -7,9 +7,10 @@ public record CreateInstance(
     // partition key
     UUID processId,
     UUID instanceId,
-    String partitionRange,
-    // How do we follow forks in a stream during one instance's lifetime? Or will that be
-    // unnecessary?
+    // Just point to shardId? Any reason for an Instance to exist outside a Shard?
+    List<String> partitionRanges,
+    // How do we follow forks in a stream during one instance's lifetime? Probably upon creation the
+    // entire Current can be specified TODO, from which deviation will be unnecessary
     List<UUID> logIds,
     String workloads,
     String runnerUrl) {}

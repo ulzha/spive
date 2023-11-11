@@ -77,14 +77,30 @@ copy_args=\
 ' 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94'\
 ' io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=localhost;port=8086'\
 ' 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94'\
-' 2021-11-15T12:00:00.000Z#3'
+' 2021-11-15T12:00:00.000Z#2'
 $MVN exec:java@copy-event-log -pl tools \
   -Dexec.args="$copy_args"
-# 8. expect SpiveDev0 to checkpoint ahead
-# (alt. expect API calls to succeed)
+# expect SpiveDev0 to checkpoint through the log
 until
   heartbeat=$(curl -sSLf http://localhost:8430/api/v0/thread_groups/ff4726aa-9f71-49e2-b139-d71d780a817c/heartbeat)
-  echo "$heartbeat" | jq -r .checkpoint | grep "#3"
+  echo "$heartbeat" | jq -r .checkpoint | grep "#2"
+do echo "retrying in 1 s"; sleep 1; done
+
+# 8. call API to launch one "hello world" style app
+$MVN clean package -f example/clicc-tracc
+run_clicc_tracc_request='{
+  "artifactUrl": "file:///mnt/app/target/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar",
+  "availabilityZones": ["dev-1"],
+  "inputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"],
+  "outputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"]
+}'
+until
+  curl -sSLf -X PUT -H "Content-Type: application/json" -d "$run_clicc_tracc_request" -i http://localhost:8440/api/applications/CliccTracc/0.0.1-alpha
+do echo "retrying in 1 s"; sleep 1; done
+# expect SpiveDev0 to watch the instance and append progress events to the log
+until
+  heartbeat=$(curl -sSLf http://localhost:8430/api/v0/thread_groups/ff4726aa-9f71-49e2-b139-d71d780a817c/heartbeat)
+  echo "$heartbeat" | jq -r .checkpoint | grep "#n"
 do echo "retrying in 1 s"; sleep 1; done
 
 # 9. print instructions, keep following the output of each container

@@ -12,6 +12,8 @@ public class CopyEventLog {
     final EventTime last = EventTime.fromString(args[4]);
 
     EventTime prevTime = EventTime.INFINITE_PAST;
+    // FIXME in this context we probably want to throw if it ends unfinalized and before `last`
+    // (start.sh with #3 tricked me), or really get rid of `last` and use ranges and throw
     for (EventEnvelope event : src) {
       dst.appendIfPrevTimeMatch(event, prevTime);
       prevTime = event.time();

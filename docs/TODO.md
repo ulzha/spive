@@ -59,6 +59,7 @@
 - [ ] Document migration from 3rd party event-sourcing systems, a tutorial/script on how to import change data stored in any ordered/timestamped format of your choice
 - [ ] Test helpers for parameterizing over various modes of parallelization and replay (https://tech.redplanetlabs.com/2021/03/17/where-were-going-we-dont-need-threads-simulating-distributed-systems/)
 - [ ] SpiveBench as a separate infra application (running another application and testing for performance and correctness issues etc. when it comes to high event rates, extreme sharding, swapping storages...)
+- [ ] Benchmark various event stores for write throughput (CAS operations/second/EUR) and read throughput
 - [ ] Regular recovery testing, imitating a cold start of the production world (have some acceptance criteria to not replay everything always - say, at least important keys making progress end to end)
 - [ ] SpiveChaos as a separate infra application (killing resources, corrupting storages, skewing clocks, redeploying with duplication of side effects, crashing gateway calls, and otherwise testing the overall platform for resiliency)
 - [ ] "Expand all" for an entity - e.g. for a process, see deployment structure with replicas, see cost, KPIs, etc, which would normally be hidden under a UI button

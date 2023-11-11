@@ -5,6 +5,14 @@ services:
     command: "gcloud beta emulators bigtable start --host-port=0.0.0.0:8086"
     ports:
     - "8086:8086"
+  dev-1:
+    image: "$BASIC_RUNNER_IMAGE_NAME"
+    volumes:
+    - "$PWD/example/clicc-tracc/app/target:/mnt/app/target"
+    ports:
+    - "8431:8430"
+    environment:
+    - "BIGTABLE_EMULATOR_HOST=bigtable-emulator:8086"
   dev-0:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:

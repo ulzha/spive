@@ -1,6 +1,7 @@
 package io.ulzha.spive.app.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -85,14 +86,25 @@ import java.util.UUID;
  * <p>[2] Consider that the appropriate storage choice for each particular Stream depends on its
  * creation and consumption patterns. These may change over time, and Spīve platform may perform
  * optimizations where the straights are migrated/copied from one storage to another. One possible
- * course of action: batch fast copy an existing version up to certain event time, and save that as
- * a new fork 1 into the old; then create a new unfinalized fork 2 off of the same event time and
- * spawn instances of the application consuming the copy and outputting to fork 2 and let them catch
- * up, and finally kill all old instances off. Or even just one disconnected straight (connected at
- * INFINITE_PAST...) As a less cautious alternative, a big-bang finalize-and-fork at a given event
- * time can also be coordinated, and does not need instances duplicated. How to stagger? Warmup,
- * where instance assists by ramping up outputs and reads to a new gateway, part of coordination?
- * This probably lower prio than the approach with duplicate instances.
+ * course of action:
+ *
+ * <ul>
+ *   <li>batch fast copy an existing version up to certain event time, and save that as a new fork 1
+ *       into the old
+ *   <li>then create a new unfinalized fork 2 off of the same event time
+ *   <li>spawn instances of the application consuming the copy and outputting to fork 2 and let them
+ *       catch up
+ *   <li>migrate downstream consumers to fork 2 as well, and finally
+ *   <li>kill all old instances off.
+ * </ul>
+ *
+ * Or even just one disconnected straight (connected at INFINITE_PAST...) The build of the affected
+ * applications must include gateway for the new storage - may be an additional preparation step.
+ *
+ * <p>As a less cautious alternative, a big-bang finalize-and-fork at a given event time can also be
+ * coordinated, and does not need instances duplicated. How to stagger? Warmup, where instance
+ * assists by ramping up outputs and reads to a new gateway, part of coordination? This probably
+ * lower prio than the approach with duplicate instances.
  */
 public class Stream {
   public String name; // human readable
@@ -192,5 +204,6 @@ public class Stream {
   public Stream(final String name, final UUID id) {
     this.name = name;
     this.id = id;
+    this.eventLogIds = new HashMap<>();
   }
 }

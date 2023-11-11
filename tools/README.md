@@ -23,6 +23,7 @@ The buildup is a bit arbitrary too, meaning the manner in which feature set is e
 TODO actual fanout numbers, to provide a range of sensible examples
 
 For doing development locally, you have the dev-*/start.sh tools to bootstrap test doubles of the production infrastructure (just prod-0 without replication, or other variously stripped-down and customized variants of the stack).
+TODO tools/dev-0-basic/start.sh tools/dev-0-compose/start.sh tools/dev-0-in-process/start.sh, but the same set of core Runners available in all
 
 ```
 {CreateType {some non-core, like SpiveScaler, SpiveInventory}
