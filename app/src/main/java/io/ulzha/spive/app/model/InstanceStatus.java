@@ -2,6 +2,7 @@ package io.ulzha.spive.app.model;
 
 // very minimal intelligence for now
 public enum InstanceStatus {
+  // STARTUP? (STARTING? PROVISIONING?)
   NOMINAL,
 
   // TODO special state for series of warnings?
@@ -11,12 +12,14 @@ public enum InstanceStatus {
   // already taken longer than the allotted handlerTimeout.
   // This can recover to NOMINAL if the handler eventually succeeds. Nevertheless Spive will spawn
   // a new instance, ready to replace this one if the slowness goes away in the newly spawned one.
-  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK? HOLD? DELINQUENT?)
+  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK? DELINQUENT?)
   // This currently would only detect handler timeout if heartbeat was detected on handler start.
   // TODO track log sizes and issue TIMEOUT if an instance takes too long to even start handling.
 
   // TODO special state for series of timeouts?
   // Don't want flood of events from flapping TIMEOUT<->NOMINAL - it wouldn't be coarse anymore.
+
+  // HOLD? (PAUSE?)
 
   // Event handlers or workloads threw exceptions on the instance but the rest of partitions resp.
   // workloads may still be proceeding (subject to bookkeeping limits).

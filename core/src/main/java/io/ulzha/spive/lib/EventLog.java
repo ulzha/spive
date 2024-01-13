@@ -129,7 +129,7 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
    * @return true if event was appended directly after the event that had time of prevTime, false if
    *     not because the latest stored Event has time > prevTime.
    * @throws IllegalArgumentException if event.time <= prevTime or if the latest stored Event has
-   *     time < prevTime.
+   *     time < prevTime, or if the log is closed.
    */
   boolean appendIfPrevTimeMatch(EventEnvelope event, EventTime prevTime) throws IOException;
 }

@@ -24,7 +24,8 @@ package io.ulzha.spive.app.model;
  * automatically.
  *
  * <p>Timeouts of external calls should be coordinated to not exceed (a fraction of?) event handler
- * timeout, as imposed by Spīve. (More complex when the number of external calls varies...)
+ * timeout, as imposed by Spīve. (More complex when the number of external calls varies...) TODO
+ * warn when exceeded (measure the interval between addWarning)
  */
 public class Gateway {
   //  public EventTime lastCommittedTime;

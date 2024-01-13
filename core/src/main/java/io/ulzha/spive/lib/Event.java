@@ -25,6 +25,10 @@ import java.util.UUID;
  * then be consumed by another application that carries out state changes (Query Model changes, in
  * CQRS terms) and side effects.
  */
+// TODO clearer... The distinction between query and command may be less important than distinction
+// between momentous and sparse "work chains" (synchronous and asynchronous handlers doesn't seem
+// like the same impact of a concept... Sequential wanted, in some way, but at the same time guarded
+// against wasteful idling)
 public class Event {
   public EventTime time;
 

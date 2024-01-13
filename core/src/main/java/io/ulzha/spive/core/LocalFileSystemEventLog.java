@@ -10,29 +10,32 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.SeekableByteChannel;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 public final class LocalFileSystemEventLog implements EventLog {
   private final Path filePath;
-  private final SeekableByteChannel channel;
+  private final FileChannel channel;
   // (Found a few examples like GoogleCloudStorageReadChannel implements SeekableByteChannel)
 
   public LocalFileSystemEventLog(final Path filePath) throws IOException {
     this.filePath = filePath;
+
     this.channel =
-        Files.newByteChannel(
+        FileChannel.open(
             filePath,
-            StandardOpenOption.CREATE,
-            StandardOpenOption.READ,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.SYNC);
+            Set.of(
+                StandardOpenOption.CREATE,
+                StandardOpenOption.READ,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.SYNC));
   }
 
   /**
@@ -60,8 +63,13 @@ public final class LocalFileSystemEventLog implements EventLog {
     return Json.deserializeEventEnvelope(line);
   }
 
-  /** Reads one event from channel and leaves channel open. */
-  private static EventEnvelope read(SeekableByteChannel channel) throws IOException {
+  /**
+   * Reads one event from channel and leaves channel open.
+   *
+   * @return null if there are no more events to read (end of channel has been reached) and the log
+   *     is closed.
+   */
+  private static EventEnvelope read(FileChannel channel) throws IOException {
     final String line = StandardCharsets.UTF_8.decode(readLine(channel)).toString();
     return Json.deserializeEventEnvelope(line);
   }
@@ -70,11 +78,11 @@ public final class LocalFileSystemEventLog implements EventLog {
   //  }
 
   private boolean append(EventEnvelope event) throws IOException {
-    try (Writer writer = Channels.newWriter(channel, StandardCharsets.UTF_8)) {
-      writer.append(Json.serializeEventEnvelope(event));
-      writer.append('\n');
-      return true;
-    }
+    final Writer writer = Channels.newWriter(channel, StandardCharsets.UTF_8);
+    writer.append(Json.serializeEventEnvelope(event));
+    writer.append('\n');
+    writer.flush();
+    return true;
   }
 
   @Override
@@ -87,12 +95,21 @@ public final class LocalFileSystemEventLog implements EventLog {
     if (event.time().compareTo(prevTime) <= 0) {
       throw new IllegalArgumentException("event must have time later than prevTime");
     }
-    // FIXME lock file to do this reliably
-    if (channel.size() > 0) {
-      seekToLastLine();
-      final EventEnvelope latestEvent = read(channel);
-      if (latestEvent.time().compareTo(prevTime) == 0) {
-        return append(event);
+    // TODO caching the last event read and peeking the next could help return falses faster, with
+    // less seeking
+
+    // atomically compare with previous time and append
+    // (lock prevents a competing replica from causing a duplicate append)
+    try (FileLock lock = channel.lock()) {
+      if (channel.size() > 0) {
+        seekToLastLine();
+        final EventEnvelope latestEvent = read(channel);
+        if (latestEvent == null) {
+          throw new IllegalArgumentException("log is closed");
+        }
+        if (latestEvent.time().compareTo(prevTime) == 0) {
+          return append(event);
+        }
       }
     }
     return false;
@@ -106,7 +123,7 @@ public final class LocalFileSystemEventLog implements EventLog {
     do {
       p = Math.max(p - chunkSize, 0);
       channel.position(p);
-      buffer.reset();
+      buffer.clear();
       channel.read(buffer);
       for (int i = 0; i < buffer.limit(); i++) {
         if (buffer.get(i) == '\n' && p + i + 1 != channel.size()) {
@@ -123,7 +140,7 @@ public final class LocalFileSystemEventLog implements EventLog {
    *
    * @return the bytes read, skipping an eventual trailing '\n'
    */
-  private static ByteBuffer readLine(SeekableByteChannel channel) throws IOException {
+  private static ByteBuffer readLine(FileChannel channel) throws IOException {
     final int chunkSize = 1024;
     ArrayList<ByteBuffer> tmp = new ArrayList<>();
     long oldPosition = channel.position();
@@ -131,29 +148,33 @@ public final class LocalFileSystemEventLog implements EventLog {
     while (true) {
       ByteBuffer buffer = ByteBuffer.allocate(chunkSize);
       int read = channel.read(buffer);
-      newPosition += read;
       if (read > 0) {
         tmp.add(buffer.flip());
         int i;
         for (i = 0; i < read; i++) {
           if (buffer.get(i) == '\n') {
-            newPosition -= read - i - 1;
-            channel.position(newPosition);
-            buffer.limit(i);
             break;
           }
         }
         if (i < read) {
+          newPosition += i + 1;
+          buffer.limit(i + 1);
           break;
+        } else {
+          newPosition += read;
         }
       } else {
         break;
       }
     }
+    channel.position(newPosition);
 
-    ByteBuffer ret = ByteBuffer.allocate((int) (newPosition - oldPosition)); // may have one surplus
+    ByteBuffer ret = ByteBuffer.allocate((int) (newPosition - oldPosition));
     for (ByteBuffer buffer : tmp) {
       ret.put(buffer);
+    }
+    if (ret.get(ret.limit() - 1) == '\n') {
+      ret.limit(ret.limit() - 1);
     }
     ret.rewind();
     return ret;
@@ -175,14 +196,14 @@ public final class LocalFileSystemEventLog implements EventLog {
   }
 
   public class EventIterator implements Iterator<EventEnvelope> {
-    private final SeekableByteChannel readChannel;
+    private final FileChannel readChannel;
     private final BufferedReader reader;
     private EventEnvelope previousEvent;
     private EventEnvelope nextEvent;
 
     public EventIterator() {
       try {
-        readChannel = Files.newByteChannel(filePath, StandardOpenOption.READ);
+        readChannel = FileChannel.open(filePath, Set.of(StandardOpenOption.READ));
         try {
           reader = new BufferedReader(Channels.newReader(readChannel, StandardCharsets.UTF_8));
         } catch (RuntimeException e) {
