@@ -5,7 +5,6 @@ import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.util.Json;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -39,38 +38,28 @@ public final class LocalFileSystemEventLog implements EventLog {
   }
 
   /**
-   * Reads one event from reader.
+   * Reads one event from channel and leaves channel open.
    *
    * <p>Will block at the end of file until more events are appended or the log is closed.
    *
-   * @return the next event, or null to signify a closed log.
-   * @param reader
+   * @param channel
+   * @return null if there are no more events to read (end of channel has been reached) and the log
+   *     is closed.
    */
-  private static EventEnvelope read(BufferedReader reader) throws IOException {
-    String line = reader.readLine();
+  private static EventEnvelope read(FileChannel channel) throws IOException {
+    String line = StandardCharsets.UTF_8.decode(readLine(channel)).toString();
 
-    while (line == null) {
+    while (line.equals("")) {
       try {
         Thread.sleep(1000);
         // TODO WatchService, to act more quickly than this polling loop?
-        line = reader.readLine();
+        line = StandardCharsets.UTF_8.decode(readLine(channel)).toString();
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         throw new RuntimeException(e);
       }
     }
 
-    return Json.deserializeEventEnvelope(line);
-  }
-
-  /**
-   * Reads one event from channel and leaves channel open.
-   *
-   * @return null if there are no more events to read (end of channel has been reached) and the log
-   *     is closed.
-   */
-  private static EventEnvelope read(FileChannel channel) throws IOException {
-    final String line = StandardCharsets.UTF_8.decode(readLine(channel)).toString();
     return Json.deserializeEventEnvelope(line);
   }
 
@@ -173,7 +162,7 @@ public final class LocalFileSystemEventLog implements EventLog {
     for (ByteBuffer buffer : tmp) {
       ret.put(buffer);
     }
-    if (ret.get(ret.limit() - 1) == '\n') {
+    if (ret.limit() > 0 && ret.get(ret.limit() - 1) == '\n') {
       ret.limit(ret.limit() - 1);
     }
     ret.rewind();
@@ -197,19 +186,12 @@ public final class LocalFileSystemEventLog implements EventLog {
 
   public class EventIterator implements Iterator<EventEnvelope> {
     private final FileChannel readChannel;
-    private final BufferedReader reader;
     private EventEnvelope previousEvent;
     private EventEnvelope nextEvent;
 
     public EventIterator() {
       try {
         readChannel = FileChannel.open(filePath, Set.of(StandardOpenOption.READ));
-        try {
-          reader = new BufferedReader(Channels.newReader(readChannel, StandardCharsets.UTF_8));
-        } catch (RuntimeException e) {
-          readChannel.close();
-          throw e;
-        }
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -220,7 +202,8 @@ public final class LocalFileSystemEventLog implements EventLog {
     public boolean hasNext() {
       if (nextEvent == null) {
         try {
-          nextEvent = read(reader);
+          // optimize later to always skip disk read when re-reading own sequence of appends?
+          nextEvent = read(readChannel);
           if (previousEvent != null
               && nextEvent != null
               && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
@@ -255,7 +238,6 @@ public final class LocalFileSystemEventLog implements EventLog {
     }
 
     private void close() throws IOException {
-      reader.close();
       readChannel.close();
     }
   }
