@@ -25,13 +25,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class LocalFileSystemEventLogTest {
-  static final ClassLoader loader = LocalFileSystemEventLogTest.class.getClassLoader();
-
   @Test
   public void givenUnclosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndBlock()
       throws Exception {
     final Path filePath =
-        Path.of(Objects.requireNonNull(loader.getResource("TwoEvents.jsonl")).getPath());
+        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final Iterator<EventEnvelope> iterator = eventLog.iterator();
 
@@ -94,7 +92,7 @@ public class LocalFileSystemEventLogTest {
   public void givenClosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndNotBlock()
       throws Exception {
     final Path filePath =
-        Path.of(Objects.requireNonNull(loader.getResource("OneEventClosed.jsonl")).getPath());
+        Path.of(Objects.requireNonNull(getClass().getResource("OneEventClosed.jsonl")).getPath());
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final Iterator<EventEnvelope> iterator = eventLog.iterator();
 
@@ -185,7 +183,8 @@ public class LocalFileSystemEventLogTest {
   }
 
   private Path copyResourceToTempFile(final String name) throws IOException {
-    final Path filePathOrig = Path.of(Objects.requireNonNull(loader.getResource(name)).getPath());
+    final Path filePathOrig =
+        Path.of(Objects.requireNonNull(getClass().getResource(name)).getPath());
 
     final File file = File.createTempFile(name, null);
     file.deleteOnExit();
