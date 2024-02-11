@@ -5,12 +5,12 @@ import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,8 @@ import org.slf4j.LoggerFactory;
 public class BasicRunnerGateway extends Gateway {
   public static final Logger LOG = LoggerFactory.getLogger(BasicRunnerGateway.class);
   private static final Jsonb jsonb = JsonbBuilder.create();
-  private static final HttpClient client = HttpClient.newHttpClient();
+  private static final HttpClient client =
+      HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
   private List<String> availabilityZones;
 
   public BasicRunnerGateway(final UmbilicalWriter umbilicus, final List<String> availabilityZones) {
@@ -63,19 +64,14 @@ public class BasicRunnerGateway extends Gateway {
     try {
       final HttpRequest.BodyPublisher requestBody =
           HttpRequest.BodyPublishers.ofString(jsonb.toJson(request), StandardCharsets.UTF_8);
-      final HttpRequest httpRequest = HttpRequest.newBuilder(requestUri).POST(requestBody).build();
-      final HttpResponse<String> response =
-          client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-      // TODO RunThreadGroupResponse.class?
+      final HttpRequest httpRequest =
+          HttpRequest.newBuilder(requestUri)
+              .timeout(Duration.ofSeconds(5))
+              .POST(requestBody)
+              .build();
+      final HttpResponse<String> httpResponse = sendRetrying(httpRequest);
       // TODO return and assert deterministic umbilicalUri?
-      LOG.info("RunThreadGroupResponse: " + response.body());
-      if (response.statusCode() != 201) {
-        // FIXME retry forever
-        throw new RuntimeException("Expected HTTP 201 Created, got " + response.statusCode());
-      }
-    } catch (IOException e) {
-      // FIXME retry forever (unless permanent)
-      throw new RuntimeException(e);
+      LOG.info("RunThreadGroupResponse: " + httpResponse.body());
     } catch (InterruptedException e) {
       // FIXME probably need to sprinkle accept() methods with `throws InterruptedException`
       Thread.currentThread().interrupt();
@@ -96,5 +92,26 @@ public class BasicRunnerGateway extends Gateway {
 
   private void doStopInstance(String name, final String runnerUrl) {
     // TODO idempotent? (noop if it already disappeared)?
+  }
+
+  // TODO encapsulate the generic retry in an AbstractHttpApiGateway... possibly... or
+  // RetryingClient a la Armeria. Along with pooling, keepalives & reconnects, etc
+  private HttpResponse<String> sendRetrying(HttpRequest request) throws InterruptedException {
+    while (true) {
+      try {
+        final HttpResponse<String> response =
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+          return response;
+        }
+        throw new Exception(
+            "Expected HTTP 2xx, got " + response.statusCode() + " " + response.body());
+      } catch (InterruptedException e) {
+        throw e;
+      } catch (Exception e) {
+        umbilicus.addWarning(e);
+        Thread.sleep(1000);
+      }
+    } // FIXME retry forever unless permanent
   }
 }
