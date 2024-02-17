@@ -1,6 +1,6 @@
 # Spīve
 
-Event-sourcing and collaboration platform
+Low-abstraction robust orchestration for scalable event-driven systems.
 
 ![Lifecycle: pre-alpha](https://img.shields.io/badge/lifecycle-pre--alpha-a0c3d2.svg)
 ![JaCoCo branch coverage: green is good](../.github/badges/branches.svg)
@@ -19,26 +19,38 @@ Teaser trailer (not there yet):
 
 ## Why
 
-Spīve, as a platform, implements a few relatively non-leaky abstractions for managing consistently ordered, partitioned streams of events, and orchestrates [event-sourced](https://martinfowler.com/articles/201701-event-driven.html#Event-sourcing) distributed applications that reliably consume and produce such streams.
+Spīve's primary goal is to boost productivity in software engineering, ranging from near-real time data processing pipelines to microservices, websites and enterprise internal tools:
+- Must make it easy to achieve more with less code, concretely: elide [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete), often encourage event-driven approach as the first choice, embrace determinism, and remove difficulties from statefulness where applicable
+- Intuitive operations and robust observability must come by default (deploying your software in a poorly observable fashion should be _hard_)
 
-(Event-sourcing as a paradigm capitalizes on history retention and thus repeatable behaviors. It uncomplicates effective use of in-memory data structures, to marry simple and easy development work with predictable processing performance. Spīve API is designed to directly assist application developers in successfully leveraging these principles.)
-
-Spīve's primary goal is to boost productivity in software engineering, concretely — simplify development and management of event-driven applications, ranging from near-real time data processing pipelines to microservices, websites and enterprise internal tools.
-
-A secondary goal is to build out a platform where business logic is neatly delineated from infrastructure concerns, such as event storage. This gives you greater power to carry out blanket optimizations across all your owned applications, thus achieving resource economy, as well as strategic capability to hop between vendors.
+Second to the above, we should also not neglect performance:
+- Should scale without contention on a group centralized nodes or a single point of failure
+- Should leverage existing durable store implementations (there are already plenty), and let you as an application owner pick optimal price/throughput among the most suitable storage and compute providers
 
 ## How
 
-A few of the orchestration aspects include:
+Spīve, as a platform, implements a few relatively non-leaky abstractions for managing consistently ordered, partitioned streams of events, and orchestrates [event-sourced](https://martinfowler.com/articles/201701-event-driven.html#Event-sourcing) distributed applications that reliably consume and produce such streams.
+
+(Event-sourcing, as a paradigm, capitalizes on history retention and thus repeatable behaviors. It uncomplicates effective use of in-memory data structures, to marry simple and easy development work with predictable processing performance. Spīve API is designed to directly assist application developers in successfully leveraging these principles.)
+
+### Intuitive orchestration
 
 - automated <abbr title="&quot;Keep The Lights On&quot;">KTLO<abbr> operations, such as instance restoration to healthy and live state by replaying historical events in case of crashes
 - assistance in debugging and rollout of code changes
 - proactive scaling (by sharding) in anticipation of excessive number of events hitting any single instance
 - always up-to-date visualization of data flow between applications
 
-Robust observability is not surprising, given how Spīve stays on top of the entire lifecycle of event streams and the applications which communicate through these streams. (Think of a nightly scheduled job producing statistical model updates into a service, then maybe a web-based administration tool allowing account managers to enter data in another service, both of them being depended on by a user-facing app server, and so on.) Tens and hundreds of interdependent applications, distributed on thousands of instances, can be easily operated and understood on a "single pane of glass" interface. The rich interactive visualization comes in especially handy when a software system grows to more than one development/operations team and its architecture evolves through years.
+(Think of a nightly scheduled job producing statistical model updates into a service, then maybe a web-based administration tool allowing account managers to enter data in another service, both of them being depended on by a user-facing app server, and so on.)
+
+### End-to-end observability
+
+Spīve stays on top of the entire lifecycles of event streams and the applications which communicate through these streams. Tens and hundreds of interdependent applications, distributed across thousands of instances, can be easily operated and understood on a "single pane of glass" interface. The rich interactive visualization comes in especially handy when a software system grows to require more than one team of developers, and the system's architecture evolves through years.
+
+### Business logic delineated from event storage
 
 Spīve API strives to abstract away storage and encoding of events — the application developer/owner should be enabled to work "in language" without extraneous concern about where technically the events came from and where they went. Spīve guarantees that deployed application code will keep executing in a consistent and timely<sup>TBD</sup> fashion to react to incoming events, or otherwise application owners will get alerted.
+
+### Foundation for platform and data engineering
 
 Under the hood, the Spīve abstractions around event handling unlock a slew of blanket optimizations that can be applied transparently. Examples include microbatching to trade off latency against throughput, moving the persisted event streams between differently priced storages, moving the computation between different machine types, etc.
 
@@ -63,7 +75,7 @@ Many Big Data problems can just as well benefit from event-sourcing model, espec
 - Serializability of [event handler](API.md#Event_handlers) code to transfer it to distributed workers is not required — on the contrary, the application code (image, resp. jar) is deployed and executed as-built, usually on a set of virtual machine instances.
 - Control of per-instance in-memory state using the native constructs of the programming language is facilitated, avoiding superfluous indirection.
 - Event handling logic is designed to be single threaded: among simplicity benefits, it should be particularly noted that stacktraces in case of errors tend to be informative and pointing to the relevant places in business logic. Meanwhile, the necessary parallelism for maintaining acceptable performance is achieved via partitioning of streams, resp. by sharding of processes into multiple instances.
-- Complementing synchronous event handling, the framework embraces [workloads](API.md#Workloads) that run concurrently with event handlers. Workloads are perfectly suitable for serving requests off the in-memory state with low latency and high availability, among other things.
+- Complementing synchronous event handling, Spīve sports [workloads](API.md#Workloads) that run concurrently with event handlers. Workloads are perfectly suitable for serving requests off the in-memory state with low latency and high availability, among other things.
 
 Spīve ultimately provides safeguards so that out-of-order events are never observed by the business logic, which is of great help to easily reason about the correctness of application behavior. This needs to be reconciled with the real world circumstances where information may happen to arrive out-of-order though. Instead of exposing late arrival of events as a complicating condition in business logic, Spīve chooses to primarily address this problem through first class versioning of streams, resp. processes, along with convenience automation and orchestration to migrate the world (the dependency graph downstream of the corrupt stream, and their hitherto created side effects) to a corrected version of the event order. (Cf. n-temporal models, backdating.) This comes with recomputation costs that may be formidable yet feasible, a tradeoff for overall productivity gain.
 
@@ -89,7 +101,7 @@ Backend and application examples are currently developed as a Maven project usin
     sdk install mvnd 1.0-m6-m40
     mvnd clean verify
 
-Frontend uses Qwik, D3 and Material UI. See the respective README.md file for instructions.
+Frontend uses Qwik, D3 and Material UI. See the respective [README.md](../app/src/main/qwik/README.md) file for instructions.
 
 ### Conventions and opinions
 
