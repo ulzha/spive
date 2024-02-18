@@ -4,7 +4,6 @@ import static io.ulzha.spive.basicrunner.matchers.HeartbeatSampleMatcher.progres
 import static io.ulzha.spive.basicrunner.matchers.ProgressUpdateMatcher.containsIgnoringTime;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,11 +38,35 @@ public class UmbilicalTest {
             nullValue(),
             containsIgnoringTime(new ProgressUpdate(), ProgressUpdate.createSuccess())));
     assertThat(actual.checkpoint(), is(t4));
-    assertThat(actual.nInputEventsTotal(), equalTo(5L));
+    assertThat(actual.nInputEventsTotal(), is(5L));
   }
 
   @Test
-  void givenManyUpdates_getHeartbeatSnapshotVerbose_shouldBeTruncatedToTen() {
+  void
+      givenNominalUpdateAndWarningUpdates_getHeartbeatSnapshot_shouldReturnExpectedFirstsAndCheckpoint() {
+    final Umbilical sut = new Umbilical();
+
+    sut.addHeartbeat(null);
+    final EventTime t0 = EventTime.fromString("2024-02-15T15:00:00Z#0");
+    sut.addHeartbeat(t0);
+    sut.addSuccess(t0);
+    final EventTime t1 = EventTime.fromString("2024-02-15T15:00:00Z#1");
+    sut.addHeartbeat(t1);
+    for (int i = 0; i < 5; i++) {
+      sut.addWarning(t1, new Exception("Sending it"));
+    }
+
+    final HeartbeatSnapshot actual = sut.getHeartbeatSnapshot(false);
+
+    assertThat(actual.sample().size(), is(2));
+    assertThat(actual.sample().get(0).eventTime(), is(t0));
+    assertThat(actual.sample().get(1).eventTime(), is(t1));
+    assertThat(actual.checkpoint(), is(t0));
+    assertThat(actual.nInputEventsTotal(), is(1L));
+  }
+
+  @Test
+  void givenManyEventsWithNominalUpdates_getHeartbeatSnapshotVerbose_shouldBeTruncatedToTen() {
     final Umbilical sut = new Umbilical();
 
     sut.addHeartbeat(null);
@@ -62,7 +85,33 @@ public class UmbilicalTest {
     assertThat(
         actual.sample().get(9).eventTime(), is(EventTime.fromString("2021-12-10T12:00:00Z#11")));
     assertThat(actual.checkpoint(), is(EventTime.fromString("2021-12-10T12:00:00Z#11")));
-    assertThat(actual.nInputEventsTotal(), equalTo(12L));
+    assertThat(actual.nInputEventsTotal(), is(12L));
+  }
+
+  @Test
+  void
+      givenNominalUpdateAndManyEventsWithWarningUpdates_getHeartbeatSnapshot_shouldReturnExpectedFirstsAndCheckpoint() {
+    final Umbilical sut = new Umbilical();
+
+    sut.addHeartbeat(null);
+    final EventTime t0 = EventTime.fromString("2024-02-15T15:00:00Z#0");
+    sut.addHeartbeat(t0);
+    sut.addSuccess(t0);
+    for (int i = 1; i < 12; i++) {
+      final EventTime t = EventTime.fromString("2024-02-15T15:00:00Z#" + i);
+      sut.addHeartbeat(t);
+      sut.addWarning(t, new Exception("Sending it"));
+      sut.addSuccess(t);
+    }
+
+    final HeartbeatSnapshot actual = sut.getHeartbeatSnapshot(false);
+
+    assertThat(actual.sample().size(), is(2));
+    // we haven't really codified a good decision yet which warning(s) to keep
+    final EventTime tLatestSuccess = EventTime.fromString("2024-02-15T15:00:00Z#11");
+    assertThat(actual.sample().get(1).eventTime(), is(tLatestSuccess));
+    assertThat(actual.checkpoint(), is(tLatestSuccess));
+    assertThat(actual.nInputEventsTotal(), is(12L));
   }
 
   //  @Test

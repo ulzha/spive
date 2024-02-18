@@ -9,6 +9,7 @@ import java.util.List;
  *
  * <p>Not broken up onto separate channels because of desire for point-in-time consistency.
  */
+// CompressedHeartbeat?
 public record HeartbeatSnapshot(
     List<ProgressUpdatesList> sample,
     @Nullable EventTime checkpoint,

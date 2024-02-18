@@ -117,36 +117,46 @@ public class Umbilical {
   /**
    * Helper to deverbosify response.
    *
-   * @return a filtered map containing only entries for the first warning (if any), the first error
-   *     (if any), and the latest event time. The failure messages are truncated to the first line.
+   * @return a filtered map containing only entries for the latest success (if any), the first
+   *     warning (if any), the first error (if any), and the latest event time. The failure messages
+   *     are truncated to the first line.
    */
   public static List<ProgressUpdatesList> getFirsts(final List<ProgressUpdatesList> sample) {
     final List<ProgressUpdatesList> firsts = new ArrayList<>();
+    ProgressUpdatesList lastSuccess = null;
     ProgressUpdatesList firstWarning = null;
     ProgressUpdatesList firstError = null;
     ProgressUpdatesList last = null;
 
     for (var list : sample) {
       for (var update : list.progressUpdates()) {
-        boolean added = false; // just to prevent duplicates in the returned sample
+        if (update.success()) {
+          lastSuccess = list;
+        }
         if (update.warning() != null && firstWarning == null) {
           firstWarning = list;
-          firsts.add(list);
-          added = true;
         }
         if (update.error() != null && firstError == null) {
           firstError = list;
-          if (!added) {
-            firsts.add(list);
-          }
+          // currently nothing can follow, but TODO elaborate when multiple erroring partitions
         }
       }
       last = list;
     }
 
-    if (last != null && last != firstWarning && last != firstError) {
+    if (lastSuccess != null) {
+      firsts.add(lastSuccess);
+    }
+    if (firstWarning != null && !firsts.contains(firstWarning)) {
+      firsts.add(firstWarning);
+    }
+    if (firstError != null && !firsts.contains(firstError)) {
+      firsts.add(firstWarning);
+    }
+    if (last != null && !firsts.contains(last)) {
       firsts.add(last);
     }
+    firsts.sort((a, b) -> a.eventTime().compareTo(b.eventTime()));
 
     firsts.replaceAll(
         list -> {
@@ -275,7 +285,7 @@ public class Umbilical {
    * <p>Tracks event time and stats, and the progress updates during each event, in constant space.
    *
    * <p>TODO maintain an even more elaborate sample - the first warning and the eventual error per
-   * partition?
+   * partition? firsts for distinct warnings? and counts? same eventually for errors
    *
    * <p>TODO non-constant space buffer for I/O stats. Maybe subsuming some of the warnings/errors ^.
    */
@@ -292,6 +302,7 @@ public class Umbilical {
       if (sample.size() > 9 || unknownEventTimeSample.get() != null && sample.size() == 9) {
         // Pick something to truncate, but avoid entries that may be of particular interest:
         // * the null eventTime (workload heartbeat before the first event was read)
+        // * the latest successful event
         // * the first slow event (? maybe sampled slowness is of interest)
         // * the first event with a warning (? maybe recent warnings are of interest)
         // * the first event with an error
