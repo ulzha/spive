@@ -109,7 +109,7 @@ public final class BigtableEventLog implements EventLog {
   @Override
   public boolean appendIfPrevTimeMatch(final EventEnvelope event, final EventTime prevTime) {
     if (event.time().compareTo(prevTime) <= 0) {
-      throw new IllegalArgumentException("event time should come strictly after prevTime");
+      throw new IllegalArgumentException("event time must come strictly after prevTime");
     }
 
     final String newRowKey = toRowKey(prevTime);

@@ -26,7 +26,7 @@ public class SpiveScaler implements SpiveScalerInstance {
   @Override
   public void accept(final CreateInstance event) {
     // TODO
-    output.emitConsequential(/* ... */ );
+    // output.emitConsequential(new ScaleProcess ...);
   }
 
   public class Watchdog implements Runnable {

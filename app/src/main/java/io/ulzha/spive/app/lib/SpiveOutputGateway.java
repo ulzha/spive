@@ -71,18 +71,20 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
    * Blocks indefinitely until append occurs or a competing prior append has been positively
    * detected.
    *
-   * @return true if appended, false if not because the latest stored Event has time >
-   *     lastEventTime.
-   * @throws IllegalArgumentException if event.time <= lastEventTime.
+   * @return true if appended, false if not because the latest stored Event has time > prevTime.
+   * @throws IllegalArgumentException if event.time <= prevTime.
    */
-  private boolean emit(Event event, EventTime lastEventTime) {
+  private boolean emit(Event event, EventTime prevTime) {
+    if (event.time.compareTo(prevTime) <= 0) {
+      throw new IllegalArgumentException("event time must come strictly after prevTime");
+    }
     // TODO check that it belongs to the intended stream and the intended subset of partitions
     long sleepMs = 10;
     long sleepMsMax = 100000;
     EventEnvelope ee = EventEnvelope.wrap(event);
     while (true) {
       try {
-        return eventLog.appendIfPrevTimeMatch(ee, lastEventTime);
+        return eventLog.appendIfPrevTimeMatch(ee, prevTime);
         // TODO report that we're leading
       } catch (IOException e) {
         // likely an intermittent failure, let's keep trying
@@ -267,22 +269,19 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
   // emitTherefore?
   private <T> void emitConsequential(Type type, T payload) {
     try {
-      final EventTime prevEventTime = lastEventTime.get();
-      final EventTime eventTime =
-          new EventTime(prevEventTime.instant, prevEventTime.tiebreaker + 1);
+      final EventTime prevTime = lastEventTime.get();
+      final EventTime eventTime = new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
       try {
         eventLog.lockConsequential();
         // If emitConsequential gets erroneously invoked from another thread than EventLoop, then
         // this deadlocks immediately, which points out the problem well... Perhaps should add a
         // descriptive exception though.
         final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
-        if (emit(event, prevEventTime)) {
+        if (emit(event, prevTime)) {
           System.out.println("Emitted consequential event, wdyt? " + eventTime);
           lastEventTimeEmitted.set(eventTime);
         } else {
           // TODO only throw if something worse than a competing identical append happened...
-          // Already with bootstrap we have to resolve this, jsonl hit with
-          // java.nio.InvalidMarkException
           throw new RuntimeException("not well thought out");
         }
       } finally {

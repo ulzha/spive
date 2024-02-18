@@ -143,10 +143,11 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <!-- <configuration>
+            <configuration>
               <excludes>
+                <exclude>io/ulzha/spive/example/copy/app/lib/*.class</exclude>
               </excludes>
-            </configuration> -->
+            </configuration>
             <executions>
               <execution>
                 <goals>

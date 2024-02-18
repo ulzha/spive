@@ -13,8 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Stores streams in Google Cloud Bigtable, one row per event, using `<logId>:<prevEventTime>` as
- * the row key.
+ * Stores streams in Google Cloud Bigtable, one row per event, using `<logId>:<prevTime>` as the row
+ * key.
  *
  * <p>(Should include stream id too? "Long row keys take up additional memory and storage and
  * increase the time it takes to get responses from the Cloud Bigtable server..." The platform can

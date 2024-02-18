@@ -9,6 +9,7 @@ import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -26,8 +27,8 @@ public class SpiveScalerOutputGateway extends Gateway {
   private final Supplier<Instant> wallClockTime;
   private final LockableEventLog eventLog;
 
-  private static final Type createInstanceType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateInstance");
+  private static final Type scaleProcessType =
+      Type.fromTypeTag("pojo:io.ulzha.spive.scaler.app.events.ScaleProcess");
 
   public SpiveScalerOutputGateway(
       final UmbilicalWriter umbilicus,
@@ -39,15 +40,6 @@ public class SpiveScalerOutputGateway extends Gateway {
     this.lastEventTimeEmitted = new AtomicReference<>(EventTime.INFINITE_PAST);
     this.wallClockTime = wallClockTime;
     this.eventLog = eventLog;
-  }
-
-  public void emitConsequential() {
-    // TODO
-
-    eventLog.lockConsequential();
-    System.out.println(
-        this.lastEventTime.toString() + lastEventTimeEmitted.toString() + wallClockTime.toString());
-    emit(null, EventTime.INFINITE_PAST);
   }
 
   /**
@@ -79,6 +71,36 @@ public class SpiveScalerOutputGateway extends Gateway {
         Thread.currentThread().interrupt();
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  // public void emitConsequential(ScaleProcess payload) {
+  //   emitConsequential(scaleProcessType, payload);
+  // }
+
+  private <T> void emitConsequential(Type type, T payload) {
+    try {
+      final EventTime prevTime = lastEventTime.get();
+      final EventTime eventTime = new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
+      try {
+        eventLog.lockConsequential();
+        // If emitConsequential gets erroneously invoked from another thread than EventLoop, then
+        // this deadlocks immediately, which points out the problem well... Perhaps should add a
+        // descriptive exception though.
+        final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+        if (emit(event, prevTime)) {
+          System.out.println("Emitted consequential event, wdyt? " + eventTime);
+          lastEventTimeEmitted.set(eventTime);
+        } else {
+          // TODO only throw if something worse than a competing identical append happened...
+          throw new RuntimeException("not well thought out");
+        }
+      } finally {
+        eventLog.unlock();
+      }
+    } catch (Throwable t) {
+      umbilicus.addError(t);
+      throw t;
     }
   }
 }

@@ -20,15 +20,15 @@ public class InMemoryEventLog implements EventLog {
   public synchronized boolean appendIfPrevTimeMatch(
       final EventEnvelope event, final EventTime prevTime) {
     if (event.time().compareTo(prevTime) <= 0) {
-      throw new IllegalArgumentException("event time should come strictly after prevTime");
+      throw new IllegalArgumentException("event time must come strictly after prevTime");
     }
 
     if (list.isEmpty() && EventTime.INFINITE_PAST.compareTo(prevTime) < 0) {
       throw new IllegalArgumentException(
-          "prevTime should be set to INFINITE_PAST, when appending the first event");
+          "prevTime must be set to INFINITE_PAST, when appending the first event");
     } else if (!list.isEmpty() && list.getLast().time().compareTo(prevTime) < 0) {
       throw new IllegalArgumentException(
-          "prevTime should be set to previous event time read, when appending a subsequent event");
+          "prevTime must be set to previous event time read, when appending a subsequent event");
     }
 
     if (!list.isEmpty() && list.getLast().time().compareTo(prevTime) > 0) {

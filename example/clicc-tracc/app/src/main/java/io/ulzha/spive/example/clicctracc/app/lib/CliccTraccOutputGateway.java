@@ -76,20 +76,6 @@ public class CliccTraccOutputGateway extends Gateway {
   }
 
   /**
-   * Emits an event to the output simultaneous with the event being handled.
-   *
-   * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
-   * Otherwise the event time is the same as for the input event currently handled. FIXME
-   *
-   * <p>TODO exhaust edge cases that may lead to impossibility of tiebreaking
-   *
-   * <p>TODO non-simultaneous version?
-   */
-  public boolean emitConsequential(Clicc payload) {
-    return emitIf(() -> true, cliccType, payload, lastEventTime.get());
-  }
-
-  /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
    * that point in time.
    *
@@ -209,5 +195,35 @@ public class CliccTraccOutputGateway extends Gateway {
       tentativeInstant = wallClockTime.get();
     }
     return new EventTime(tentativeInstant);
+  }
+
+  public void emitConsequential(Clicc payload) {
+    emitConsequential(cliccType, payload);
+  }
+
+  private <T> void emitConsequential(Type type, T payload) {
+    try {
+      final EventTime prevTime = lastEventTime.get();
+      final EventTime eventTime = new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
+      try {
+        eventLog.lockConsequential();
+        // If emitConsequential gets erroneously invoked from another thread than EventLoop, then
+        // this deadlocks immediately, which points out the problem well... Perhaps should add a
+        // descriptive exception though.
+        final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+        if (emit(event, prevTime)) {
+          System.out.println("Emitted consequential event, wdyt? " + eventTime);
+          lastEventTimeEmitted.set(eventTime);
+        } else {
+          // TODO only throw if something worse than a competing identical append happened...
+          throw new RuntimeException("not well thought out");
+        }
+      } finally {
+        eventLog.unlock();
+      }
+    } catch (Throwable t) {
+      umbilicus.addError(t);
+      throw t;
+    }
   }
 }

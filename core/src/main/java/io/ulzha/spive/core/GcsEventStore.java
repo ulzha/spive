@@ -4,7 +4,7 @@ package io.ulzha.spive.core;
  * TODO compare with Bigtable.
  *
  * <p>Stores streams in a Google Cloud Storage bucket, one object per event, structured as
- * `/<logId>/<prevEventTime>`.
+ * `/<logId>/<prevTime>`.
  *
  * <p>Use of previous event time lets appendIfPrevTimeMatch be easily implemented using an
  * `if-generation-match:0` precondition. Thus it only takes one RPC per append and there is no need
