@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 /**
  * Facilitates the tiny bit of asynchronous bidirectional communication needed between control plane
@@ -216,9 +217,9 @@ public class Umbilical {
   // TODO SSE tunnel of some sort, so UI can stream directly from the runner, with minimal delay on
   // focus?
   public class Umbilicus implements UmbilicalWriter {
-    public final AtomicReference<EventTime> currentEventTime;
+    public final Supplier<EventTime> currentEventTime;
 
-    public Umbilicus(AtomicReference<EventTime> currentEventTime) {
+    public Umbilicus(Supplier<EventTime> currentEventTime) {
       this.currentEventTime = currentEventTime;
     }
 

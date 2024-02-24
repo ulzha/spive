@@ -83,17 +83,15 @@ public final class LocalFileSystemEventLog implements EventLog {
     if (event.time().compareTo(prevTime) <= 0) {
       throw new IllegalArgumentException("event must have time later than prevTime");
     }
-    // TODO caching the last event read and peeking the next could help return falses faster, with
-    // less seeking
+    // TODO version with position hint, usable from EventIterator, with less seeking
 
     // atomically compare with previous time and append
-    // (lock prevents a competing replica from causing a duplicate append)
     try (FileLock lock = channel.lock()) {
       if (channel.size() > 0) {
         seekToLastLine();
         final EventEnvelope latestEvent = read(channel);
         if (latestEvent == null) {
-          throw new IllegalArgumentException("log is closed");
+          throw new IllegalStateException("log is closed");
         }
         if (latestEvent.time().compareTo(prevTime) == 0) {
           return append(event);
@@ -201,7 +199,6 @@ public final class LocalFileSystemEventLog implements EventLog {
     public boolean hasNext() {
       if (nextEvent == null) {
         try {
-          // optimize later to always skip disk read when re-reading own sequence of appends? Yes
           nextEvent = read(readChannel);
           if (previousEvent != null
               && nextEvent != null
@@ -238,7 +235,21 @@ public final class LocalFileSystemEventLog implements EventLog {
 
     @Override
     public EventEnvelope appendOrPeek(EventEnvelope event) {
-      throw new UnsupportedOperationException("appendOrPeek");
+      try {
+        if (LocalFileSystemEventLog.this.appendIfPrevTimeMatch(event, previousEvent.time())) {
+          return event;
+        } else {
+          if (!hasNext()) { // note side effects
+            throw new IllegalStateException(
+                "expected a subsequent event after "
+                    + previousEvent.time()
+                    + ", but log prematurely indicates end");
+          }
+          return nextEvent;
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     private void close() throws IOException {

@@ -17,8 +17,8 @@ import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
 import io.ulzha.spive.basicrunner.api.Umbilical;
 import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
+import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLog;
-import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,8 +102,6 @@ public interface SpiveInstance
     //    }
 
     public static void main(final Umbilical umbilical, final String... args) throws Exception {
-      // null until the first event is read
-      final AtomicReference<EventTime> currentEventTime = new AtomicReference<>();
       final Supplier<Instant> wallClockTime = Instant::now;
 
       try (EventLog naiveInputEventLog = EventLog.open(args[0], args[1]);
@@ -117,31 +114,24 @@ public interface SpiveInstance
                 ? inputEventLog
                 : new LockableEventLog(naiveOutputEventLog));
 
-        // just needs a Supplier?
-        final UmbilicalWriter umbilicus = umbilical.new Umbilicus(currentEventTime);
+        final EventIterator eventIterator = new EventIterator(inputEventLog.iterator());
 
-        // just needs a Supplier but FIXME beat outside an event when the write is actually from a
-        // concurrent workload
+        // FIXME thread-safe supplier
+        // FIXME beat outside an event when the write is actually from a concurrent workload
+        final UmbilicalWriter umbilicus = umbilical.new Umbilicus(() -> eventIterator.lastTimeRead);
+
         final SpiveOutputGateway output =
-            new SpiveOutputGateway(umbilicus, currentEventTime, wallClockTime, outputEventLog);
+            new SpiveOutputGateway(umbilicus, eventIterator, wallClockTime, outputEventLog);
 
         // FIXME zones that this instance manages should come from its state, not from args
         final BasicRunnerGateway runner =
             new BasicRunnerGateway(umbilicus, List.of(args[4].split(",")));
         // TODO parse arguments in a more structured way
 
-        // offer executorService and synchronizedExecutorService?
-        // executorServiceFactory? awaitQuiescence on all?
         final Spive app = new Spive(output, runner);
 
         List<Runnable> workloads = new ArrayList<>();
-        workloads.add(
-            new EventLoop(
-                umbilical,
-                currentEventTime, // TODO refactor this as sort of a position, in inputEventLog?
-                // Pass an iterator only? Yes I think so, or readonly iterator here applicable
-                app,
-                inputEventLog));
+        workloads.add(new EventLoop(umbilical, eventIterator, app, inputEventLog));
         workloads.addAll(selectWorkloads(app, args[5]));
 
         umbilical.addHeartbeat(null); // marks start of all the workloads
@@ -208,9 +198,7 @@ public interface SpiveInstance
      */
     private static void runWorkloads(List<Runnable> workloads)
         throws InterruptedException, ExecutionException {
-      // yolo, not sure which ExecutorService is best API-wise or if we should or should not pass
-      // them into workloads
-      // (we might benefit from knowing about thread fanout, also CPU or IO boundness... TODO)
+      // atomic needed?
       final AtomicInteger threadCounter = new AtomicInteger();
       final ExecutorService executorService =
           Executors.newCachedThreadPool(
@@ -260,17 +248,17 @@ public interface SpiveInstance
 
     private static class EventLoop implements Runnable {
       private final Umbilical umbilical;
-      private final AtomicReference<EventTime> currentEventTime;
+      private final EventIterator eventIterator;
       private final Spive spive;
       private final LockableEventLog inputEventLog;
 
       private EventLoop(
           Umbilical umbilical,
-          AtomicReference<EventTime> currentEventTime,
+          EventIterator eventIterator,
           Spive spive,
           LockableEventLog inputEventLog) {
         this.umbilical = umbilical;
-        this.currentEventTime = currentEventTime;
+        this.eventIterator = eventIterator;
         this.spive = spive;
         this.inputEventLog = inputEventLog;
       }
@@ -278,7 +266,8 @@ public interface SpiveInstance
       @Override
       public void run() {
         LOG.info("EventLoop over {} running", inputEventLog);
-        for (EventEnvelope envelope : inputEventLog) {
+        while (eventIterator.hasNext()) {
+          final EventEnvelope envelope = eventIterator.next();
           System.out.println("We have an envelope: " + envelope);
           final Event event = envelope.unwrap();
           System.out.println("We have an event: " + event);
@@ -291,7 +280,6 @@ public interface SpiveInstance
             // the same log.
             // TODO optimize to forego synchronization when no other workloads are running
             inputEventLog.lock();
-            currentEventTime.set(event.time);
             spive
                 .getClass()
                 .getMethod("accept", event.payload.getClass())
@@ -304,10 +292,10 @@ public interface SpiveInstance
           } catch (InvocationTargetException ite) {
             // cause seems to be in user code... But could be also from a Gateway call
             // TODO sanity check if gateway exceptions are swallowed by user code
-            umbilical.addError(currentEventTime.get(), ite.getCause());
+            umbilical.addError(eventIterator.lastTimeRead, ite.getCause());
             throw new HandledException(ite.getCause());
           } catch (NoSuchMethodException | IllegalAccessException e) {
-            umbilical.addError(currentEventTime.get(), e);
+            umbilical.addError(eventIterator.lastTimeRead, e);
             throw new InternalException(
                 "Error invoking "
                     + spive.getClass().getCanonicalName()

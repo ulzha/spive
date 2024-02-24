@@ -2,7 +2,6 @@ package io.ulzha.spive.lib;
 
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -14,7 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * handler behavior would become nondeterministic due to nondeterministic results of _their_ emit()
  * calls.)
  */
-//
+// this shouldn't at all be a wrapper, more like an OutputLock between Gateway and EventLoop.
+// PendingConsequencesLock? HandlerProgress?
 public class LockableEventLog implements EventLog {
   private final EventLog delegate;
   private final ReentrantLock spontaneousAppendLock = new ReentrantLock(true);
@@ -32,7 +32,7 @@ public class LockableEventLog implements EventLog {
 
   @Override
   @Nonnull
-  public Iterator<EventEnvelope> iterator() {
+  public AppendIterator iterator() {
     return delegate.iterator();
   }
 
