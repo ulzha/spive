@@ -10,6 +10,6 @@ public record CreateEventLog(
 // A slew of CreateEventLog simultaneously decribe creation of a Fork - roundabout and possibly
 // scales badly? Alt. non-simultaneously...
 
-// TODO FinalizeEventLog?
+// TODO FinalizeEventLog? SealEventLog?
 // Something that records event time, explicitly after the owning instance positively reports
 // finalizing it?

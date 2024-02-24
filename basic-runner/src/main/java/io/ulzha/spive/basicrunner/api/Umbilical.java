@@ -301,7 +301,7 @@ public class Umbilical {
     private void truncate(final EventTime eventTimeToKeep) {
       if (sample.size() > 9 || unknownEventTimeSample.get() != null && sample.size() == 9) {
         // Pick something to truncate, but avoid entries that may be of particular interest:
-        // * the null eventTime (workload heartbeat before the first event was read)
+        // * the null eventTime (heartbeat before the first event was read, alt. between events)
         // * the latest successful event
         // * the first slow event (? maybe sampled slowness is of interest)
         // * the first event with a warning (? maybe recent warnings are of interest)

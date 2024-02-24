@@ -61,7 +61,8 @@ import org.slf4j.LoggerFactory;
  * assumptions as to which (if any) workload Runnables coexist on a given instance of Foo.
  *
  * <p>The workload Runnables can freely rely on in-memory state of Foo, but they should never modify
- * it nor create side effects through gateways, except emitting events through EventStoreGateway.
+ * this state, nor create side effects through gateways, except for emitting events through {@code
+ * output} gateway.
  */
 public interface SpiveInstance
 /*BackgroundfulInstance, ServerfulInstance, Supplier<Runnable>*/ {
@@ -116,8 +117,11 @@ public interface SpiveInstance
                 ? inputEventLog
                 : new LockableEventLog(naiveOutputEventLog));
 
+        // just needs a Supplier?
         final UmbilicalWriter umbilicus = umbilical.new Umbilicus(currentEventTime);
 
+        // just needs a Supplier but FIXME beat outside an event when the write is actually from a
+        // concurrent workload
         final SpiveOutputGateway output =
             new SpiveOutputGateway(umbilicus, currentEventTime, wallClockTime, outputEventLog);
 
@@ -135,7 +139,7 @@ public interface SpiveInstance
             new EventLoop(
                 umbilical,
                 currentEventTime, // TODO refactor this as sort of a position, in inputEventLog?
-                // Pass an iterator only?
+                // Pass an iterator only? Yes I think so, or readonly iterator here applicable
                 app,
                 inputEventLog));
         workloads.addAll(selectWorkloads(app, args[5]));

@@ -220,6 +220,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
     while (lastEventTime.get().compareTo(lastEventTimeEmitted.get()) < 0
         || tentativeInstant.compareTo(lastEventTime.get().instant) <= 0) {
       try {
+        // here we can wait() on the iterator or lastEventTimeEmitted, no need to back off
+        // but actually this whole function needs to be different when output isn't an input
         Thread.sleep(waitMillis);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
@@ -278,12 +280,15 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
         // descriptive exception though.
         final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
         if (emit(event, prevTime)) {
-          System.out.println("Emitted consequential event, wdyt? " + eventTime);
-          lastEventTimeEmitted.set(eventTime);
+          // we are leading, we actually appended
         } else {
-          // TODO only throw if something worse than a competing identical append happened...
-          throw new RuntimeException("not well thought out");
+          // we are not leading, but this must act idempotent, as we came here from an event handler
+          if (!eventLog.contains(event, prevTime)) {
+            throw new RuntimeException("Unexpected ");
+          }
         }
+        System.out.println("Emitted consequential event, wdyt? " + eventTime);
+        lastEventTimeEmitted.set(eventTime);
       } finally {
         eventLog.unlock();
       }

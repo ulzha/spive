@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -180,16 +179,16 @@ public final class LocalFileSystemEventLog implements EventLog {
   }
 
   @Override
-  public Iterator<EventEnvelope> iterator() {
-    return new EventIterator();
+  public AppendIterator iterator() {
+    return new AppendIteratorImpl();
   }
 
-  public class EventIterator implements Iterator<EventEnvelope> {
+  private class AppendIteratorImpl implements AppendIterator {
     private final FileChannel readChannel;
     private EventEnvelope previousEvent;
     private EventEnvelope nextEvent;
 
-    public EventIterator() {
+    public AppendIteratorImpl() {
       try {
         readChannel = FileChannel.open(filePath, Set.of(StandardOpenOption.READ));
       } catch (IOException e) {
@@ -202,7 +201,7 @@ public final class LocalFileSystemEventLog implements EventLog {
     public boolean hasNext() {
       if (nextEvent == null) {
         try {
-          // optimize later to always skip disk read when re-reading own sequence of appends?
+          // optimize later to always skip disk read when re-reading own sequence of appends? Yes
           nextEvent = read(readChannel);
           if (previousEvent != null
               && nextEvent != null
@@ -235,6 +234,11 @@ public final class LocalFileSystemEventLog implements EventLog {
       previousEvent = nextEvent;
       nextEvent = null;
       return previousEvent;
+    }
+
+    @Override
+    public EventEnvelope appendOrPeek(EventEnvelope event) {
+      throw new UnsupportedOperationException("appendOrPeek");
     }
 
     private void close() throws IOException {

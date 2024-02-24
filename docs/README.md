@@ -20,7 +20,7 @@ Teaser trailer (not there yet):
 ## Why
 
 Spīve's primary goal is to boost productivity in software engineering, ranging from near-real time data processing pipelines to microservices, websites and enterprise internal tools:
-- Must make it easy to achieve more with less code, concretely: elide [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete), often encourage event-driven approach as the first choice, embrace determinism, and remove difficulties from statefulness where applicable
+- Must make it easy to achieve more with less code, concretely: elide [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) boilerplate, often encourage event-driven approach as the first choice, embrace determinism, and remove difficulties from statefulness where applicable
 - Intuitive operations and robust observability must come by default (deploying your software in a poorly observable fashion should be _hard_)
 
 Second to the above, we should also not neglect performance:
@@ -68,7 +68,7 @@ Use-case wise, Spīve most readily works for backend services serving low write 
 
 For (sub)systems receiving very frequent writes, Spīve may not be particularly easy to use and scale out of the box — good old <abbr title="key-value">KV</abbr> stores, <abbr title="Relational Database Management System">RDBMS</abbr>es, or specialized graph databases may be the way to go, unless you are looking at Spīve exactly as a suitable control plane to roll your own custom in-memory data structures and indexes in. For transporting large files such as video and multimedia, Spīve events are not your first choice either — consider using an off-the-shelf object store resp. <abbr title="Content Delivery Network">CDN</abbr>, and just managing file metadata in Spīve.
 
-On a scale from "a highly optimized query engine for detecting near-Earth asteroids on a specialized astronomy mainframe" to "a Jenga tower which we keep tweaking to ship features our users value", quite a lot of software systems fall in the latter group — custom, smallish and business critical systems. This "long, fat tail" tends to exhibit significant engineering overhead and accidental complexity. Seeking to remedy this, Spīve platform is adamant to provide sensible default behaviors, readily trades off processor cycles in favor of cutting engineering toil, tightens the development feedback loop, and reduces mean time to incident resolution.
+On a scale from "a highly optimized query engine for detecting near-Earth asteroids on a specialized astronomy mainframe" to "a Jenga tower which we keep tweaking to ship features our users value", quite a lot of software systems fall in the latter group — custom, smallish and business critical systems. This "long, fat tail" tends to exhibit significant engineering overhead and accidental complexity. Seeking to remedy this, Spīve platform is adamant to provide sensible default behaviors, readily trades off processor cycles in favor of reducing human toil, tightens the development feedback loop, and speeds up recovery from eventual incidents.
 
 Many Big Data problems can just as well benefit from event-sourcing model, especially if the problem is [embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel). In any case, Spīve is not a blob store, nor yet another Big Data analytics engine with faster queries or anything of that sort. Spīve API makes different tradeoffs than those familiar to Beam or Hadoop users:
 

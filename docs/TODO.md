@@ -83,6 +83,8 @@
 - [ ] Allow detaching and operating the application standalone. This works also as a "Plan B"/escape hatch/retreat path for early Spīve adopters
 - [ ] Document/demo how to implement custom deploy/undeploy hooks listening to platform events to clean up application resources (like dashboards, or Pub/Sub subscriptions) reliably even if application instances die abruptly
 - [ ] Example forking/decoration/piggyback flow - frictionlessly and safely reuse parent application(s) in-memory state as part of the model of a new application, replicated without the parent side effects, but with added I/O to more streams, and/or with different workloads
+- [ ] Split tool, also exemplifying forking/decoration/piggyback flow - can emit two event logs from one, without reading twice?
+- [ ] Basic compaction tool. (Must not screw with consequential streaks... Can there be a protective measure?)
 - [ ] SpiveCompactor as a separate infra application. (Only for compactable applications that provide the compaction job logic.) (Compactions can be batch, Kappa architecture meets Lambda architecture.) (Compaction also to play a role in GDPR/PII data deletion?) Compaction to generate historical graph? (Doubt)
 - [ ] Example compaction job as a reduce operator in packaged alongside event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
 - [ ] SpiveArchiver as a related infra application

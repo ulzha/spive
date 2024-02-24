@@ -3,6 +3,7 @@ package io.ulzha.spive.lib;
 import io.ulzha.spive.core.BigtableEventStore;
 import io.ulzha.spive.core.LocalFileSystemEventStore;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,8 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * BookKeeper ledger, a Kinesis shard, or an SQS message group.) May contain events from one or
  * several `Stream.Partition`s. (Even from multiple streams?)
  *
- * <p>Reading is not thread-safe. (An EventLog object is only supposed to be iterated through by the
- * event loop of one <a href="">process instance</a>.)
+ * <p>Relies on concurrency primitives of the underlying store to safely detect races. Multiple
+ * EventLog objects operating concurrently on the same underlying log is specifically safe, their
+ * reads and appends occur atomically.
  *
  * <p>Storing several partitions together is an optimization, useful because Spive scalability and
  * simplicity depends on arbitrarily fine-grained partitioning, while the underlying storage may not
@@ -58,6 +60,39 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
   }
 
   /**
+   * Efficient interface for reading the log in sequence and appending to it. No removals supported.
+   */
+  public static interface AppendIterator extends Iterator<EventEnvelope> {
+    /**
+     * Tries to append {@code event} to the end of the log, validating that no other event is
+     * appended in between it and the event that was previously returned from this iterator's {@code
+     * next()}.
+     *
+     * <p>Relies on concurrency primitives of the underlying store to safely detect races.
+     *
+     * @param event
+     * @return {@code event} if the iterator was at the end of the log, and {@code event} was
+     *     appended directly after. Then {@code event} is also guaranteed to be returned by the next
+     *     {@code next()} call. If {@code event} was not appended, due to iterator not yet being at
+     *     the end of the log, then a different object, the actual next element read from the store,
+     *     is returned resp. guaranteed to be returned by the next {@code next()} call.
+     * @throws UnsupportedOperationException if this iterator is read-only
+     * @throws IllegalArgumentException if {@code event.time} <= the event time of the latest event
+     *     returned from this iterator's {@code next()}
+     * @throws IllegalStateException if the iterator is at the end of the log and the log is closed
+     */
+    default EventEnvelope appendOrPeek(EventEnvelope event) {
+      throw new UnsupportedOperationException("appendOrPeek");
+    }
+  }
+
+  /**
+   * The returned iterator is only supposed to be iterated through by one thread, such as by the
+   * event loop of one Process Instance.
+   */
+  public AppendIterator iterator();
+
+  /**
    * @return false if we have read all the events and the log is closed, true otherwise (which means
    *     it may have zero or more events to catch up with right now, and more can further be
    *     appended).
@@ -94,7 +129,7 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
    *
    * <p>Time is adjusted if necessary to come strictly after the latest event time already present.
    *
-   * <p>May employ concurrency primitives of the underlying storage to optimize, i.e. store the
+   * <p>May employ concurrency primitives of the underlying store to optimize, i.e. persist the
    * event and retrieve the adjusted time in one operation (or as few operations as possible).
    *
    * <p>This is primarily useful for output from stateless applications. Offers no mechanism for
@@ -110,10 +145,8 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
   EventTime appendAndGetAdjustedTime(EventEnvelope event) throws IOException;
 
   /**
-   * Tries to append event to the end of the log validating that no other Event is appended in
+   * Tries to append event to the end of the log, validating that no other Event is appended in
    * between it and the Event that was previously observed as being the last one.
-   *
-   * <p>Relies on concurrency primitives of the underlying storage to safely detect races.
    *
    * <p>By requiring awareness of prevTime, this allows an application to ensure it has seen all the
    * events already present in the log the moment a subsequent event gets appended. That way the
