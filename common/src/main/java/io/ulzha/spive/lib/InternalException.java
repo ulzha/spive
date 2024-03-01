@@ -9,6 +9,8 @@ package io.ulzha.spive.lib;
  * <p>Always explicitly highlight in message, what is the essential component/design invariant that
  * is supposed to safeguard against the particular problem, to the best of your understanding.
  */
+// TODO more classes to point out non-core (contributed to platform) origins, as well as conditions
+// when storage corruption is a likely factor rather than bugs
 public class InternalException extends RuntimeException {
   static final long serialVersionUID = 42L;
 

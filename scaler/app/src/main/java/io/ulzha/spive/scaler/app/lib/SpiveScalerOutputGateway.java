@@ -2,6 +2,7 @@ package io.ulzha.spive.scaler.app.lib;
 
 import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
+import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.Gateway;
 import io.ulzha.spive.lib.LockableEventLog;
@@ -10,7 +11,6 @@ import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -22,8 +22,7 @@ import java.util.function.Supplier;
  * interface, while implementing the Gateway contract.
  */
 public class SpiveScalerOutputGateway extends Gateway {
-  private final AtomicReference<EventTime> lastEventTime;
-  private final AtomicReference<EventTime> lastEventTimeEmitted;
+  private final EventIterator eventIterator;
   private final Supplier<Instant> wallClockTime;
   private final LockableEventLog eventLog;
 
@@ -32,12 +31,11 @@ public class SpiveScalerOutputGateway extends Gateway {
 
   public SpiveScalerOutputGateway(
       final UmbilicalWriter umbilicus,
-      final AtomicReference<EventTime> lastEventTime,
+      final EventIterator eventIterator,
       final Supplier<Instant> wallClockTime,
       final LockableEventLog eventLog) {
     super(umbilicus);
-    this.lastEventTime = lastEventTime;
-    this.lastEventTimeEmitted = new AtomicReference<>(EventTime.INFINITE_PAST);
+    this.eventIterator = eventIterator;
     this.wallClockTime = wallClockTime;
     this.eventLog = eventLog;
   }
@@ -80,20 +78,24 @@ public class SpiveScalerOutputGateway extends Gateway {
 
   private <T> void emitConsequential(Type type, T payload) {
     try {
-      final EventTime prevTime = lastEventTime.get();
-      final EventTime eventTime = new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
       try {
         eventLog.lockConsequential();
-        // If emitConsequential gets erroneously invoked from another thread than EventLoop, then
-        // this deadlocks immediately, which points out the problem well... Perhaps should add a
-        // descriptive exception though.
+        final EventTime eventTime = nextConsequentialTime();
         final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
-        if (emit(event, prevTime)) {
-          System.out.println("Emitted consequential event, wdyt? " + eventTime);
-          lastEventTimeEmitted.set(eventTime);
+        final EventEnvelope wanted = EventEnvelope.wrap(event);
+        final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
+        if (actual == wanted) {
+          // we actually appended
         } else {
-          // TODO only throw if something worse than a competing identical append happened...
-          throw new RuntimeException("not well thought out");
+          // must act idempotent anyway, as we came here from an event handler
+          if (!actual.equals(wanted)) {
+            throw new IllegalStateException(
+                "Could not emit consequential event "
+                    + wanted.time()
+                    + ": Unexpected event in log "
+                    + actual.time()
+                    + " - possible nondeterminism in handler code, or corrupt log");
+          }
         }
       } finally {
         eventLog.unlock();
@@ -102,5 +104,14 @@ public class SpiveScalerOutputGateway extends Gateway {
       umbilicus.addError(t);
       throw t;
     }
+  }
+
+  /** Caters for one or multiple consequential events. */
+  private EventTime nextConsequentialTime() {
+    EventTime prevTime = eventIterator.lastTimeRead;
+    if (eventIterator.lastTimeEmitted.compareTo(prevTime) > 0) {
+      prevTime = eventIterator.lastTimeEmitted;
+    }
+    return new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
   }
 }

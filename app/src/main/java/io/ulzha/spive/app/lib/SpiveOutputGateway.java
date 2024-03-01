@@ -201,8 +201,8 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
    * Picks the earliest event time that may be used for the next event so that an append operation
    * has chances of succeeding, according to information available in local instance.
    *
-   * <p>This method blocks at least until event handling operations (locking reads) from the
-   * underlying log have read the last event emitted, as observed by current thread. TODO handled?
+   * <p>This method blocks at least until the given instance has handled the last event emitted by
+   * itself. FIXME
    *
    * <p>Note that the returned event time may nevertheless fall earlier than the latest event time
    * actually present in the underlying log, in case of a concurrent append from a sporadic workload
@@ -217,7 +217,7 @@ public class SpiveOutputGateway /*<PojoAsJson, or some scheme revolving around T
     long waitMillis = 1;
     long waitMillisMax = 1000;
 
-    // in testing, this Supplier call also advances lastEventTime. Should create a cleaner harness
+    // in testing, this Supplier call also advances eventIterator. Should create a cleaner harness
     Instant tentativeInstant = wallClockTime.get();
 
     while (eventIterator.lastTimeRead.compareTo(eventIterator.lastTimeEmitted) < 0

@@ -4,7 +4,6 @@ import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.UUID;
 
 public final class GcsEventLog implements EventLog {
@@ -29,7 +28,7 @@ public final class GcsEventLog implements EventLog {
   public void close() throws Exception {}
 
   @Override
-  public Iterator<EventEnvelope> iterator() {
+  public AppendIterator iterator() {
     throw new RuntimeException("not implemented");
   }
 }

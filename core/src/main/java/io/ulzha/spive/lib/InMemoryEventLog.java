@@ -2,14 +2,14 @@ package io.ulzha.spive.lib;
 
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 /** For testing and debugging. */
 public class InMemoryEventLog implements EventLog {
-  private LinkedList<EventEnvelope> list = new LinkedList<>();
+  private List<EventEnvelope> list = new ArrayList<>();
 
   @Override
   public EventTime appendAndGetAdjustedTime(final EventEnvelope event) throws IOException {
@@ -26,16 +26,16 @@ public class InMemoryEventLog implements EventLog {
     if (list.isEmpty() && EventTime.INFINITE_PAST.compareTo(prevTime) < 0) {
       throw new IllegalArgumentException(
           "prevTime must be set to INFINITE_PAST, when appending the first event");
-    } else if (!list.isEmpty() && list.getLast().time().compareTo(prevTime) < 0) {
+    } else if (!list.isEmpty() && list.get(list.size() - 1).time().compareTo(prevTime) < 0) {
       throw new IllegalArgumentException(
           "prevTime must be set to previous event time read, when appending a subsequent event");
     }
 
-    if (!list.isEmpty() && list.getLast().time().compareTo(prevTime) > 0) {
+    if (!list.isEmpty() && list.get(list.size() - 1).time().compareTo(prevTime) > 0) {
       return false;
     }
 
-    list.addLast(event);
+    list.add(event);
     return true;
   }
 
@@ -44,8 +44,36 @@ public class InMemoryEventLog implements EventLog {
 
   @Override
   @Nonnull
-  public Iterator<EventEnvelope> iterator() {
-    return list.iterator();
+  public AppendIterator iterator() {
+    return new AppendIteratorImpl();
+  }
+
+  private class AppendIteratorImpl implements AppendIterator {
+    private int i = 0;
+
+    @Override
+    public boolean hasNext() {
+      // FIXME block and null terminate
+      return i < list.size();
+    }
+
+    @Override
+    public EventEnvelope next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      return list.get(i++);
+    }
+
+    @Override
+    public EventEnvelope appendOrPeek(EventEnvelope event) {
+      final EventTime previousTime = (i == 0 ? EventTime.INFINITE_PAST : list.get(i - 1).time());
+      if (InMemoryEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
+        return event;
+      } else {
+        return list.get(i);
+      }
+    }
   }
 
   /** for testing only */
@@ -60,7 +88,7 @@ public class InMemoryEventLog implements EventLog {
     if (list.isEmpty()) {
       return EventTime.INFINITE_PAST;
     } else {
-      return list.getLast().time();
+      return list.get(list.size() - 1).time();
     }
   }
 }

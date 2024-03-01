@@ -235,14 +235,16 @@ public final class LocalFileSystemEventLog implements EventLog {
 
     @Override
     public EventEnvelope appendOrPeek(EventEnvelope event) {
+      final EventTime previousTime =
+          (previousEvent == null ? EventTime.INFINITE_PAST : previousEvent.time());
       try {
-        if (LocalFileSystemEventLog.this.appendIfPrevTimeMatch(event, previousEvent.time())) {
+        if (LocalFileSystemEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
           return event;
         } else {
-          if (!hasNext()) { // note side effects
+          if (!hasNext()) { // sets nextEvent
             throw new IllegalStateException(
                 "expected a subsequent event after "
-                    + previousEvent.time()
+                    + previousTime
                     + ", but log prematurely indicates end");
           }
           return nextEvent;

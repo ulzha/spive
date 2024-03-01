@@ -61,6 +61,8 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
 
   /**
    * Efficient interface for reading the log in sequence and appending to it. No removals supported.
+   *
+   * <p>Not thread-safe - event loop and output gateway perform synchronization (when necessary).
    */
   public static interface AppendIterator extends Iterator<EventEnvelope> {
     /**
@@ -68,7 +70,10 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
      * appended in between it and the event that was previously returned from this iterator's {@code
      * next()}.
      *
-     * <p>Relies on concurrency primitives of the underlying store to safely detect races.
+     * <p>Relies on concurrency primitives of the underlying store to safely detect races. To append
+     * to the underlying log either by this iterator's appendOrPeek method or by other iterators, or
+     * by EventLog methods, is specifically allowed during iteration, and will not lead to
+     * ConcurrentModificationException (unlike with basic java.util.ListIterator).
      *
      * @param event
      * @return {@code event} if the iterator was at the end of the log, and {@code event} was
@@ -86,10 +91,6 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
     }
   }
 
-  /**
-   * The returned iterator is only supposed to be iterated through by one thread, such as by the
-   * event loop of one Process Instance.
-   */
   public AppendIterator iterator();
 
   /**
@@ -162,7 +163,8 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
    * @return true if event was appended directly after the event that had time of prevTime, false if
    *     not because the latest stored Event has time > prevTime.
    * @throws IllegalArgumentException if event.time <= prevTime or if the latest stored Event has
-   *     time < prevTime, or if the log is closed.
+   *     time < prevTime.
+   * @throws IllegalStateException if the log is closed.
    */
   boolean appendIfPrevTimeMatch(EventEnvelope event, EventTime prevTime) throws IOException;
 }

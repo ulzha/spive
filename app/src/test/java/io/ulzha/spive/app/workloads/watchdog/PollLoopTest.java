@@ -7,6 +7,7 @@ import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Process;
+import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InMemoryEventLog;
 import io.ulzha.spive.lib.LockableEventLog;
@@ -29,7 +30,6 @@ class PollLoopTest {
   private Process.Instance instance;
 
   private FakePlacenta fakePlacenta;
-  private AtomicReference<EventTime> controlPlaneLastEventTime;
   private AtomicReference<Instant> controlPlaneWallClockTime;
   private InMemoryEventLog eventLog;
   private PollLoop pollLoop;
@@ -55,13 +55,15 @@ class PollLoopTest {
 
     fakePlacenta = new FakePlacenta();
     final UmbilicalWriter fakeUmbilicus = new FakeUmbilicus();
-    controlPlaneLastEventTime = new AtomicReference<>();
     controlPlaneWallClockTime = new AtomicReference<>(Instant.EPOCH);
     eventLog = new InMemoryEventLog();
     final LockableEventLog lockableEventLog = new LockableEventLog(eventLog);
+    final EventIterator eventIterator = new EventIterator(eventLog.iterator());
     final Supplier<Instant> wallClockAutoAdvancingMimickingReads =
         () -> {
-          controlPlaneLastEventTime.set(eventLog.latestEventTime());
+          // not sure we should be _mimicking_ reads. Realistic event history and real reads FTW?
+          // Fake output gateway entirely when unittesting a sporadic workload
+          eventIterator.lastTimeRead = eventLog.latestEventTime();
           if (controlPlaneWallClockTime.get().compareTo(eventLog.latestEventTime().instant) <= 0) {
             controlPlaneWallClockTime.set(eventLog.latestEventTime().instant.plusMillis(1));
           }
@@ -69,10 +71,7 @@ class PollLoopTest {
         };
     final SpiveOutputGateway fakeOutput =
         new SpiveOutputGateway(
-            fakeUmbilicus,
-            controlPlaneLastEventTime,
-            wallClockAutoAdvancingMimickingReads,
-            lockableEventLog);
+            fakeUmbilicus, eventIterator, wallClockAutoAdvancingMimickingReads, lockableEventLog);
 
     pollLoop =
         new PollLoop(instance, fakePlacenta, () -> controlPlaneWallClockTime.get(), fakeOutput);
@@ -94,7 +93,6 @@ class PollLoopTest {
                         Instant.parse("2021-04-14T10:00:01.222Z"), true, null, null))));
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
     final List<Object> expected = List.of(new InstanceProgress(instance.id, t1, 1, 0));
@@ -117,7 +115,6 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.checkpoint = t1;
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
     final List<Object> expected = List.of();
@@ -142,7 +139,6 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t2, 2, 0));
 
     instance.checkpoint = t1;
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
     final List<Object> expected = List.of(new InstanceProgress(instance.id, t2, 2, 0));
@@ -165,7 +161,6 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.process = null;
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
     final List<Object> expected = List.of();
@@ -186,7 +181,6 @@ class PollLoopTest {
                         Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null))));
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, null, 0, 0));
 
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
     pollLoop.pollOnce();
 
@@ -204,7 +198,7 @@ class PollLoopTest {
   @Test
   void givenErrorStatus_whenNoErrorInHeartbeat_shouldNotEmitInstanceStatusChange()
       throws InterruptedException {
-    // Runners should keep reporting the first error indefinitely.
+    // Runners must keep reporting the first error indefinitely.
     // This test is paranoid to survive a buggy runner that reports non-error heartbeat anyway.
     final EventTime t1 = EventTime.fromString("2021-04-14T10:00:01Z#0");
     final EventTime t2 = EventTime.fromString("2021-04-14T10:00:02Z#0");
@@ -220,7 +214,6 @@ class PollLoopTest {
 
     instance.checkpoint = t1;
     instance.status = InstanceStatus.ERROR;
-    controlPlaneLastEventTime.set(t1);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
     pollLoop.pollOnce();
 
@@ -258,7 +251,6 @@ class PollLoopTest {
 
     instance.checkpoint = t1;
     instance.status = InstanceStatus.TIMEOUT;
-    controlPlaneLastEventTime.set(t1);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
     pollLoop.pollOnce();
 
@@ -283,7 +275,6 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(
         new HeartbeatSnapshot(sample, EventTime.INFINITE_PAST, 0, 0));
 
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
     pollLoop.pollOnce();
 
@@ -315,7 +306,6 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.status = InstanceStatus.TIMEOUT;
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     pollLoop.pollOnce();
 
     final List<Object> expected =
@@ -340,7 +330,6 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, null, 0, 0));
 
     instance.status = InstanceStatus.TIMEOUT;
-    controlPlaneLastEventTime.set(EventTime.INFINITE_PAST);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
     pollLoop.pollOnce();
 
@@ -364,7 +353,6 @@ class PollLoopTest {
 
     instance.process = null;
     instance.status = InstanceStatus.TIMEOUT;
-    controlPlaneLastEventTime.set(t1);
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
     pollLoop.pollOnce();
 

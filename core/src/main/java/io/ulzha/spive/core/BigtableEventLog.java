@@ -137,11 +137,11 @@ public final class BigtableEventLog implements EventLog {
   }
 
   @Override
-  public Iterator<EventEnvelope> iterator() {
-    return new EventIterator();
+  public AppendIterator iterator() {
+    return new AppendIteratorImpl();
   }
 
-  public class EventIterator implements Iterator<EventEnvelope> {
+  private class AppendIteratorImpl implements AppendIterator {
     private EventEnvelope previousEvent;
     private EventEnvelope nextEvent;
 
@@ -178,6 +178,23 @@ public final class BigtableEventLog implements EventLog {
       previousEvent = nextEvent;
       nextEvent = null;
       return previousEvent;
+    }
+
+    @Override
+    public EventEnvelope appendOrPeek(EventEnvelope event) {
+      final EventTime previousTime =
+          (previousEvent == null ? EventTime.INFINITE_PAST : previousEvent.time());
+      if (BigtableEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
+        return event;
+      } else {
+        if (!hasNext()) { // sets nextEvent
+          throw new IllegalStateException(
+              "expected a subsequent event after "
+                  + previousTime
+                  + ", but log prematurely indicates end");
+        }
+        return nextEvent;
+      }
     }
   }
 }

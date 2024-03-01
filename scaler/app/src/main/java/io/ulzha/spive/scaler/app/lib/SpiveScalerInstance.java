@@ -5,8 +5,9 @@ import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.basicrunner.api.Umbilical;
 import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
+import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLog;
-import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
@@ -24,7 +25,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +44,6 @@ public interface SpiveScalerInstance {
     public static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     public static void main(final Umbilical umbilical, final String... args) throws Exception {
-      // null until the first event is read
-      final AtomicReference<EventTime> currentEventTime = new AtomicReference<>();
       final Supplier<Instant> wallClockTime = Instant::now;
 
       try (EventLog naiveInputEventLog = EventLog.open(args[1], args[2]);
@@ -58,40 +56,38 @@ public interface SpiveScalerInstance {
                 ? inputEventLog
                 : new LockableEventLog(naiveOutputEventLog));
 
-        final UmbilicalWriter umbilicus = umbilical.new Umbilicus(currentEventTime);
+        final EventIterator eventIterator = new EventIterator(inputEventLog.iterator());
+
+        final UmbilicalWriter umbilicus = umbilical.new Umbilicus(() -> eventIterator.lastTimeRead);
 
         final SpiveScalerOutputGateway output =
-            new SpiveScalerOutputGateway(
-                umbilicus, currentEventTime, wallClockTime, outputEventLog);
+            new SpiveScalerOutputGateway(umbilicus, eventIterator, wallClockTime, outputEventLog);
 
-        // offer executorService and synchronizedExecutorService?
-        // executorServiceFactory? awaitQuiescence on all?
         final SpiveScaler app = new SpiveScaler(output);
 
         List<Runnable> workloads = new ArrayList<>();
-        workloads.add(
-            new EventLoop(
-                umbilical,
-                currentEventTime, // TODO refactor this as sort of a position, in inputEventLog?
-                // Pass an iterator only?
-                app,
-                inputEventLog));
+        workloads.add(new EventLoop(umbilical, eventIterator, app, inputEventLog));
         workloads.addAll(selectWorkloads(app));
 
         umbilical.addHeartbeat(null); // marks start of all the workloads
         runWorkloads(workloads);
+        LOG.info("Instance exiting nominally");
+      } catch (ExecutionException e) {
+        LOG.info("Workload failed:", e.getCause());
+        umbilical.addError(null, e.getCause());
+        throw new HandledException(e.getCause());
+      } catch (InterruptedException e) {
+        LOG.info("Workload interrupted:", e);
+        umbilical.addError(null, e);
+        Thread.currentThread().interrupt();
+        throw new HandledException(e);
       } catch (Throwable t) {
-        // TODO differentiate between errors that propagate from gateways (already appended to the
-        // sample) and event handler exceptions, and workload exceptions...?
-        LOG.info("Instance failure", t);
-        umbilical.addError(currentEventTime.get(), t);
+        LOG.info("Workload failed:", t);
+        umbilical.addError(null, t);
         throw t;
-        // TODO proceed gracefully actually? Other partitions can be processed so long as the
-        // crashed one sees no subsequent events? If event log stalls, keep serving read requests
-        // for a while? Vice versa as well? Write requests can even be served against the unaffected
-        // partitions?
       } finally {
-        LOG.info("Instance exiting");
+        LOG.info(
+            "Instance exiting with K failed partitions, L stalling partitions, and M general workload failures");
       }
     }
 
@@ -151,17 +147,17 @@ public interface SpiveScalerInstance {
 
     private static class EventLoop implements Runnable {
       private final Umbilical umbilical;
-      private final AtomicReference<EventTime> currentEventTime;
+      private final EventIterator eventIterator;
       private final SpiveScaler app;
       private final LockableEventLog inputEventLog;
 
       private EventLoop(
           Umbilical umbilical,
-          AtomicReference<EventTime> currentEventTime,
+          EventIterator eventIterator,
           SpiveScaler app,
           LockableEventLog inputEventLog) {
         this.umbilical = umbilical;
-        this.currentEventTime = currentEventTime;
+        this.eventIterator = eventIterator;
         this.app = app;
         this.inputEventLog = inputEventLog;
       }
@@ -169,9 +165,9 @@ public interface SpiveScalerInstance {
       @Override
       public void run() {
         LOG.info("EventLoop over {} running", inputEventLog);
-        for (EventEnvelope envelope : inputEventLog) {
+        while (eventIterator.hasNext()) {
+          final EventEnvelope envelope = eventIterator.next();
           final Event event = envelope.unwrap();
-          // TODO bail if the time is in distant future
           // TODO assert that the event belongs to the intended subset of partitions
           // TODO maintain a rolling hash and panic if inconsistency observed?
           umbilical.addHeartbeat(event.time);
@@ -181,7 +177,6 @@ public interface SpiveScalerInstance {
             // the same log.
             // TODO optimize to forego synchronization when no other workloads are running
             inputEventLog.lock();
-            currentEventTime.set(event.time);
             app.getClass().getMethod("accept", event.payload.getClass()).invoke(app, event.payload);
             inputEventLog.unlock();
             // There is intentionally no `finally` here. If we ensure unlock after an exception then
@@ -190,15 +185,11 @@ public interface SpiveScalerInstance {
             // when a handler throws is consistent.
           } catch (InvocationTargetException ite) {
             // cause seems to be in user code... But could be also from a Gateway call
-            // TODO retry with backoff if it is a retryable handler (note that we specify some
-            // retrying responsibility on Gateway, so the need for retryable handlers is uncertain)
             // TODO sanity check if gateway exceptions are swallowed by user code
-            // umbilical.addFailure(currentEventTime.get(), ite); the throw ought to reach
-            // runWorkloads. TODO test
-            throw new RuntimeException("Application failure", ite);
+            umbilical.addError(eventIterator.lastTimeRead, ite.getCause());
+            throw new HandledException(ite.getCause());
           } catch (NoSuchMethodException | IllegalAccessException e) {
-            // umbilical.addFailure(currentEventTime.get(), e); the throw ought to reach
-            // runWorkloads. TODO test
+            umbilical.addError(eventIterator.lastTimeRead, e);
             throw new InternalException(
                 "Error invoking "
                     + app.getClass().getCanonicalName()

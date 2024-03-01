@@ -17,13 +17,13 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+// TODO suite with identical scenarios, applied to all EventLog implementations consistently
 public class LocalFileSystemEventLogTest {
   @Test
   public void givenUnclosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndBlock()
@@ -31,7 +31,7 @@ public class LocalFileSystemEventLogTest {
     final Path filePath =
         Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final Iterator<EventEnvelope> iterator = eventLog.iterator();
+      final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
       final EventEnvelope event1 = iterator.next();
@@ -53,7 +53,7 @@ public class LocalFileSystemEventLogTest {
       throws Exception {
     final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final Iterator<EventEnvelope> iterator = eventLog.iterator();
+      final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
       final EventEnvelope event1 = iterator.next();
@@ -94,7 +94,7 @@ public class LocalFileSystemEventLogTest {
     final Path filePath =
         Path.of(Objects.requireNonNull(getClass().getResource("OneEventClosed.jsonl")).getPath());
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final Iterator<EventEnvelope> iterator = eventLog.iterator();
+      final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
       final EventEnvelope event1 = iterator.next();
@@ -115,7 +115,7 @@ public class LocalFileSystemEventLogTest {
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final Iterator<EventEnvelope> iterator = eventLog.iterator();
+      final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
       final EventEnvelope event1 = iterator.next();
@@ -175,7 +175,7 @@ public class LocalFileSystemEventLogTest {
               "pojo:io.ulzha.spive.test.DeleteProcess",
               "\"BRRRRR\"");
       Assertions.assertThrows(
-          IllegalArgumentException.class, () -> eventLog.appendIfPrevTimeMatch(event2, eventTime1));
+          IllegalStateException.class, () -> eventLog.appendIfPrevTimeMatch(event2, eventTime1));
     }
 
     final byte[] bytes = Files.readAllBytes(filePath);

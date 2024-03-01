@@ -3,6 +3,7 @@ package io.ulzha.spive.example.clicctracc.app.lib;
 import io.ulzha.spive.example.clicctracc.app.events.Clicc;
 import io.ulzha.spive.lib.Event;
 import io.ulzha.spive.lib.EventEnvelope;
+import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.Gateway;
 import io.ulzha.spive.lib.LockableEventLog;
@@ -11,7 +12,6 @@ import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -23,8 +23,7 @@ import java.util.function.Supplier;
  * interface, while implementing the Gateway contract.
  */
 public class CliccTraccOutputGateway extends Gateway {
-  private final AtomicReference<EventTime> lastEventTime;
-  private final AtomicReference<EventTime> lastEventTimeEmitted;
+  private final EventIterator eventIterator;
   private final Supplier<Instant> wallClockTime;
   private final LockableEventLog eventLog;
 
@@ -33,12 +32,11 @@ public class CliccTraccOutputGateway extends Gateway {
 
   public CliccTraccOutputGateway(
       final UmbilicalWriter umbilicus,
-      final AtomicReference<EventTime> lastEventTime,
+      final EventIterator eventIterator,
       final Supplier<Instant> wallClockTime,
       final LockableEventLog eventLog) {
     super(umbilicus);
-    this.lastEventTime = lastEventTime;
-    this.lastEventTimeEmitted = new AtomicReference<>(EventTime.INFINITE_PAST);
+    this.eventIterator = eventIterator;
     this.wallClockTime = wallClockTime;
     this.eventLog = eventLog;
   }
@@ -94,25 +92,22 @@ public class CliccTraccOutputGateway extends Gateway {
 
   private <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload) {
     try {
-      while (true) {
-        final EventTime eventTime = awaitAdvancing();
+      final EventTime eventTime = awaitAdvancing();
 
-        try {
-          eventLog.lock();
-          if (lastEventTime.get() == null || lastEventTime.get().compareTo(eventTime) < 0) {
-            if (check.get()) {
-              final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
-              if (emit(event, lastEventTime.get())) {
-                lastEventTimeEmitted.set(eventTime);
-                return true;
-              }
-            } else {
-              return false;
-            }
-          }
-        } finally {
-          eventLog.unlock();
+      try {
+        eventLog.lock();
+
+        if (check.get()) {
+          final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+          final EventEnvelope wanted = EventEnvelope.wrap(event);
+          final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
+          if (actual == wanted) {
+            return true;
+          } // FIXME else loop
         }
+        return false;
+      } finally {
+        eventLog.unlock();
       }
     } catch (Throwable t) {
       umbilicus.addError(t);
@@ -136,18 +131,22 @@ public class CliccTraccOutputGateway extends Gateway {
   }
 
   private <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload, EventTime eventTime) {
-    final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
     try {
       awaitAdvancing();
 
       try {
         eventLog.lock();
-        if (lastEventTime.get() == null || lastEventTime.get().compareTo(eventTime) < 0) {
+        if ((eventIterator.lastTimeRead == null
+                || eventIterator.lastTimeRead.compareTo(eventTime) < 0)
+            && (eventIterator.lastTimeEmitted == null
+                || eventIterator.lastTimeEmitted.compareTo(eventTime) < 0)) {
           if (check.get()) {
-            if (emit(event, lastEventTime.get())) {
-              lastEventTimeEmitted.set(eventTime);
+            final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+            final EventEnvelope wanted = EventEnvelope.wrap(event);
+            final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
+            if (actual == wanted) {
               return true;
-            }
+            } // FIXME else loop
           }
         }
         return false;
@@ -164,8 +163,8 @@ public class CliccTraccOutputGateway extends Gateway {
    * Picks the earliest event time that may be used for the next event so that an append operation
    * has chances of succeeding, according to information available in local instance.
    *
-   * <p>This method blocks at least until event handling operations (locking reads) from the
-   * underlying log have caught up with the last event emitted, as observed by current thread.
+   * <p>This method blocks at least until the given instance has handled the last event emitted by
+   * itself.
    *
    * <p>Note that the returned event time may nevertheless fall earlier than the latest event time
    * actually present in the underlying log, in case of a concurrent append from a sporadic workload
@@ -179,12 +178,11 @@ public class CliccTraccOutputGateway extends Gateway {
     long waitMillis = 1;
     long waitMillisMax = 1000;
 
-    // in testing, this Supplier call also advances lastEventTime. Should create a cleaner harness
+    // in testing, this Supplier call also advances eventIterator. Should create a cleaner harness
     Instant tentativeInstant = wallClockTime.get();
 
-    // FIXME null until the first event is read, right?
-    while (lastEventTime.get().compareTo(lastEventTimeEmitted.get()) < 0
-        || tentativeInstant.compareTo(lastEventTime.get().instant) <= 0) {
+    while (eventIterator.lastTimeRead.compareTo(eventIterator.lastTimeEmitted) < 0
+        || tentativeInstant.compareTo(eventIterator.lastTimeRead.instant) <= 0) {
       try {
         Thread.sleep(waitMillis);
       } catch (InterruptedException e) {
@@ -203,20 +201,24 @@ public class CliccTraccOutputGateway extends Gateway {
 
   private <T> void emitConsequential(Type type, T payload) {
     try {
-      final EventTime prevTime = lastEventTime.get();
-      final EventTime eventTime = new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
       try {
         eventLog.lockConsequential();
-        // If emitConsequential gets erroneously invoked from another thread than EventLoop, then
-        // this deadlocks immediately, which points out the problem well... Perhaps should add a
-        // descriptive exception though.
+        final EventTime eventTime = nextConsequentialTime();
         final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
-        if (emit(event, prevTime)) {
-          System.out.println("Emitted consequential event, wdyt? " + eventTime);
-          lastEventTimeEmitted.set(eventTime);
+        final EventEnvelope wanted = EventEnvelope.wrap(event);
+        final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
+        if (actual == wanted) {
+          // we actually appended
         } else {
-          // TODO only throw if something worse than a competing identical append happened...
-          throw new RuntimeException("not well thought out");
+          // must act idempotent anyway, as we came here from an event handler
+          if (!actual.equals(wanted)) {
+            throw new IllegalStateException(
+                "Could not emit consequential event "
+                    + wanted.time()
+                    + ": Unexpected event in log "
+                    + actual.time()
+                    + " - possible nondeterminism in handler code, or corrupt log");
+          }
         }
       } finally {
         eventLog.unlock();
@@ -225,5 +227,14 @@ public class CliccTraccOutputGateway extends Gateway {
       umbilicus.addError(t);
       throw t;
     }
+  }
+
+  /** Caters for one or multiple consequential events. */
+  private EventTime nextConsequentialTime() {
+    EventTime prevTime = eventIterator.lastTimeRead;
+    if (eventIterator.lastTimeEmitted.compareTo(prevTime) > 0) {
+      prevTime = eventIterator.lastTimeEmitted;
+    }
+    return new EventTime(prevTime.instant, prevTime.tiebreaker + 1);
   }
 }
