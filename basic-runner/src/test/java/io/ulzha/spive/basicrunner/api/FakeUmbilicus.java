@@ -9,6 +9,9 @@ public class FakeUmbilicus implements UmbilicalWriter {
   public List<Throwable> errors = new ArrayList<>();
 
   @Override
+  public void addSuccess() {}
+
+  @Override
   public boolean getReplayMode() {
     return false;
   }
@@ -22,4 +25,7 @@ public class FakeUmbilicus implements UmbilicalWriter {
   public void addWarning(final Throwable warning) {
     warnings.add(warning);
   }
+
+  @Override
+  public void addHeartbeat() {}
 }

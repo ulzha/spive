@@ -13,7 +13,7 @@
   <artifactId>spive-common</artifactId>
   <description>
     A few Java interfaces and utilities shared between application instance code and control plane
-    code.
+    (runner) code.
   </description>
 
   <dependencies>

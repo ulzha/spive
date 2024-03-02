@@ -3,6 +3,8 @@ package io.ulzha.spive.app.workloads.watchdog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 
 public class FakeUmbilicus implements UmbilicalWriter {
+  @Override
+  public void addSuccess() {}
 
   @Override
   public boolean getReplayMode() {
@@ -14,4 +16,7 @@ public class FakeUmbilicus implements UmbilicalWriter {
 
   @Override
   public void addWarning(final Throwable warning) {}
+
+  @Override
+  public void addHeartbeat() {}
 }

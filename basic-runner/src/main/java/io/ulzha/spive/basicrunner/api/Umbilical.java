@@ -227,6 +227,10 @@ public class Umbilical {
       return Umbilical.this.getReplayMode(currentEventTime.get());
     }
 
+    public void addSuccess() {
+      Umbilical.this.addSuccess(currentEventTime.get());
+    }
+
     /** Set on retryable failures. */
     public void addWarning(Throwable warning) {
       Umbilical.this.addWarning(currentEventTime.get(), warning);
@@ -235,6 +239,11 @@ public class Umbilical {
     /** Set on non-retryable failures. */
     public void addError(Throwable error) {
       Umbilical.this.addError(currentEventTime.get(), error);
+    }
+
+    @Override
+    public void addHeartbeat() {
+      Umbilical.this.addHeartbeat(currentEventTime.get());
     }
   }
 

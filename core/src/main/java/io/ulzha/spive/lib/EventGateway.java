@@ -12,6 +12,7 @@ public class EventGateway extends Gateway {
   private final LockableEventLog eventLog;
 
   public EventGateway(
+      // dumb name, but UmbilicalWriter also is the one that has getReplayMode
       final UmbilicalWriter umbilicus,
       final EventIterator eventIterator,
       final Supplier<Instant> wallClockTime,

@@ -4,6 +4,8 @@ package io.ulzha.spive.lib.umbilical;
 public interface UmbilicalWriter {
   public boolean getReplayMode();
 
+  public void addSuccess();
+
   /**
    * Added by instance, whenever an event handler crashes (permanent failure). Also added by gateway
    * before exiting to the handler with a permanent failure.
@@ -18,4 +20,11 @@ public interface UmbilicalWriter {
    * @param warning
    */
   public void addWarning(Throwable warning);
+
+  /**
+   * Set by event loop before every event handled.
+   *
+   * @param warning
+   */
+  public void addHeartbeat();
 }
