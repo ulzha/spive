@@ -13,16 +13,25 @@ import java.util.Map;
  */
 public class Cli {
   public static void main(final String... args) throws Exception {
-    final Map<String, AppIoc.AppConfig> configs = new HashMap<>();
+    final Map<String, AppIoc.AppDescriptor> configs = new HashMap<>();
 
     configs.put(
         "app/src/main/java/io/ulzha/spive/app/spive/gen",
-        new AppIoc.AppConfig(
-            "Spive",
+        new AppIoc.AppDescriptor(
+            "io.ulzha.spive.app.Spive",
             List.of(
-              new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateEventLog"),
-              new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateInstance")),
-            List.of(new AppIoc.WorkloadDescriptor("Watchdog"), new AppIoc.WorkloadDescriptor("Api"))));
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateEventLog"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateInstance"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateProcess"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateStream"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.CreateType"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.DeleteInstance"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.DeleteProcess"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.InstanceIopw"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.InstanceProgress"),
+                new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.InstanceStatusChange")),
+            List.of(
+                new AppIoc.WorkloadDescriptor("Watchdog"), new AppIoc.WorkloadDescriptor("Api"))));
 
     for (String dir : configs.keySet()) {
       AppIoc.generateAppInstanceCode(configs.get(dir), dir);

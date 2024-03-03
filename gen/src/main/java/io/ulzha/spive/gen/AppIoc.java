@@ -32,13 +32,28 @@ public class AppIoc {
 
   public static record EventDescriptor(String typeTag) {
     public String getName() {
-      String[] parts = typeTag.split(".");
+      String[] parts = typeTag.split("\\.");
       return parts[parts.length - 1];
     }
+
     public String getImport() {
       String[] parts = typeTag.split(":");
       return "import " + parts[1] + ";";
     }
+
+    public String getAccept() {
+      return """
+               void accept(final %s event);
+
+               default void accept(final %s event, final EventTime eventTime) {
+                 accept(event);
+               }
+             """
+          .formatted(getName(), getName());
+      // Any neater type signature possible? Help ensure that exactly one of the two is implemented?
+      // TODO default void accept(final Clicc event, final Instant eventInstant) {}
+    }
+
     public String getTypeTag() {
       return typeTag;
     }
@@ -50,25 +65,43 @@ public class AppIoc {
     }
   }
 
-  public static record AppConfig(
-      String name, List<EventDescriptor> events, List<WorkloadDescriptor> workloads) {}
+  public static record AppDescriptor(
+      String mainClass, List<EventDescriptor> events, List<WorkloadDescriptor> workloads) {
+    public String getPackage() {
+      int iDot = mainClass.lastIndexOf('.');
+      return "package " + String.join(".", mainClass.substring(0, iDot), "spive", "gen") + ";";
+      // app.gen? app.shell? app.bus? app.scaffold? app.spive.gen?
+      // layers, outer spive.sdk.ioc.gen + spive.sdk.ioc.lib, and inner spive.sdk.lib?
+    }
 
-  // private static final STGroup templates = new STGroupDir("spive/gen");
-  private static final STGroup templates = new STGroupFile("spive/gen/AppInstance.stg", '%', '%');
+    public String getImport() {
+      return "import " + mainClass + ";";
+    }
 
-  public static void generateAppOutputGatewayCode(AppConfig config, String dir) {
+    public String getName() {
+      String[] parts = mainClass.split("\\.");
+      return parts[parts.length - 1];
+    }
+  }
+
+  private static final STGroup templates = new STGroupDir("spive/gen/", '%', '%');
+
+  static {
+    templates.setListener(new ThrowingListener());
+  }
+
+  public static void generateAppOutputGatewayCode(AppDescriptor config, String dir) {
     final ST st = templates.getInstanceOf("AppOutputGateway");
     st.add("event", config.events);
   }
 
-  public static void generateAppInstanceCode(AppConfig config, String dir) throws IOException {
-    templates.setListener(new ThrowingListener());
-    System.err.println("Come on: " + templates.show());
-    final ST st = templates.getInstanceOf("body");
-    st.add("events", config.events);
-    st.add("workloads", config.workloads);
+  public static void generateAppInstanceCode(AppDescriptor app, String dir) throws IOException {
+    final ST st = templates.getInstanceOf("AppInstance");
+    st.add("app", app);
+    st.add("events", app.events);
+    st.add("workloads", app.workloads);
 
-    try (FileWriter writer = new FileWriter(dir + "/" + config.name + "Instance.java")) {
+    try (FileWriter writer = new FileWriter(dir + "/" + app.getName() + "Instance.java")) {
       writer.write(st.render());
     }
   }
