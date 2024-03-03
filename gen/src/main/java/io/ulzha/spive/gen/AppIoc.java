@@ -101,8 +101,33 @@ public class AppIoc {
     }
   }
 
+  public static record GatewayDescriptor(String fqcn, String variableName) {
+    public String getImport() {
+      return "import " + fqcn + ";";
+    }
+
+    public String getName() {
+      String[] parts = fqcn.split(":");
+      return parts[parts.length - 1];
+    }
+
+    public String getNew() {
+      return """
+                    final BasicRunnerGateway runner =
+                        new BasicRunnerGateway(umbilicus, List.of(args[4].split(",")));
+            """
+          .formatted(getName(), variableName, getName());
+      // FIXME output also may be absent as a gateway, along with all the deps
+      // FIXME zones that this instance manages should come from its state, not from args
+      // FIXME parse arguments in a more structured way; this only supports one gateway
+    }
+  }
+
   public static record AppDescriptor(
-      String mainClass, List<EventDescriptor> events, List<WorkloadDescriptor> workloads) {
+      String mainClass,
+      List<EventDescriptor> events,
+      List<WorkloadDescriptor> workloads,
+      List<GatewayDescriptor> gateways) {
     public String getPackage() {
       int iDot = mainClass.lastIndexOf('.');
       return "package " + String.join(".", mainClass.substring(0, iDot), "spive", "gen") + ";";
@@ -118,6 +143,15 @@ public class AppIoc {
       String[] parts = mainClass.split("\\.");
       return parts[parts.length - 1];
     }
+
+    public String getNew() {
+      String gatewayArgs =
+          String.join("", gateways.stream().map(g -> ", " + g.variableName).toList());
+      return """
+                     final %s app = new %s(output%s);
+             """
+          .formatted(getName(), getName(), gatewayArgs);
+    }
   }
 
   private static final STGroup templates = new STGroupDir("spive/gen/", '%', '%');
@@ -131,6 +165,7 @@ public class AppIoc {
     st.add("app", app);
     st.add("events", app.events);
     st.add("workloads", app.workloads);
+    st.add("gateways", app.gateways);
 
     try (FileWriter writer = new FileWriter(dir + "/" + app.getName() + "Instance.java")) {
       writer.write(st.render());

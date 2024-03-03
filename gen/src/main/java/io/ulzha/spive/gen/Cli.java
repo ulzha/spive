@@ -31,7 +31,10 @@ public class Cli {
                 new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.InstanceProgress"),
                 new AppIoc.EventDescriptor("pojo:io.ulzha.spive.app.events.InstanceStatusChange")),
             List.of(
-                new AppIoc.WorkloadDescriptor("Watchdog"), new AppIoc.WorkloadDescriptor("Api"))));
+                new AppIoc.WorkloadDescriptor("Watchdog"), new AppIoc.WorkloadDescriptor("Api")),
+            List.of(
+                new AppIoc.GatewayDescriptor(
+                    "io.ulzha.spive.basicrunner.api.BasicRunnerGateway", "runner"))));
 
     for (String dir : configs.keySet()) {
       AppIoc.generateAppInstanceCode(configs.get(dir), dir);
