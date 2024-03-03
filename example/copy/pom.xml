@@ -145,7 +145,7 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <configuration>
               <excludes>
-                <exclude>io/ulzha/spive/example/copy/app/lib/*.class</exclude>
+                <exclude>io/ulzha/spive/example/copy/app/spive/gen/*.class</exclude>
               </excludes>
             </configuration>
             <executions>

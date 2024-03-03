@@ -23,9 +23,9 @@
   <modules>
     <module>app</module>
     <module>basic-runner</module>
+    <module>code-gen</module>
     <module>common</module>
     <module>core</module>
-    <module>gen</module>
     <!-- examples aren't part of module structure (separate lifecycle, conceptually), owned ecosystem tools are (monorepo, conceptually) -->
     <module>scaler/app</module>
     <module>tools</module>
@@ -252,7 +252,7 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <configuration>
               <excludes>
-                <exclude>io/ulzha/spive/scaler/app/lib/*.class</exclude>
+                <exclude>io/ulzha/spive/scaler/app/spive/gen/*.class</exclude>
               </excludes>
             </configuration>
             <executions>

@@ -1,4 +1,4 @@
-package io.ulzha.spive.gen;
+package io.ulzha.spive.codegen;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class AppIoc {
 
     public String getAccept() {
       return """
-               void accept(final %s event);
+               default void accept(final %s event) {}
 
                default void accept(final %s event, final EventTime eventTime) {
                  accept(event);
@@ -127,7 +127,8 @@ public class AppIoc {
       String mainClass,
       List<EventDescriptor> events,
       List<WorkloadDescriptor> workloads,
-      List<GatewayDescriptor> gateways) {
+      List<GatewayDescriptor> gateways,
+      boolean readsOwnOutput) {
     public String getPackage() {
       int iDot = mainClass.lastIndexOf('.');
       return "package " + String.join(".", mainClass.substring(0, iDot), "spive", "gen") + ";";
@@ -151,6 +152,14 @@ public class AppIoc {
                      final %s app = new %s(output%s);
              """
           .formatted(getName(), getName(), gatewayArgs);
+    }
+
+    public boolean getHasConcurrentWorkloads() {
+      return !workloads.isEmpty();
+    }
+
+    public boolean getReadsOwnOutput() {
+      return readsOwnOutput; // TODO infer from input and output streams obvs
     }
   }
 

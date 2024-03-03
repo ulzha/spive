@@ -2,9 +2,9 @@ package io.ulzha.spive.app.workloads.watchdog;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
+import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.util.InterruptableSchedulable;
 import java.net.http.HttpClient;
 import java.time.Instant;

@@ -16,7 +16,7 @@
 
     On premise or on cloud infrastructure. (TODO refactor out?)
 
-    (TODO refactor out data plane boilerplate for app.lib - deps for Instances and OutputGateways)
+    (TODO refactor out data plane boilerplate for spive.gen - deps for Instances and OutputGateways)
   </description>
 
   <dependencies>

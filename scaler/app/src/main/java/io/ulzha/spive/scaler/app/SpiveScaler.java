@@ -3,8 +3,8 @@ package io.ulzha.spive.scaler.app;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
-import io.ulzha.spive.scaler.app.lib.SpiveScalerInstance;
-import io.ulzha.spive.scaler.app.lib.SpiveScalerOutputGateway;
+import io.ulzha.spive.scaler.app.spive.gen.SpiveScalerInstance;
+import io.ulzha.spive.scaler.app.spive.gen.SpiveScalerOutputGateway;
 
 /**
  * Would be best to not poll... Make its input an example of an ephemeral stream that doesn't keep

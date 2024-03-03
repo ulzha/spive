@@ -31,17 +31,17 @@
     </dependency>
     <dependency>
       <groupId>io.ulzha</groupId>
+      <artifactId>spive-code-gen</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ulzha</groupId>
       <artifactId>spive-common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ulzha</groupId>
       <artifactId>spive-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.ulzha</groupId>
-      <artifactId>spive-gen</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -40,8 +40,8 @@ public class Type {
   /**
    * Factory to allow hot updates of serde implementations without rebuilding user's application.
    *
-   * <p>(Maybe, instead of dynamic loading, always just generate and plop a lib of types in app.lib,
-   * as source or as a jar?)
+   * <p>(Maybe, instead of dynamic loading, always just generate and plop a lib of types in
+   * app.spive.gen, as source or as a jar?)
    */
   public static Type fromTypeTag(final String tag) {
     if (tag.startsWith("pojo:")) {

@@ -1,8 +1,8 @@
 package io.ulzha.spive.example.clicctracc.app;
 
 import io.ulzha.spive.example.clicctracc.app.events.Clicc;
-import io.ulzha.spive.example.clicctracc.app.lib.CliccTraccInstance;
-import io.ulzha.spive.example.clicctracc.app.lib.CliccTraccOutputGateway;
+import io.ulzha.spive.example.clicctracc.app.spive.gen.CliccTraccInstance;
+import io.ulzha.spive.example.clicctracc.app.spive.gen.CliccTraccOutputGateway;
 import io.ulzha.spive.lib.EventTime;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

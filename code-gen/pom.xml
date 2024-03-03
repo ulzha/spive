@@ -10,9 +10,9 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>spive-gen</artifactId>
+  <artifactId>spive-code-gen</artifactId>
   <description>
-    Code generator for IoC (Inversion of Control).
+    Generates scaffolding code for apps in IoC (Inversion of Control) manner.
 
     In a way it's private to Spive app, but has value as a dev tool, too
   </description>
@@ -23,11 +23,6 @@
       <artifactId>ST4</artifactId>
       <version>4.3.4</version>
     </dependency>
-    <!-- <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>stringtemplate</artifactId>
-      <version>4.0.2</version>
-    </dependency> -->
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -45,7 +40,7 @@
           <execution>
             <id>generate-ioc-code</id>
             <configuration>
-              <mainClass>io.ulzha.spive.gen.Cli</mainClass>
+              <mainClass>io.ulzha.spive.codegen.GenerateIocCode</mainClass>
             </configuration>
           </execution>
         </executions>

@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 import io.ulzha.spive.app.events.InstanceProgress;
 import io.ulzha.spive.app.events.InstanceStatusChange;
-import io.ulzha.spive.app.lib.SpiveOutputGateway;
 import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Process;
+import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InMemoryEventLog;

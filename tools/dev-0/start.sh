@@ -43,7 +43,7 @@ run_bootstrap_request='{
   "threadGroup": {
     "name": "foo",
     "artifactUrl": "file:///mnt/app/target/spive-0.0.1-SNAPSHOT.jar",
-    "mainClass": "io.ulzha.spive.app.lib.SpiveInstance$Main",
+    "mainClass": "io.ulzha.spive.app.spive.gen.SpiveInstance$Main",
     "args": [
       "io.ulzha.spive.core.LocalFileSystemEventStore;basePath=/mnt/event-store",
       "93ff4295-5a8c-4181-b50b-3d7345643581",
