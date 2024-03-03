@@ -10,14 +10,24 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>spive-tools</artifactId>
+  <artifactId>spive-gen</artifactId>
+  <description>
+    Code generator for IoC (Inversion of Control).
+
+    In a way it's private to Spive app, but has value as a dev tool, too
+  </description>
 
   <dependencies>
     <dependency>
-      <groupId>io.ulzha</groupId>
-      <artifactId>spive-core</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.antlr</groupId>
+      <artifactId>ST4</artifactId>
+      <version>4.3.4</version>
     </dependency>
+    <!-- <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>stringtemplate</artifactId>
+      <version>4.0.2</version>
+    </dependency> -->
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -26,16 +36,16 @@
     </dependency>
   </dependencies>
 
-  <build>
+    <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>copy-event-log</id>
+            <id>generate-ioc-code</id>
             <configuration>
-              <mainClass>io.ulzha.spive.tools.CopyEventLog</mainClass>
+              <mainClass>io.ulzha.spive.gen.Cli</mainClass>
             </configuration>
           </execution>
         </executions>
