@@ -54,6 +54,42 @@ public class AppIoc {
       // TODO default void accept(final Clicc event, final Instant eventInstant) {}
     }
 
+    public String getTypeVarName() {
+      String name = getName();
+      return name.substring(0, 1).toLowerCase() + name.substring(1) + "Type";
+    }
+
+    public String getType() {
+      return """
+               private static final Type %s =
+                   Type.fromTypeTag("%s");
+             """
+          .formatted(getTypeVarName(), getTypeTag());
+      // (protobuf Any, anyone? type_url: "type.googleapis.com/company.entity.Foo")
+    }
+
+    public String getEmitIf() {
+      return """
+               public boolean emitIf(Supplier<Boolean> check, %s payload) {
+                 return emitIf(check, %s, payload);
+               }
+
+               public boolean emitIf(Supplier<Boolean> check, %s payload, EventTime eventTime) {
+                 return emitIf(check, %s, payload, eventTime);
+               }
+             """
+          .formatted(getName(), getTypeVarName(), getName(), getTypeVarName());
+    }
+
+    public String getEmitConsequential() {
+      return """
+               public void emitConsequential(%s payload) {
+                 emitConsequential(%s, payload);
+               }
+             """
+          .formatted(getName(), getTypeVarName());
+    }
+
     public String getTypeTag() {
       return typeTag;
     }
@@ -90,11 +126,6 @@ public class AppIoc {
     templates.setListener(new ThrowingListener());
   }
 
-  public static void generateAppOutputGatewayCode(AppDescriptor config, String dir) {
-    final ST st = templates.getInstanceOf("AppOutputGateway");
-    st.add("event", config.events);
-  }
-
   public static void generateAppInstanceCode(AppDescriptor app, String dir) throws IOException {
     final ST st = templates.getInstanceOf("AppInstance");
     st.add("app", app);
@@ -102,6 +133,17 @@ public class AppIoc {
     st.add("workloads", app.workloads);
 
     try (FileWriter writer = new FileWriter(dir + "/" + app.getName() + "Instance.java")) {
+      writer.write(st.render());
+    }
+  }
+
+  public static void generateAppOutputGatewayCode(AppDescriptor app, String dir)
+      throws IOException {
+    final ST st = templates.getInstanceOf("AppOutputGateway");
+    st.add("app", app);
+    st.add("events", app.events);
+
+    try (FileWriter writer = new FileWriter(dir + "/" + app.getName() + "OutputGateway.java")) {
       writer.write(st.render());
     }
   }

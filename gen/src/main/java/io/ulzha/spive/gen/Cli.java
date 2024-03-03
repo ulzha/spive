@@ -35,7 +35,7 @@ public class Cli {
 
     for (String dir : configs.keySet()) {
       AppIoc.generateAppInstanceCode(configs.get(dir), dir);
-      // AppIoc.generateAppOutputGatewayCode(configs.get(dir), dir);
+      AppIoc.generateAppOutputGatewayCode(configs.get(dir), dir);
     }
   }
 }
