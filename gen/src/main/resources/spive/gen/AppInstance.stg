@@ -1,14 +1,11 @@
-delimiters "%", "%"
-
-workload_new(x) ::= "app.new %x.name%()"
-
-body(workloads) ::= <<
+body(events, workloads) ::= <<
 package io.ulzha.spive.app.lib;
 // app.gen? app.shell? app.bus? app.scaffold? app.spive.gen?
 // layers, outer spive.sdk.ioc.gen + spive.sdk.ioc.lib, and inner spive.sdk.lib?
 
 import com.google.common.collect.ImmutableList;
 import io.ulzha.spive.app.Spive;
+%events:{e | %e.import%}; separator="\n"%
 import io.ulzha.spive.app.events.CreateEventLog;
 import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.app.events.CreateProcess;
@@ -178,7 +175,9 @@ public interface SpiveInstance
       if (workloads.equals("event loop only")) {
         return ImmutableList.of();
       } else {
-        return ImmutableList.of(%workloads:workload_new()%);
+        return ImmutableList.of(
+          %workloads:{w | %w.new%}; separator=",\n"%
+        );
       }
     }
   }
