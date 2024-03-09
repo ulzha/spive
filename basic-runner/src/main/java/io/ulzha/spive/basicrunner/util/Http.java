@@ -27,7 +27,7 @@ public class Http {
     HTTP_START_TIME,
   }
 
-  /** HttpServer itself doesn't log */
+  /** HttpServer itself doesn't log basic things such as exceptions and timings */
   private static HttpHandler rootHandler(HttpHandler delegate) {
     return (exchange) -> {
       RuntimeException e = null;
@@ -41,7 +41,7 @@ public class Http {
               "No HTTP status code sent despite normal return - make sure the exchange is thoroughly handled");
         }
       } catch (Throwable t) {
-        e = new RuntimeException("Internal server error", t);
+        e = new RuntimeException("Error handling HTTP exchange", t);
         int prevCode = exchange.getResponseCode();
         if (prevCode == -1) {
           try {
@@ -70,7 +70,7 @@ public class Http {
         // dunno if this can be slow too
         exchange.close();
       } catch (Throwable t) {
-        final RuntimeException eLate = new RuntimeException("Internal server error but late", t);
+        final RuntimeException eLate = new RuntimeException("Error closing HTTP exchange", t);
         if (e != null) {
           e.addSuppressed(eLate);
         } else {
@@ -79,6 +79,7 @@ public class Http {
       }
 
       if (e != null) {
+        LOG.error("Internal server error", e);
         throw e;
       }
     };

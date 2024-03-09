@@ -126,6 +126,8 @@ public final class BasicRunner {
       // InternalException must bubble up here for logging, as well as other unchecked exceptions
       // and errors originating in runner layer. I think system thread group problems also would
       // (TODO test)
+      // Rest handlers exceptions don't bubble up here, HttpServer and its executor put walls up:
+      // https://stackoverflow.com/questions/1838923/why-is-uncaughtexceptionhandler-not-called-by-executorservice
       if (!(t instanceof HandledException || t instanceof ThreadDeath)) {
         final String message = addWarnings(thread, t);
         // make sure the throwing thread's name is logged (with slf4j-simple it is...)
