@@ -5,8 +5,8 @@ package io.ulzha.spive.example.clicctracc.app.spive.gen;
 import io.ulzha.spive.example.clicctracc.app.events.Clicc;
 import io.ulzha.spive.lib.EventGateway;
 import io.ulzha.spive.lib.EventIterator;
+import io.ulzha.spive.lib.EventLock;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
@@ -30,8 +30,8 @@ public class CliccTraccOutputGateway extends EventGateway {
       UmbilicalWriter umbilicus,
       EventIterator eventIterator,
       Supplier<Instant> wallClockTime,
-      LockableEventLog eventLog) {
-    super(umbilicus, eventIterator, wallClockTime, eventLog);
+      EventLock eventLock) {
+    super(umbilicus, eventIterator, wallClockTime, eventLock);
   }
 
   private static final Type cliccType =

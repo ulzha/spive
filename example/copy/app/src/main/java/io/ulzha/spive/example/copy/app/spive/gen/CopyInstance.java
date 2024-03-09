@@ -7,11 +7,11 @@ import io.ulzha.spive.basicrunner.api.Umbilical;
 import io.ulzha.spive.example.copy.app.Copy;
 import io.ulzha.spive.example.copy.app.events.CreateFoo;
 import io.ulzha.spive.lib.EventIterator;
+import io.ulzha.spive.lib.EventLock;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.InstanceMain;
-import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -68,29 +68,22 @@ public interface CopyInstance {
     public static void main(final Umbilical umbilical, final String... args) throws Exception {
       final Supplier<Instant> wallClockTime = Instant::now;
 
-      try (EventLog naiveInputEventLog = EventLog.open(args[0], args[1]);
-          EventLog naiveOutputEventLog = EventLog.open(args[2], args[3])) {
-        // Locking is intended to have effect iff output is the same as input.
-        // Ugly way to code it?
-        final LockableEventLog inputEventLog = new LockableEventLog(naiveInputEventLog);
-        final LockableEventLog outputEventLog =
-            (naiveInputEventLog == naiveOutputEventLog
-                ? inputEventLog
-                : new LockableEventLog(naiveOutputEventLog));
-
+      try (EventLog inputEventLog = EventLog.open(args[0], args[1]);
+          EventLog outputEventLog = EventLog.open(args[2], args[3])) {
         final EventIterator eventIterator = new EventIterator(inputEventLog.iterator());
 
         // FIXME thread-safe supplier
         // FIXME beat outside an event when the write is actually from a concurrent workload
         final UmbilicalWriter umbilicus = umbilical.new Umbilicus(() -> eventIterator.lastTimeRead);
 
+        final EventLock eventLock = new EventLock();
         final CopyOutputGateway output =
-            new CopyOutputGateway(umbilicus, eventIterator, wallClockTime, outputEventLog);
+            new CopyOutputGateway(umbilicus, eventIterator, wallClockTime, eventLock);
 
         final Copy app = new Copy(output);
 
         List<Runnable> workloads = new ArrayList<>();
-        workloads.add(new EventLoop<Copy>(umbilicus, eventIterator, app, inputEventLog));
+        workloads.add(new EventLoop<Copy>(umbilicus, eventIterator, app, eventLock));
         workloads.addAll(selectWorkloads(app, args[5]));
 
         umbilical.addHeartbeat(null); // marks start of all the workloads

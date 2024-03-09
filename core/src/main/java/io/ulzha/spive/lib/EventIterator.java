@@ -61,4 +61,9 @@ public class EventIterator implements EventLog.AppendIterator {
     knownEvents.add(actualEvent);
     return actualEvent;
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "(" + delegate + ")";
+  }
 }

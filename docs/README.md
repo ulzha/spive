@@ -20,8 +20,8 @@ Teaser trailer (not there yet):
 ## Why
 
 Spīve's primary goal is to boost productivity in software engineering, ranging from near-real time data processing pipelines to microservices, websites and enterprise internal tools:
-- Must make it easy to achieve more with less code, concretely: elide [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) boilerplate, often encourage event-driven approach as the first choice, embrace determinism, and remove difficulties from statefulness where applicable
-- Intuitive operations and robust observability must come by default (deploying your software in a poorly observable fashion should be _hard_)
+- Must minimize [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) boilerplate (achieve more with less code), encourage decoupled event-driven architectures, assist with versioning to make refactoring and modernizing of components a breeze (shorten life of legacy code), embrace determinism, and remove difficulties around statekeeping
+- Intuitive operations and robust observability must come by default (should be _hard_ to deploy your software in such a way that you miss an error stacktrace or miss the onset of degraded service)
 
 Second to the above, we should also not neglect performance:
 - Should scale without contention on a group centralized nodes or a single point of failure
@@ -114,7 +114,7 @@ Aspire to gamify common chores, such as deployment, scaling, and verification of
 Do precompute views, throw hardware at the problem, get UI to [update in split seconds](https://lawsofux.com/doherty-threshold/).
 Key durations guidance, applicable throughout ecosystem: < 400 ms for roundtrip from UI interaction to backend, 5 seconds between status updates, 5 minutes for replay on each instance...
 
-[Hermeticity](https://testing.googleblog.com/2012/10/hermetic-servers.html). Spive app is self-hosting, its code seems self-referential to an extent. Astonishingly self-manipulating as a quine it should be _not_. In the same way that a never-halting program tends to be of diminished usefulness in practice — and same can be said of a program whose halting is _unclear_ — we do not want to contort Spīve architecture into a platform that readily mangles itself out in the field — nor one that is _prone to_ mangling itself if a user happens to click the wrong button.
+[Hermeticity](https://testing.googleblog.com/2012/10/hermetic-servers.html). Spive app is self-hosting, its code seems self-referential to an extent. Astonishingly self-manipulating as a quine it should be _not_. We do not want to contort Spīve into a platform that readily mangles itself out in the field — nor one that is _prone to_ mangling itself if a user happens to click the wrong button.
 
 A [TODO list](TODO.md) full of wishes.
 

@@ -1,7 +1,6 @@
 package io.ulzha.spive.lib;
 
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -9,18 +8,18 @@ import java.util.function.Supplier;
 public class EventGateway extends Gateway {
   private final EventIterator eventIterator;
   private final Supplier<Instant> wallClockTime;
-  private final LockableEventLog eventLog;
+  private final EventLock eventLock;
 
   public EventGateway(
       // dumb name, but UmbilicalWriter also is the one that has getReplayMode
       final UmbilicalWriter umbilicus,
       final EventIterator eventIterator,
       final Supplier<Instant> wallClockTime,
-      final LockableEventLog eventLog) {
+      final EventLock eventLock) {
     super(umbilicus);
     this.eventIterator = eventIterator;
     this.wallClockTime = wallClockTime;
-    this.eventLog = eventLog;
+    this.eventLock = eventLock;
   }
 
   /**
@@ -30,32 +29,34 @@ public class EventGateway extends Gateway {
    * @return true if appended, false if not because the latest stored Event has time > prevTime.
    * @throws IllegalArgumentException if event.time <= prevTime.
    */
-  private boolean emit(Event event, EventTime prevTime) {
-    if (event.time.compareTo(prevTime) <= 0) {
-      throw new IllegalArgumentException("event time must come strictly after prevTime");
-    }
-    // TODO check that it belongs to the intended stream and the intended subset of partitions
-    long sleepMs = 10;
-    long sleepMsMax = 100000;
-    EventEnvelope ee = EventEnvelope.wrap(event);
-    while (true) {
-      try {
-        return eventLog.appendIfPrevTimeMatch(ee, prevTime);
-        // TODO report that we're leading
-      } catch (IOException e) {
-        // likely an intermittent failure, let's keep trying
-        umbilicus.addWarning(e);
-      }
-      // unlisted exceptions are likely permanent failures, let them crash the instance
-      try {
-        sleepMs = Math.min(sleepMs * 10, sleepMsMax);
-        Thread.sleep(sleepMs);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
-      }
-    }
-  }
+  // so far saw no need for emitting directly to logs, just via eventIterator
+  // perhaps EventIteratorGateway and EventLogGateway should split, complement each other in use
+  // private boolean emit(Event event, EventTime prevTime) {
+  //   if (event.time.compareTo(prevTime) <= 0) {
+  //     throw new IllegalArgumentException("event time must come strictly after prevTime");
+  //   }
+  //   // TODO check that it belongs to the intended stream and the intended subset of partitions
+  //   long sleepMs = 10;
+  //   long sleepMsMax = 100000;
+  //   EventEnvelope ee = EventEnvelope.wrap(event);
+  //   while (true) {
+  //     try {
+  //       return eventLog.appendIfPrevTimeMatch(ee, prevTime);
+  //       // TODO report that we're leading
+  //     } catch (IOException e) {
+  //       // likely an intermittent failure, let's keep trying
+  //       umbilicus.addWarning(e);
+  //     }
+  //     // unlisted exceptions are likely permanent failures, let them crash the instance
+  //     try {
+  //       sleepMs = Math.min(sleepMs * 10, sleepMsMax);
+  //       Thread.sleep(sleepMs);
+  //     } catch (InterruptedException e) {
+  //       Thread.currentThread().interrupt();
+  //       throw new RuntimeException(e);
+  //     }
+  //   }
+  // }
 
   /**
    * Emits between event handlers, first checking if the check returns true for in-memory state at
@@ -86,7 +87,7 @@ public class EventGateway extends Gateway {
       final EventTime eventTime = awaitAdvancing();
 
       try {
-        eventLog.lock();
+        eventLock.lock();
         // Unsure if replay mode is applicable to concurrent workloads at the same times when it's
         // applicable to event handlers... Roughly it might be, but whenever we have just entered
         // trailing state and not yet toggled replay on, an attempt at fulfilling side effects will
@@ -122,7 +123,7 @@ public class EventGateway extends Gateway {
         }
         return false;
       } finally {
-        eventLog.unlock();
+        eventLock.unlock();
       }
     } catch (Throwable t) {
       umbilicus.addError(t);
@@ -146,7 +147,7 @@ public class EventGateway extends Gateway {
       awaitAdvancing();
 
       try {
-        eventLog.lock();
+        eventLock.lock();
         if ((eventIterator.lastTimeRead == null
                 || eventIterator.lastTimeRead.compareTo(eventTime) < 0)
             && (eventIterator.lastTimeEmitted == null
@@ -162,7 +163,7 @@ public class EventGateway extends Gateway {
         }
         return false;
       } finally {
-        eventLog.unlock();
+        eventLock.unlock();
       }
     } catch (Throwable t) {
       umbilicus.addError(t);
@@ -218,6 +219,9 @@ public class EventGateway extends Gateway {
    * <p>If the output stream is also an input, then the tiebreaker in event time gets incremented.
    * Otherwise the event time is the same as for the input event currently handled. FIXME
    *
+   * <p>TODO a simultaneous consequence across shards must not oppose the "ontological" order, or
+   * range reassignment will splice some effects before their causes?
+   *
    * <p>TODO what is the well-defined order of consequences of consequences, across shards?
    *
    * <p>TODO non-simultaneous version? (Haven't yet thought much about situations where the
@@ -246,7 +250,7 @@ public class EventGateway extends Gateway {
   protected <T> void emitConsequential(Type type, T payload) {
     try {
       try {
-        eventLog.lockConsequential();
+        eventLock.lockConsequential();
         final EventTime eventTime = nextConsequentialTime();
         final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
         final EventEnvelope wanted = EventEnvelope.wrap(event);
@@ -267,7 +271,7 @@ public class EventGateway extends Gateway {
           System.out.println("Trailed with a consequential event, wdyt? " + eventTime);
         }
       } finally {
-        eventLog.unlock();
+        eventLock.unlock();
       }
     } catch (Throwable t) {
       umbilicus.addError(t);

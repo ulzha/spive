@@ -8,9 +8,9 @@ import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventIterator;
+import io.ulzha.spive.lib.EventLock;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InMemoryEventLog;
-import io.ulzha.spive.lib.LockableEventLog;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.ProgressUpdatesList;
@@ -57,7 +57,6 @@ class PollLoopTest {
     final UmbilicalWriter fakeUmbilicus = new FakeUmbilicus();
     controlPlaneWallClockTime = new AtomicReference<>(Instant.EPOCH);
     eventLog = new InMemoryEventLog();
-    final LockableEventLog lockableEventLog = new LockableEventLog(eventLog);
     final EventIterator eventIterator = new EventIterator(eventLog.iterator());
     final Supplier<Instant> wallClockAutoAdvancingMimickingReads =
         () -> {
@@ -69,9 +68,10 @@ class PollLoopTest {
           }
           return controlPlaneWallClockTime.get();
         };
+    final EventLock eventLock = new EventLock();
     final SpiveOutputGateway fakeOutput =
         new SpiveOutputGateway(
-            fakeUmbilicus, eventIterator, wallClockAutoAdvancingMimickingReads, lockableEventLog);
+            fakeUmbilicus, eventIterator, wallClockAutoAdvancingMimickingReads, eventLock);
 
     pollLoop =
         new PollLoop(instance, fakePlacenta, () -> controlPlaneWallClockTime.get(), fakeOutput);

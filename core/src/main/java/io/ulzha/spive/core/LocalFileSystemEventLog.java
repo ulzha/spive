@@ -254,6 +254,11 @@ public final class LocalFileSystemEventLog implements EventLog {
       }
     }
 
+    @Override
+    public String toString() {
+      return getClass().getSimpleName() + "(" + LocalFileSystemEventLog.this + ")";
+    }
+
     private void close() throws IOException {
       readChannel.close();
     }

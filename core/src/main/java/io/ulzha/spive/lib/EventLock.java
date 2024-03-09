@@ -1,7 +1,5 @@
 package io.ulzha.spive.lib;
 
-import jakarta.annotation.Nonnull;
-import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -13,41 +11,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * handler behavior would become nondeterministic due to nondeterministic results of _their_ emit()
  * calls.)
  */
-// this shouldn't at all be a wrapper, more like an OutputLock between Gateway and EventLoop.
-// PendingConsequencesLock? HandlerProgress?
-public class LockableEventLog implements EventLog {
-  private final EventLog delegate;
+public class EventLock {
   private final ReentrantLock spontaneousAppendLock = new ReentrantLock(true);
-
-  public LockableEventLog(final EventLog delegate) {
-    this.delegate = delegate;
-    // TODO Until EOF is read we should probably never even open the lock, no appendIfPrevTimeMatch
-    // can go through anyway...
-  }
-
-  @Override
-  public void close() throws Exception {
-    delegate.close();
-  }
-
-  @Override
-  @Nonnull
-  public AppendIterator iterator() {
-    return delegate.iterator();
-  }
-
-  @Override
-  public EventTime appendAndGetAdjustedTime(final EventEnvelope event) throws IOException {
-    // if (!sporadicAppendLock.isHeldByCurrentThread()) throw IOException?
-    return delegate.appendAndGetAdjustedTime(event);
-  }
-
-  @Override
-  public boolean appendIfPrevTimeMatch(final EventEnvelope event, final EventTime prevTime)
-      throws IOException {
-    // if (!sporadicAppendLock.isHeldByCurrentThread()) throw IOException?
-    return delegate.appendIfPrevTimeMatch(event, prevTime);
-  }
 
   /** Sets hold count to one unless we already hold it. */
   public void lock() {
@@ -73,10 +38,5 @@ public class LockableEventLog implements EventLog {
 
   public void unlock() {
     spontaneousAppendLock.unlock();
-  }
-
-  @Override
-  public String toString() {
-    return this.getClass().getCanonicalName() + "(delegate=" + delegate + ")";
   }
 }

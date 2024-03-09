@@ -80,22 +80,19 @@ public class InstanceMain {
     private final UmbilicalWriter umbilical;
     private final EventIterator eventIterator;
     private final T app;
-    private final LockableEventLog inputEventLog;
+    private final EventLock eventLock;
 
     public EventLoop(
-        UmbilicalWriter umbilical,
-        EventIterator eventIterator,
-        T app,
-        LockableEventLog inputEventLog) {
+        UmbilicalWriter umbilical, EventIterator eventIterator, T app, EventLock eventLock) {
       this.umbilical = umbilical;
       this.eventIterator = eventIterator;
       this.app = app;
-      this.inputEventLog = inputEventLog;
+      this.eventLock = eventLock;
     }
 
     @Override
     public void run() {
-      LOG.info("EventLoop over {} running", inputEventLog);
+      LOG.info("EventLoop over {} running", eventIterator);
       while (eventIterator.hasNext()) {
         final EventEnvelope envelope = eventIterator.next();
         System.out.println("We have an envelope: " + envelope);
@@ -109,9 +106,9 @@ public class InstanceMain {
           // that it never runs between an input event and its consequential event when emitted to
           // the same log.
           // TODO optimize to forego synchronization when no other workloads are running
-          inputEventLog.lock();
+          eventLock.lock();
           app.getClass().getMethod("accept", event.payload.getClass()).invoke(app, event.payload);
-          inputEventLog.unlock();
+          eventLock.unlock();
           // There is intentionally no `finally` here. If we ensure unlock after an exception then
           // that may give workloads a short window before instance death where they can corrupt
           // the event sequence ahead of an intended consequential event. Leaving them deadlocked
@@ -134,7 +131,7 @@ public class InstanceMain {
         umbilical.addSuccess();
         // TODO check umbilical for errors from gateway that may have been swallowed in accept()
       }
-      LOG.info("EventLoop over {} completed", inputEventLog);
+      LOG.info("EventLoop over {} completed", eventIterator);
       // end of event log, so just exit normally
     }
   }
