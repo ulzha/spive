@@ -1,10 +1,10 @@
 package io.ulzha.spive.basicrunner.api;
 
 import static io.ulzha.spive.basicrunner.matchers.HeartbeatSampleMatcher.progressUpdatesListThat;
-import static io.ulzha.spive.basicrunner.matchers.ProgressUpdateMatcher.containsIgnoringTime;
+import static io.ulzha.spive.basicrunner.matchers.ProgressUpdateMatcher.containsEssentially;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.ulzha.spive.lib.EventTime;
@@ -16,6 +16,35 @@ import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Test;
 
 public class UmbilicalTest {
+  @Test
+  void givenUnknownEventTimeUpdates_getHeartbeatSnapshot_shouldReturnExpectedFirsts() {
+    final Umbilical sut = new Umbilical();
+
+    sut.addHeartbeat(null);
+    final EventTime t0 = EventTime.fromString("2024-02-15T15:00:00Z#0");
+    sut.addHeartbeat(t0);
+    sut.addSuccess(t0);
+    Exception e0 = new Exception("Concurrent workload exception, let's say");
+    sut.addError(null, e0);
+
+    final HeartbeatSnapshot actual = sut.getHeartbeatSnapshot(false);
+
+    assertThat(actual.sample().size(), is(2));
+    assertThat(
+        actual.sample().get(0),
+        progressUpdatesListThat(
+            nullValue(EventTime.class),
+            nullValue(),
+            containsEssentially(new ProgressUpdate(), ProgressUpdate.createError(e0))));
+    assertThat(
+        actual.sample().get(1),
+        progressUpdatesListThat(
+            is(t0),
+            nullValue(),
+            containsEssentially(new ProgressUpdate(), ProgressUpdate.createSuccess())));
+    assertThat(actual.nInputEventsTotal(), is(1L));
+  }
+
   @Test
   void givenNominalUpdates_getHeartbeatSnapshot_shouldReturnExpectedFirstsAndCheckpoint() {
     final Umbilical sut = new Umbilical();
@@ -36,7 +65,7 @@ public class UmbilicalTest {
         progressUpdatesListThat(
             is(t4),
             nullValue(),
-            containsIgnoringTime(new ProgressUpdate(), ProgressUpdate.createSuccess())));
+            containsEssentially(new ProgressUpdate(), ProgressUpdate.createSuccess())));
     assertThat(actual.checkpoint(), is(t4));
     assertThat(actual.nInputEventsTotal(), is(5L));
   }

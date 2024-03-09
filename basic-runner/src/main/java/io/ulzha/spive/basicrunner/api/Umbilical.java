@@ -1,5 +1,7 @@
 package io.ulzha.spive.basicrunner.api;
 
+import static java.util.Comparator.*;
+
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.ConcurrentProgressUpdatesList;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
@@ -152,12 +154,12 @@ public class Umbilical {
       firsts.add(firstWarning);
     }
     if (firstError != null && !firsts.contains(firstError)) {
-      firsts.add(firstWarning);
+      firsts.add(firstError);
     }
     if (last != null && !firsts.contains(last)) {
       firsts.add(last);
     }
-    firsts.sort((a, b) -> a.eventTime().compareTo(b.eventTime()));
+    firsts.sort(comparing(ProgressUpdatesList::eventTime, nullsFirst(naturalOrder())));
 
     firsts.replaceAll(
         list -> {
