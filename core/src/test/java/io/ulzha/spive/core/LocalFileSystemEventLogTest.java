@@ -3,6 +3,7 @@ package io.ulzha.spive.core;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,7 +27,53 @@ import org.junit.jupiter.api.Test;
 // TODO suite with identical scenarios, applied to all EventLog implementations consistently
 public class LocalFileSystemEventLogTest {
   @Test
-  public void givenUnclosedLog_whenAppendedViaIterator_thenNextReturnsSameEvent() throws Exception {
+  public void
+      givenCompetingEventHasEqualTimeDifferentPayload_whenPeekedViaIterator_thenNextReturnsActualEvent()
+          throws Exception {
+    final EventEnvelope e = dummyEvent(1);
+    final Path filePath =
+        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      final var iterator = eventLog.iterator();
+      iterator.next();
+
+      final EventEnvelope actual = iterator.appendOrPeek(e);
+      assertThat(actual, not(e));
+      assertThat(actual.time(), is(e.time()));
+      assertThat(actual.serializedPayload(), not(e.serializedPayload()));
+      // reference equality here is relevant (not `is`, which calls `equals`)
+      assertTrue(actual != e);
+      assertTrue(actual == iterator.next());
+    }
+  }
+
+  @Test
+  public void
+      givenCompetingEventHasEqualTimeAndEqualPayload_whenPeekedViaIterator_thenNextReturnsActualEvent()
+          throws Exception {
+    final EventEnvelope e =
+        new EventEnvelope(
+            new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1),
+            null,
+            "pojo:io.ulzha.spive.test.DeleteProcess",
+            "{\"processId\": \"00000000-0000-0000-0000-000000000000\"}");
+    final Path filePath =
+        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      final var iterator = eventLog.iterator();
+      iterator.next();
+
+      final EventEnvelope actual = iterator.appendOrPeek(e);
+      assertThat(actual, is(e));
+      // reference equality here is relevant (not `is`, which calls `equals`)
+      assertTrue(actual != e);
+      assertTrue(actual == iterator.next());
+    }
+  }
+
+  @Test
+  public void givenNoCompetingEvent_whenAppendedViaIterator_thenNextReturnsAppendedEvent()
+      throws Exception {
     final EventEnvelope e = dummyEvent(2);
     final Path filePath =
         Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
@@ -35,10 +82,10 @@ public class LocalFileSystemEventLogTest {
       iterator.next();
       iterator.next();
 
-      final EventEnvelope appended = iterator.appendOrPeek(e);
-      // reference equality here is relevant (not `is`)
-      assertTrue(appended == e);
-      assertTrue(appended == iterator.next());
+      final EventEnvelope actual = iterator.appendOrPeek(e);
+      // reference equality here is relevant (not `is`, which calls `equals`)
+      assertTrue(actual == e);
+      assertTrue(actual == iterator.next());
     }
   }
 
