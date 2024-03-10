@@ -111,7 +111,10 @@ public final class LocalFileSystemEventLog implements EventLog {
       channel.position(p);
       buffer.clear();
       channel.read(buffer);
-      for (int i = 0; i < buffer.limit(); i++) {
+      if (buffer.limit() < chunkSize && !(p == 0 && buffer.limit() == channel.size())) {
+        throw new InternalException("Hard to seek from end with this channel");
+      }
+      for (int i = buffer.limit(); i-- > 0; ) {
         if (buffer.get(i) == '\n' && p + i + 1 != channel.size()) {
           channel.position(p + i + 1);
           return;

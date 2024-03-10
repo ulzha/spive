@@ -200,7 +200,7 @@ public class LocalFileSystemEventLogTest {
   }
 
   @Test
-  public void givenTwoEventsInLog_whenAppendingAfterLast_shouldAppendAndReturnTrue()
+  public void givenTwoEventsInLog_whenAppendingTwoMore_shouldAppendAndReturnTrue()
       throws Exception {
     final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     final byte[] bytesOrig = Files.readAllBytes(filePath);
@@ -208,12 +208,20 @@ public class LocalFileSystemEventLogTest {
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
       final EventTime eventTime3 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 0);
+      final EventTime eventTime4 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 1);
       final EventEnvelope event3 =
           new EventEnvelope(
               eventTime3, UUID.randomUUID(), "pojo:io.ulzha.spive.test.MournProcess", "\"BRRRRR\"");
-      final boolean appended = eventLog.appendIfPrevTimeMatch(event3, eventTime2);
+      final boolean appended3 = eventLog.appendIfPrevTimeMatch(event3, eventTime2);
 
-      assertTrue(appended);
+      assertTrue(appended3);
+
+      final EventEnvelope event4 =
+          new EventEnvelope(
+              eventTime4, UUID.randomUUID(), "pojo:io.ulzha.spive.test.MournProcess", "\"BZZZZZ\"");
+      final boolean appended4 = eventLog.appendIfPrevTimeMatch(event4, eventTime3);
+
+      assertTrue(appended4);
     }
 
     final byte[] bytes = Files.readAllBytes(filePath);
@@ -225,7 +233,7 @@ public class LocalFileSystemEventLogTest {
   }
 
   @Test
-  public void givenClosedLog_whenAppendingAfterLast_shouldThrow() throws Exception {
+  public void givenClosedLog_whenAppendingOneMore_shouldThrow() throws Exception {
     final Path filePath = copyResourceToTempFile("OneEventClosed.jsonl");
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
