@@ -239,7 +239,7 @@ public final class LocalFileSystemEventLog implements EventLog {
           (previousEvent == null ? EventTime.INFINITE_PAST : previousEvent.time());
       try {
         if (LocalFileSystemEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
-          return event;
+          nextEvent = event;
         } else {
           if (!hasNext()) { // sets nextEvent
             throw new IllegalStateException(
@@ -247,8 +247,8 @@ public final class LocalFileSystemEventLog implements EventLog {
                     + previousTime
                     + ", but log prematurely indicates end");
           }
-          return nextEvent;
         }
+        return nextEvent;
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

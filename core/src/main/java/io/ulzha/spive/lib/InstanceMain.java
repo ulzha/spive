@@ -100,7 +100,7 @@ public class InstanceMain {
         final EventEnvelope envelope = eventIterator.next();
         System.out.println("We have an envelope: " + envelope);
         final Event event = envelope.unwrap();
-        System.out.println("We have an event: " + event);
+        System.out.println("We have a payload: " + event.payload);
         // TODO assert that the event belongs to the intended subset of partitions
         // TODO maintain a rolling hash and panic if inconsistency observed?
         umbilical.addHeartbeat();

@@ -26,6 +26,23 @@ import org.junit.jupiter.api.Test;
 // TODO suite with identical scenarios, applied to all EventLog implementations consistently
 public class LocalFileSystemEventLogTest {
   @Test
+  public void givenUnclosedLog_whenAppendedViaIterator_thenNextReturnsSameEvent() throws Exception {
+    final EventEnvelope e = dummyEvent(2);
+    final Path filePath =
+        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      final var iterator = eventLog.iterator();
+      iterator.next();
+      iterator.next();
+
+      final EventEnvelope appended = iterator.appendOrPeek(e);
+      // reference equality here is relevant (not `is`)
+      assertTrue(appended == e);
+      assertTrue(appended == iterator.next());
+    }
+  }
+
+  @Test
   public void givenUnclosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndBlock()
       throws Exception {
     final Path filePath =
@@ -180,6 +197,14 @@ public class LocalFileSystemEventLogTest {
 
     final byte[] bytes = Files.readAllBytes(filePath);
     assertThat(bytes, is(bytesOrig));
+  }
+
+  private EventEnvelope dummyEvent(int i) {
+    return new EventEnvelope(
+        new EventTime(Instant.parse("1111-11-11T00:00:00Z"), i),
+        null,
+        "pojo:io.ulzha.spive.test.WhamProcess",
+        "\"WHAM!\"");
   }
 
   private Path copyResourceToTempFile(final String name) throws IOException {
