@@ -159,6 +159,8 @@ public class Umbilical {
     if (last != null && !firsts.contains(last)) {
       firsts.add(last);
     }
+    // System.out.println(firsts);
+    // firsts.sort((a, b) -> a.eventTime().compareTo(b.eventTime()));
     firsts.sort(comparing(ProgressUpdatesList::eventTime, nullsFirst(naturalOrder())));
 
     firsts.replaceAll(

@@ -1,8 +1,9 @@
 package io.ulzha.spive.lib;
 
 /**
- * Decorator around problems that are propagated through various Spīve layers. Geared towards
- * prevention of confusing duplicate messaging.
+ * Decorator around problems that are already reported to user, best effort, and afterwards
+ * propagate through various Spīve layers. Geared towards prevention of confusing duplicate
+ * messaging.
  *
  * <p>Not for use outside io.ulzha.spive
  */

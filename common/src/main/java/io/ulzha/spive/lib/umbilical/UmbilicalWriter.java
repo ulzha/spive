@@ -1,6 +1,7 @@
 package io.ulzha.spive.lib.umbilical;
 
 /** (Initially aimed to just use some functional interfaces but they became many) */
+// It's confusing to talk direction but less confusing to talk scope? EventHandlerUmbilical?
 public interface UmbilicalWriter {
   public boolean getReplayMode();
 

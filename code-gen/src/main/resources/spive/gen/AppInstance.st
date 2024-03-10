@@ -17,7 +17,6 @@ import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +54,7 @@ public interface %app.name%Instance {
    * of the stack for application developers. Should strive to eliminate any obscureness of late
    * dependency injection etc.
    */
+  // just instance utils? No need to extend?
   class Main extends InstanceMain {
     public static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
@@ -64,6 +64,7 @@ public interface %app.name%Instance {
 
     public static void main(final Umbilical umbilical, final String... args) throws Exception {
       final Supplier<Instant> wallClockTime = Instant::now;
+      String logExitStatus = "nominally";
 
       try (EventLog inputEventLog = EventLog.open(args[0], args[1]);
           EventLog outputEventLog = EventLog.open(args[2], args[3])) {
@@ -85,35 +86,28 @@ public interface %app.name%Instance {
         workloads.addAll(selectWorkloads(app, args[5]));
 
         umbilical.addHeartbeat(null); // marks start of all the workloads
-        runWorkloads(workloads);
-        LOG.info("Instance exiting nominally"); // with L stalling partitions, etc...
-      } catch (ExecutionException e) {
-        // TODO not leak ExecutionException here.... Cleanup callback may leak here instead?
-        LOG.info("Workload failed:", e.getCause());
-        umbilical.addError(null, e.getCause());
-        throw new HandledException(e.getCause());
+        runWorkloads(umbilical.new Umbilicus(() -> null), workloads);
       } catch (InterruptedException e) {
-        LOG.info("Workload interrupted:", e);
+        logExitStatus = "after being interrupted";
+        // TODO was duplicated on the event, if any. That's intended: interruption cross-cuts
         umbilical.addError(null, e);
         Thread.currentThread().interrupt();
-        throw new HandledException(e);
+      } catch (HandledException e) {
+        logExitStatus = "after handling an error";
       } catch (Throwable t) {
         // TODO differentiate between errors that propagate from gateways (already appended to the
         // sample) and event handler exceptions, and workload exceptions...?
-        LOG.info("Workload failed:", t);
+        logExitStatus = "abnormally";
         // Unlike inside event loop, here our best option is to add error at instance level, and not
         // associate it with currentEventTime, because that event may have already been successfully
         // handled, and a success followed by an error would make a confusing sequence of updates.
-        // TODO smth quieter for HandledException
-        umbilical.addError(null, t);
+        // Runner takes care of adding and logging with stacktrace.
         throw t;
-        // TODO proceed gracefully actually? Other partitions can be processed so long as the
-        // crashed one sees no subsequent events? If event log stalls, keep serving read requests
-        // for a while? Vice versa as well? Write requests can even be served against the unaffected
-        // partitions?
       } finally {
         LOG.info(
-            "Instance exiting with K failed partitions, L stalling partitions, and M general workload failures");
+            "%app.name% instance exiting {}, with {}",
+            logExitStatus,
+            "K failed partitions, L stalling partitions, and M general workload failures");
       }
     }
 

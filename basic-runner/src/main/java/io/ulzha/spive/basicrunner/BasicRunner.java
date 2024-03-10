@@ -102,19 +102,19 @@ public final class BasicRunner {
   private static class RootExceptionHandler implements UncaughtExceptionHandler {
     private static final ThreadGroup MAIN_THREAD_GROUP = Thread.currentThread().getThreadGroup();
 
-    private String addWarnings(Thread thread, Throwable t) {
+    private String addErrors(Thread thread, Throwable t) {
       for (ThreadGroup tg = thread.getThreadGroup(); tg != MAIN_THREAD_GROUP; tg = tg.getParent()) {
         final ThreadGroupRecord record = RECORDS.get(tg.getName());
         if (record != null && tg.getParent() == MAIN_THREAD_GROUP) {
           // mark the particular application's umbilical with a warning
           // even RuntimeException and InternalException transparent to application owner...
           // TODO semi-opaque, without stacktrace?
-          record.umbilical.addWarning(null, t);
+          record.umbilical.addError(null, t);
           return record.threadGroupDescriptor.toString();
         }
       }
-      // might be relevant to any application on this runner, but we shouldn't disclose internals
-      // across applications
+      // might be relevant to any application on this runner, but we shouldn't yell and shouldn't
+      // disclose internals across applications
       for (ThreadGroupRecord record : RECORDS.values()) {
         record.umbilical.addWarning(null, new OpaqueException(t));
       }
@@ -129,7 +129,7 @@ public final class BasicRunner {
       // Rest handlers exceptions don't bubble up here, HttpServer and its executor put walls up:
       // https://stackoverflow.com/questions/1838923/why-is-uncaughtexceptionhandler-not-called-by-executorservice
       if (!(t instanceof HandledException || t instanceof ThreadDeath)) {
-        final String message = addWarnings(thread, t);
+        final String message = addErrors(thread, t);
         // make sure the throwing thread's name is logged (with slf4j-simple it is...)
         LOG.error("Uncaught exception, {}:", message, t);
       }

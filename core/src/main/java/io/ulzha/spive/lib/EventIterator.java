@@ -37,11 +37,16 @@ public class EventIterator implements EventLog.AppendIterator {
 
   @Override
   public EventEnvelope next() {
+    final EventEnvelope event;
+
     if (knownEvents.isEmpty()) {
-      return delegate.next();
+      event = delegate.next();
     } else {
-      return knownEvents.remove();
+      event = knownEvents.remove();
     }
+
+    lastTimeRead = event.time();
+    return event;
   }
 
   /**

@@ -27,8 +27,8 @@ public class InstanceMain {
    * which corresponds to a completed Instance resp. Process. Whereas a HttpServer thread crashing
    * would correspond to a crashed Instance, which Spīve would then normally respawn with replay.
    */
-  protected static void runWorkloads(List<Runnable> workloads)
-      throws InterruptedException, ExecutionException {
+  protected static void runWorkloads(UmbilicalWriter umbilical, List<Runnable> workloads)
+      throws InterruptedException {
     final AtomicInteger threadCounter = new AtomicInteger();
     final ExecutorService executorService =
         Executors.newCachedThreadPool(
@@ -50,31 +50,34 @@ public class InstanceMain {
     }
     final Future<Runnable> firstExitedFuture = lifetimeService.take();
     // TODO test interrupted behavior - InterruptedException should show on umbilical
-    // TODO runWorkloads catchMess... "Workload failed: " with stacktrace should be printed first
+    final String workloadName = workloadsByFuture.get(firstExitedFuture).getClass().getSimpleName();
 
-    LOG.info("Workload exited: {}", workloadsByFuture.get(firstExitedFuture));
-    // TODO exit all the threads when instance is deleted (they are daemon already, right?) -
-    // yet allow state and workloads to live through storage failures. Oftentimes it would be
-    // useful to keep serving read requests even when the event loop has crashed due to
-    // permanent failure in persisting new changes, for example. (On intermittent failures the
-    // gateway should just retry indefinitely.)
-    LOG.warn(
-        "Shutting down workloads immediately without capturing any useful detail. TODO improve");
-    // TODO perhaps the event loop must be last, to prevent premature lock release?
-    executorService.shutdownNow();
-
-    // either completes normally or has the actual workload failure propagate
-    firstExitedFuture.get();
+    try {
+      // either completes normally or has the actual workload failure propagate
+      firstExitedFuture.get();
+      LOG.info("{} workload completed nominally", workloadName);
+    } catch (ExecutionException e) {
+      LOG.info("{} workload failed", workloadName, e.getCause());
+      if (e.getCause() instanceof HandledException) {
+        // came via EventLoop (or from gateway?) or some other Spive-provided workload?
+        // keep propagating it unwrapped of InvocationTargetException and ExecutionException
+        throw (HandledException) e.getCause();
+      } else {
+        umbilical.addError(e.getCause());
+        throw new HandledException(e.getCause());
+      }
+    } finally {
+      // TODO exit all the threads when instance is deleted (they are daemon already, right?) -
+      // yet allow state and workloads to live through storage failures. Oftentimes it would be
+      // useful to keep serving read requests even when the event loop has crashed due to
+      // permanent failure in persisting new changes, for example. (On intermittent failures the
+      // gateway should just retry indefinitely.)
+      LOG.warn(
+          "Shutting down workloads immediately without capturing any useful detail. TODO improve");
+      // TODO perhaps the event loop must be last, to prevent premature lock release?
+      executorService.shutdownNow();
+    }
   }
-
-  //    TODO abstract class with parent, like picocli does?
-
-  //    public static Main getInstance() {
-  //      if (singletonInstance == null) {
-  //        singletonInstance = new Main();
-  //      }
-  //      return singletonInstance;
-  //    }
 
   protected static class EventLoop<T> implements Runnable {
     private final UmbilicalWriter umbilical;
@@ -117,6 +120,10 @@ public class InstanceMain {
           // cause seems to be in user code... But could be also from a Gateway call
           // TODO sanity check if gateway exceptions are swallowed by user code
           umbilical.addError(ite.getCause());
+          // TODO proceed gracefully actually? Other partitions can be processed so long as the
+          // crashed one sees no subsequent events? If event log stalls, keep serving read requests
+          // for a while? Vice versa as well? Write requests can even be served against the
+          // unaffected partitions?
           throw new HandledException(ite.getCause());
         } catch (NoSuchMethodException | IllegalAccessException e) {
           umbilical.addError(e);
@@ -129,7 +136,6 @@ public class InstanceMain {
               e);
         }
         umbilical.addSuccess();
-        // TODO check umbilical for errors from gateway that may have been swallowed in accept()
       }
       LOG.info("EventLoop over {} completed", eventIterator);
       // end of event log, so just exit normally
