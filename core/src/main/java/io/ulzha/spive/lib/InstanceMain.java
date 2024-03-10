@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class InstanceMain {
-  public static final Logger LOG = LoggerFactory.getLogger(InstanceMain.class);
+  private static final Logger LOG = LoggerFactory.getLogger(InstanceMain.class);
 
   /**
    * Waits for the first workload to complete. The remaining workloads are then interrupted with a

@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Jars {
-  public static final Logger LOG = LoggerFactory.getLogger(Jars.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Jars.class);
 
   // Example:
   // https://repo.maven.apache.org/maven2/io/norberg/auto-matter/0.26.0/auto-matter-0.26.0.jar

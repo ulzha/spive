@@ -123,7 +123,7 @@ public interface SpiveInstance {
    */
   // just instance utils? No need to extend?
   class Main extends InstanceMain {
-    public static final Logger LOG = LoggerFactory.getLogger(Main.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     // useful for running outside framework? Spawn some sort of CLI umbilical?
     //    public static void main(final String... args) {

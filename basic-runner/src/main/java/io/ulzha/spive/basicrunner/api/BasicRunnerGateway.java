@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * hosting Spive Processes, one thread group per Process Instance.
  */
 public class BasicRunnerGateway extends Gateway {
-  public static final Logger LOG = LoggerFactory.getLogger(BasicRunnerGateway.class);
+  private static final Logger LOG = LoggerFactory.getLogger(BasicRunnerGateway.class);
   private static final Jsonb jsonb = JsonbBuilder.create();
   private static final HttpClient client =
       HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
