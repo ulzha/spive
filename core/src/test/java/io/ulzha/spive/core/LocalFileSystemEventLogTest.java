@@ -172,6 +172,27 @@ public class LocalFileSystemEventLogTest {
   // public void testAppend() {}
 
   // appendIfPrevTimeMatch
+
+  @Test
+  public void givenTwoEventsInLog_whenAppendingBeforeFirst_shouldDoNothingAndReturnFalse()
+      throws Exception {
+    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
+    final byte[] bytesOrig = Files.readAllBytes(filePath);
+
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventEnvelope event2 =
+          new EventEnvelope(
+              eventTime2, UUID.randomUUID(), "pojo:io.ulzha.spive.test.InceptProcess", "\"EIEIO\"");
+      final boolean appended = eventLog.appendIfPrevTimeMatch(event2, eventTime1);
+      assertFalse(appended);
+    }
+
+    final byte[] bytes = Files.readAllBytes(filePath);
+    assertThat(bytes, is(bytesOrig));
+  }
+
   @Test
   public void givenTwoEventsInLog_whenReadingAndAppendingAfterFirst_shouldDoNothingAndReturnFalse()
       throws Exception {
@@ -230,6 +251,25 @@ public class LocalFileSystemEventLogTest {
         new String(Arrays.copyOfRange(bytes, 0, bytesOrig.length), StandardCharsets.UTF_8),
         is(new String(bytesOrig, StandardCharsets.UTF_8)));
     assertThat(Arrays.copyOfRange(bytes, 0, bytesOrig.length), is(bytesOrig));
+  }
+
+  @Test
+  public void whenAppendingSameTimeAsPrevTime_shouldThrow() throws Exception {
+    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
+    final byte[] bytesOrig = Files.readAllBytes(filePath);
+
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      // final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventEnvelope event2 =
+          new EventEnvelope(
+              eventTime2, UUID.randomUUID(), "pojo:io.ulzha.spive.test.InceptProcess", "\"EIEIO\"");
+      Assertions.assertThrows(
+          IllegalArgumentException.class, () -> eventLog.appendIfPrevTimeMatch(event2, eventTime2));
+    }
+
+    final byte[] bytes = Files.readAllBytes(filePath);
+    assertThat(bytes, is(bytesOrig));
   }
 
   @Test
