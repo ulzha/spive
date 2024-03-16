@@ -90,6 +90,48 @@ public class LocalFileSystemEventLogTest {
   }
 
   @Test
+  public void givenEmptyLog_whenAppendedViaIterator_shouldReadExpectedEventAndBlock()
+      throws Exception {
+    final EventEnvelope e = dummyEvent(0);
+    final Path filePath = emptyTempFile();
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      final var iterator = eventLog.iterator();
+
+      final EventEnvelope actual = iterator.appendOrPeek(e);
+      // reference equality here is relevant (not `is`, which calls `equals`)
+      assertTrue(actual == e);
+      assertTrue(actual == iterator.next());
+
+      // Sic - this file has no closing marker, the logic is to expect more events eventually.
+      Assertions.assertThrows(
+          ConditionTimeoutException.class,
+          () -> await().atMost(Duration.ofSeconds(1)).until(iterator::hasNext));
+    }
+  }
+
+  @Test
+  public void givenEmptyLog_whenAppended_shouldReadExpectedEventAndBlock() throws Exception {
+    final EventEnvelope e = dummyEvent(0);
+    final Path filePath = emptyTempFile();
+    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+      final var iterator = eventLog.iterator();
+
+      final boolean appended = eventLog.appendIfPrevTimeMatch(e, EventTime.INFINITE_PAST);
+      assertTrue(appended);
+
+      assertTrue(iterator.hasNext());
+      final EventEnvelope eRead = iterator.next();
+      assertThat(eRead.typeTag(), is("pojo:io.ulzha.spive.test.WhamProcess"));
+      assertThat(eRead.serializedPayload(), is("\"WHAM!\""));
+
+      // Sic - this file has no closing marker, the logic is to expect more events eventually.
+      Assertions.assertThrows(
+          ConditionTimeoutException.class,
+          () -> await().atMost(Duration.ofSeconds(1)).until(iterator::hasNext));
+    }
+  }
+
+  @Test
   public void givenUnclosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndBlock()
       throws Exception {
     final Path filePath =
@@ -113,7 +155,7 @@ public class LocalFileSystemEventLogTest {
   }
 
   @Test
-  public void givenUnclosedLog_whenReadTillTheEndAndAppended_shouldReadAllExpectedEventsThenBlock()
+  public void givenUnclosedLog_whenReadTillTheEndAndAppended_shouldReadExpectedEventsAndBlock()
       throws Exception {
     final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
@@ -259,7 +301,6 @@ public class LocalFileSystemEventLogTest {
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      // final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
       final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
       final EventEnvelope event2 =
           new EventEnvelope(
@@ -306,10 +347,18 @@ public class LocalFileSystemEventLogTest {
     final Path filePathOrig =
         Path.of(Objects.requireNonNull(getClass().getResource(name)).getPath());
 
-    final File file = File.createTempFile(name, null);
+    final File file = File.createTempFile("spive_test_", "__" + name);
     file.deleteOnExit();
     final Path filePath = file.toPath();
     Files.copy(filePathOrig, filePath, StandardCopyOption.REPLACE_EXISTING);
+
+    return filePath;
+  }
+
+  private Path emptyTempFile() throws IOException {
+    final File file = File.createTempFile("spive_test_", "__Events.jsonl");
+    file.deleteOnExit();
+    final Path filePath = file.toPath();
 
     return filePath;
   }

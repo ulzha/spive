@@ -65,7 +65,7 @@ public final class LocalFileSystemEventLog implements EventLog {
   //  LocalFileSystemEventLog position(EventTime newTime) {
   //  }
 
-  private boolean append(EventEnvelope event) throws IOException {
+  private static boolean append(EventEnvelope event, FileChannel channel) throws IOException {
     final Writer writer = Channels.newWriter(channel, StandardCharsets.UTF_8);
     writer.append(Json.serializeEventEnvelope(event));
     writer.append('\n');
@@ -83,7 +83,6 @@ public final class LocalFileSystemEventLog implements EventLog {
     if (event.time().compareTo(prevTime) <= 0) {
       throw new IllegalArgumentException("event must have time later than prevTime");
     }
-    // TODO version with position hint, usable from EventIterator, with less seeking
 
     // atomically compare with previous time and append
     try (FileLock lock = channel.lock()) {
@@ -93,12 +92,12 @@ public final class LocalFileSystemEventLog implements EventLog {
         if (latestEvent == null) {
           throw new IllegalStateException("log is closed");
         }
-        if (latestEvent.time().compareTo(prevTime) == 0) {
-          return append(event);
+        if (latestEvent.time().compareTo(prevTime) != 0) {
+          return false;
         }
       }
+      return append(event, channel);
     }
-    return false;
   }
 
   /** Seeks to the beginning of the last line, or does nothing if the channel has size 0. */
@@ -185,13 +184,20 @@ public final class LocalFileSystemEventLog implements EventLog {
   }
 
   private class AppendIteratorImpl implements AppendIterator {
-    private final FileChannel readChannel;
+    private final FileChannel iterChannel;
     private EventEnvelope previousEvent;
     private EventEnvelope nextEvent;
 
     public AppendIteratorImpl() {
       try {
-        readChannel = FileChannel.open(filePath, Set.of(StandardOpenOption.READ));
+        iterChannel =
+            FileChannel.open(
+                filePath,
+                Set.of(
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.READ,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.SYNC));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -202,7 +208,7 @@ public final class LocalFileSystemEventLog implements EventLog {
     public boolean hasNext() {
       if (nextEvent == null) {
         try {
-          nextEvent = read(readChannel);
+          nextEvent = read(iterChannel);
           if (previousEvent != null
               && nextEvent != null
               && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
@@ -240,9 +246,19 @@ public final class LocalFileSystemEventLog implements EventLog {
     public EventEnvelope appendOrPeek(EventEnvelope event) {
       final EventTime previousTime =
           (previousEvent == null ? EventTime.INFINITE_PAST : previousEvent.time());
-      try {
-        if (LocalFileSystemEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
+      if (event.time().compareTo(previousTime) <= 0) {
+        throw new IllegalArgumentException(
+            "event must have time later than that of the preceding event");
+      }
+
+      // atomically check the tail and append
+      try (FileLock lock = iterChannel.lock()) {
+        if (iterChannel.position() == iterChannel.size()) {
+          append(event, iterChannel);
           nextEvent = event;
+        } else if (iterChannel.position() + 3 == iterChannel.size()) {
+          // "{}\n"
+          throw new IllegalStateException("log is closed");
         } else {
           if (!hasNext()) { // sets nextEvent
             throw new IllegalStateException(
@@ -263,7 +279,7 @@ public final class LocalFileSystemEventLog implements EventLog {
     }
 
     private void close() throws IOException {
-      readChannel.close();
+      iterChannel.close();
     }
   }
 }
