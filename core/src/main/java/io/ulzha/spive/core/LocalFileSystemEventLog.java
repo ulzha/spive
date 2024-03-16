@@ -185,7 +185,7 @@ public final class LocalFileSystemEventLog implements EventLog {
 
   private class AppendIteratorImpl implements AppendIterator {
     private final FileChannel iterChannel;
-    private EventEnvelope previousEvent;
+    private EventEnvelope prevEvent;
     private EventEnvelope nextEvent;
 
     public AppendIteratorImpl() {
@@ -209,13 +209,13 @@ public final class LocalFileSystemEventLog implements EventLog {
       if (nextEvent == null) {
         try {
           nextEvent = read(iterChannel);
-          if (previousEvent != null
+          if (prevEvent != null
               && nextEvent != null
-              && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
+              && nextEvent.time().compareTo(prevEvent.time()) <= 0) {
             throw new InternalException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
-                    previousEvent.time(), nextEvent.time(), filePath));
+                    prevEvent.time(), nextEvent.time(), filePath));
           }
         } catch (IOException e) {
           throw new RuntimeException(e);
@@ -237,16 +237,15 @@ public final class LocalFileSystemEventLog implements EventLog {
       if (!hasNext()) {
         throw new NoSuchElementException();
       }
-      previousEvent = nextEvent;
+      prevEvent = nextEvent;
       nextEvent = null;
-      return previousEvent;
+      return prevEvent;
     }
 
     @Override
     public EventEnvelope appendOrPeek(EventEnvelope event) {
-      final EventTime previousTime =
-          (previousEvent == null ? EventTime.INFINITE_PAST : previousEvent.time());
-      if (event.time().compareTo(previousTime) <= 0) {
+      final EventTime prevTime = (prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time());
+      if (event.time().compareTo(prevTime) <= 0) {
         throw new IllegalArgumentException(
             "event must have time later than that of the preceding event");
       }
@@ -263,7 +262,7 @@ public final class LocalFileSystemEventLog implements EventLog {
           if (!hasNext()) { // sets nextEvent
             throw new IllegalStateException(
                 "expected a subsequent event after "
-                    + previousTime
+                    + prevTime
                     + ", but log prematurely indicates end");
           }
         }

@@ -67,8 +67,8 @@ public class InMemoryEventLog implements EventLog {
 
     @Override
     public EventEnvelope appendOrPeek(EventEnvelope event) {
-      final EventTime previousTime = (i == 0 ? EventTime.INFINITE_PAST : list.get(i - 1).time());
-      if (InMemoryEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
+      final EventTime prevTime = (i == 0 ? EventTime.INFINITE_PAST : list.get(i - 1).time());
+      if (InMemoryEventLog.this.appendIfPrevTimeMatch(event, prevTime)) {
         return event;
       } else {
         return list.get(i);

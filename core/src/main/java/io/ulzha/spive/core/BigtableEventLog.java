@@ -35,14 +35,14 @@ public final class BigtableEventLog implements EventLog {
   }
 
   /**
-   * Reads the next event after previousEvent.
+   * Reads the next event after prevEvent.
    *
    * <p>Will block after the last row until more events are appended or the log is closed.
    *
    * @return the next event, or null to signify a closed log.
    */
-  private EventEnvelope read(final EventEnvelope previousEvent) throws IOException {
-    final String start = (previousEvent == null ? null : toRowKey(previousEvent.time()));
+  private EventEnvelope read(final EventEnvelope prevEvent) throws IOException {
+    final String start = (prevEvent == null ? null : toRowKey(prevEvent.time()));
     final Query query =
         Query.create(TABLE_ID)
             .range(start, null)
@@ -142,7 +142,7 @@ public final class BigtableEventLog implements EventLog {
   }
 
   private class AppendIteratorImpl implements AppendIterator {
-    private EventEnvelope previousEvent;
+    private EventEnvelope prevEvent;
     private EventEnvelope nextEvent;
 
     /** Will block after the last event until more events are appended or the log is closed. */
@@ -150,14 +150,14 @@ public final class BigtableEventLog implements EventLog {
     public boolean hasNext() {
       if (nextEvent == null) {
         try {
-          nextEvent = read(previousEvent);
-          if (previousEvent != null
+          nextEvent = read(prevEvent);
+          if (prevEvent != null
               && nextEvent != null
-              && nextEvent.time().compareTo(previousEvent.time()) <= 0) {
+              && nextEvent.time().compareTo(prevEvent.time()) <= 0) {
             throw new InternalException(
                 String.format(
                     "Out-of-order event sequence: %s followed by %s in %s",
-                    previousEvent.time(), nextEvent.time(), logId));
+                    prevEvent.time(), nextEvent.time(), logId));
           }
         } catch (IOException e) {
           throw new RuntimeException(e);
@@ -175,22 +175,21 @@ public final class BigtableEventLog implements EventLog {
       if (!hasNext()) {
         throw new NoSuchElementException();
       }
-      previousEvent = nextEvent;
+      prevEvent = nextEvent;
       nextEvent = null;
-      return previousEvent;
+      return prevEvent;
     }
 
     @Override
     public EventEnvelope appendOrPeek(EventEnvelope event) {
-      final EventTime previousTime =
-          (previousEvent == null ? EventTime.INFINITE_PAST : previousEvent.time());
-      if (BigtableEventLog.this.appendIfPrevTimeMatch(event, previousTime)) {
+      final EventTime prevTime = (prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time());
+      if (BigtableEventLog.this.appendIfPrevTimeMatch(event, prevTime)) {
         return event;
       } else {
         if (!hasNext()) { // sets nextEvent
           throw new IllegalStateException(
               "expected a subsequent event after "
-                  + previousTime
+                  + prevTime
                   + ", but log prematurely indicates end");
         }
         return nextEvent;

@@ -47,9 +47,7 @@ public record InstanceStatusChange(
     // TODO capture thread dumps? Always, or when missing cause, or only on demand? Would that be a
     // runner feature perhaps, part of external debug suite?
     @Nullable String cause) {
-  // EventTime previousEventTime,
-  // TODO short list? Last few in the partition (that current event comes from), or last few in
-  // the
+  // TODO last few event times in the partition (that current event comes from), or last few in the
   // whole partition set? Something like that could help in troubleshooting when the error is
   // nondeterministic wrt ordering across partitions or partition distribution across shards
 
