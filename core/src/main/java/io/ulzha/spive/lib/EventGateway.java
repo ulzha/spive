@@ -2,6 +2,8 @@ package io.ulzha.spive.lib;
 
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -20,6 +22,24 @@ public class EventGateway extends Gateway {
     this.eventIterator = eventIterator;
     this.wallClockTime = wallClockTime;
     this.eventLock = eventLock;
+  }
+
+  // quick and dirty "history"; not sure how this will evolve
+  private Map<UUID, UUID> lastPseudorandomKeyPerPartition = new HashMap<>();
+
+  private UUID getPseudorandomUuid(UUID prevUuid) {
+    return UUID.nameUUIDFromBytes(prevUuid.toString().getBytes());
+  }
+
+  /**
+   * Generates a deterministic one. For use in event handlers.
+   *
+   * <p>Seeded by current event's partition's history; i.e. regardless of resharding, the same key
+   * will be returned during eventual replay.
+   */
+  public UUID getPseudorandomKey(UUID seed, Class<?> newEventClass) {
+    return lastPseudorandomKeyPerPartition.compute(
+        seed, (k, v) -> getPseudorandomUuid(v == null ? k : v));
   }
 
   /**
@@ -252,7 +272,7 @@ public class EventGateway extends Gateway {
       try {
         eventLock.lockConsequential();
         final EventTime eventTime = nextConsequentialTime();
-        final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+        final Event event = new Event(eventTime, null, type, payload);
         final EventEnvelope wanted = EventEnvelope.wrap(event);
         final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
         if (actual == wanted) {
@@ -261,10 +281,12 @@ public class EventGateway extends Gateway {
         } else {
           // must act idempotent anyway, as we came here from an event handler
           if (!actual.equals(wanted)) {
+            System.out.println("Actual: " + actual);
+            System.out.println("Wanted: " + wanted);
             throw new IllegalStateException(
                 "Could not emit consequential event "
                     + wanted.time()
-                    + ": Unexpected event in log "
+                    + ": unexpected event in log "
                     + actual.time()
                     + " - possible nondeterminism in handler code, or corrupt log");
           }

@@ -166,9 +166,6 @@ public class Spive implements SpiveInstance {
         .processesByApplicationAndVersion
         .computeIfAbsent(process.name, name -> new HashMap<>())
         .put(process.version, process);
-    // TODO ensure (upon emitting) that name-version and id are not duplicated
-    // TODO ensure (upon emitting) that the output stream exists
-    // TODO ensure (upon emitting) that there are no cycles of streams
 
     // TODO someone decide initial sharding
     // It should not be up to UI to send explicit `CreateInstance`s? Or to send `ScaleProcess`?
@@ -188,14 +185,18 @@ public class Spive implements SpiveInstance {
             shard.partitionRanges().keySet().stream()
                 .map(stream -> stream.eventLogIds.get(shard.partitionRanges().get(stream)))
                 .collect(Collectors.toList());
+        // UUID newInstanceId = output.getPseudorandomOwnedKey(...)
+        UUID newInstanceId = output.getPseudorandomKey(event.processId(), CreateInstance.class);
+        // TODO watertightly type, so emit* functions keep partition assignment self-explanatory
+        // or otherwise statically assure
         output.emitConsequential(
             new CreateInstance(
                 process.id,
-                UUID.randomUUID(),
+                newInstanceId,
                 partitionRanges,
                 logIds,
                 "*",
-                "http://dev-1:8431/api/v0"));
+                "http://dev-0:8430/api/v0"));
       }
     }
 

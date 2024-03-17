@@ -42,10 +42,9 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
       @Param("name") String name,
       @Param("version") String version,
       @RequestObject CreateProcessRequest request) {
-    // FIXME prevent duplicate creation events by design... Does that require generation of GUIDs
-    // here in handlers?
-
+    // FIXME nontrivial generation of UUID, to make the event belong to the intended partition
     final UUID uuid = UUID.randomUUID();
+
     final CreateProcess event =
         new CreateProcess(
             uuid,
@@ -56,6 +55,8 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
             request.inputStreamIds(),
             request.outputStreamIds());
     if (output.emitIf(
+        // TODO ensure that the output stream exists
+        // TODO ensure that there are no cycles of streams
         () ->
             !(platform.processesByApplicationAndVersion.containsKey(name)
                     && platform.processesByApplicationAndVersion.get(name).containsKey(version))

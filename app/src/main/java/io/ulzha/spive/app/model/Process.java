@@ -218,6 +218,29 @@ public class Process {
   // Shard creation is a way to horizontally scale a process. Adjusting nInstances is a way to
   // increase redundancy. Also, in the use case of serving layer, bumping nInstances and having a
   // load balancer in front is a way to increase the serving throughput for a hot key.
+
+  // App implementation does need to be aware how its scaling is structured. This ties in with
+  // partition keys in a given app's Stream schemas. Spīve platform supports large scale processes
+  // with million+ instances, and to feasibly structure this model, Spive app itself must be aware
+  // that a Process is scaled horizontally beyond what one Spive.Watchdog can watch. (Constrained by
+  // network throughput on a nominally bad day.) Each Spive instance only handles a subset of
+  // instances of a Process, when said Process is sufficiently large.
+  // TODO measure numbers and write up in README as well
+
+  // Need the subset to exactly correspond to a (set of) Shards? Each Spive instance knowing the
+  // full set of Shards in a Process? Otherwise detecting conditions such as "all instances have
+  // started" or "all instances have stopped" is no longer event-time instantaneous... (in what way
+  // do we build on that? Instantaneity simplifies away edge cases probably)
+
+  // For now I suspect that state can hold the entire set of Instances of a Process, and each Spive
+  // instance that owns a given Process can read all their events. (The instances collectively own a
+  // Process then, but it's safe because of determinism, if a bit wasteful.) Owning an Instance
+  // doesn't mean that we stay oblivious of sibling events, but we noop their side effects and we
+  // don't dedicate workloads to them. (The latter is manual work, not handled under the hood by
+  // platform.)
+
+  // Optimize further with first class Shard only if measured numbers say that we should?
+  // TODO measurer that could serve app developers as well
   public record Shard(Map<Stream, Stream.PartitionRange> partitionRanges, int nDesiredInstances
       // Map<Workload, n> nDesiredWorkloads
       ) {}
