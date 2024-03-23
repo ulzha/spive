@@ -8,6 +8,7 @@ set -euxo pipefail
 [[ $(which jq) ]] || { echo "To start dev-0 environment, you need jq installed"; exit 1; }
 [[ $(which mvnd) ]] || { echo "To start dev-0 environment, you need mvnd installed"; exit 1; }
 
+CURL="curl -sSLf --max-time 5"
 DC="docker compose -f tools/dev-0/docker-compose.yml"
 # speed up Maven
 MVN="mvnd -Dfmt.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmvnd.connectTimeout=60s"
@@ -55,12 +56,12 @@ run_bootstrap_request='{
   }
 }'
 until
-  curl -sSLf -X POST -d "$run_bootstrap_request" -i http://localhost:8429/api/v0/thread_groups
+  $CURL -X POST -d "$run_bootstrap_request" -i http://localhost:8429/api/v0/thread_groups
 do echo "retrying in 1 s"; sleep 1; done
 
 # 5. expect SpiveDevBootstrap to checkpoint to the end of its log and launch SpiveDev0
 until
-  heartbeat=$(curl -sSLf http://localhost:8429/api/v0/thread_groups/foo/heartbeat)
+  heartbeat=$($CURL http://localhost:8429/api/v0/thread_groups/foo/heartbeat)
   echo "$heartbeat" | jq -r .checkpoint | grep "#4"
 do echo "retrying in 1 s"; sleep 1; done
 
@@ -82,7 +83,7 @@ $MVN exec:java@copy-event-log -pl tools \
   -Dexec.args="$copy_args"
 # expect SpiveDev0 to checkpoint through the log
 until
-  heartbeat=$(curl -sSLf http://localhost:8430/api/v0/thread_groups/ff4726aa-9f71-49e2-b139-d71d780a817c/heartbeat)
+  heartbeat=$($CURL http://localhost:8430/api/v0/thread_groups/85ceafce-ebb3-3a3c-a3e6-46d064c782ab/heartbeat)
   echo "$heartbeat" | jq -r .checkpoint | grep "#2"
 do echo "retrying in 1 s"; sleep 1; done
 
@@ -95,11 +96,11 @@ run_clicc_tracc_request='{
   "outputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"]
 }'
 until
-  curl -sSLf -X PUT -H "Content-Type: application/json" -d "$run_clicc_tracc_request" -i http://localhost:8440/api/applications/CliccTracc/0.0.1-alpha
+  $CURL -X PUT -H "Content-Type: application/json" -d "$run_clicc_tracc_request" -i http://localhost:8440/api/applications/CliccTracc/0.0.1-alpha
 do echo "retrying in 1 s"; sleep 1; done
 # expect SpiveDev0 to watch the instance and append progress events to the log
 until
-  heartbeat=$(curl -sSLf http://localhost:8430/api/v0/thread_groups/ff4726aa-9f71-49e2-b139-d71d780a817c/heartbeat)
+  heartbeat=$($CURL http://localhost:8430/api/v0/thread_groups/85ceafce-ebb3-3a3c-a3e6-46d064c782ab/heartbeat)
   echo "$heartbeat" | jq -r .checkpoint | grep "#n"
 do echo "retrying in 1 s"; sleep 1; done
 
