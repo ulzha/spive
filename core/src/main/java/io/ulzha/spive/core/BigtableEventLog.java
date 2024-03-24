@@ -124,12 +124,25 @@ public final class BigtableEventLog implements EventLog {
                     .setCell(
                         EVENT_COLUMN_FAMILY, PAYLOAD_COLUMN_QUALIFIER, event.serializedPayload()));
 
-    return !dataClient.checkAndMutateRow(mutation);
+    final boolean existed = dataClient.checkAndMutateRow(mutation);
+
+    if (existed) {
+      final Row row = dataClient.readRow(TABLE_ID, newRowKey);
+      if (row == null) {
+        throw new IllegalStateException(
+            "row was reported existing but now is missing - should not happen unless someone messes with table contents");
+      }
+      if (row.getCells().get(0).getValue().toStringUtf8().isEmpty()) {
+        throw new IllegalStateException("log is closed");
+      }
+    }
+
+    return !existed;
   }
 
   @Override
   public void close() {
-    dataClient.close();
+    // TODO close a ServerStream here if one is carried... Probably won't be? Make read() private?
   }
 
   private String toRowKey(EventTime eventTime) {
@@ -184,7 +197,7 @@ public final class BigtableEventLog implements EventLog {
     public EventEnvelope appendOrPeek(EventEnvelope event) {
       final EventTime prevTime = (prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time());
       if (BigtableEventLog.this.appendIfPrevTimeMatch(event, prevTime)) {
-        return event;
+        nextEvent = event;
       } else {
         if (!hasNext()) { // sets nextEvent
           throw new IllegalStateException(
@@ -192,8 +205,8 @@ public final class BigtableEventLog implements EventLog {
                   + prevTime
                   + ", but log prematurely indicates end");
         }
-        return nextEvent;
       }
+      return nextEvent;
     }
   }
 }

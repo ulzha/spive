@@ -1,38 +1,89 @@
 package io.ulzha.spive.core;
 
+import static com.google.cloud.bigtable.data.v2.models.Filters.FILTERS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.cloud.bigtable.admin.v2.BigtableTableAdminClient;
+import com.google.cloud.bigtable.admin.v2.BigtableTableAdminSettings;
+import com.google.cloud.bigtable.admin.v2.models.CreateTableRequest;
+import com.google.cloud.bigtable.admin.v2.models.GCRules;
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
+import com.google.cloud.bigtable.data.v2.models.Query;
+import com.google.cloud.bigtable.data.v2.models.Row;
+import com.google.cloud.bigtable.data.v2.models.RowCell;
+import com.google.cloud.bigtable.data.v2.models.RowMutation;
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventTime;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-// TODO suite with identical scenarios, applied to all EventLog implementations consistently
-public class LocalFileSystemEventLogTest {
+@Testcontainers
+public class BigtableEventLogTest {
+  static final String PROJECT_ID = "test-project";
+  static final String INSTANCE_ID = "test-instance";
+  static final Integer BIGTABLE_EMULATOR_PORT = 8086;
+
+  @Container
+  public static final GenericContainer<?> bigtableEmulator =
+      new GenericContainer<>("google/cloud-sdk")
+          .withCommand(
+              "gcloud",
+              "beta",
+              "emulators",
+              "bigtable",
+              "start",
+              "--host-port",
+              "0.0.0.0:" + BIGTABLE_EMULATOR_PORT)
+          .withExposedPorts(BIGTABLE_EMULATOR_PORT);
+
+  private static BigtableDataClient testDataClient;
+  private static BigtableTableAdminClient testAdminClient;
+
+  @BeforeAll
+  public static void setupClass() throws IOException {
+    testDataClient =
+        BigtableDataClient.create(
+            BigtableDataSettings.newBuilderForEmulator(
+                    bigtableEmulator.getMappedPort(BIGTABLE_EMULATOR_PORT))
+                .setProjectId(PROJECT_ID)
+                .setInstanceId(INSTANCE_ID)
+                .build());
+    testAdminClient =
+        BigtableTableAdminClient.create(
+            BigtableTableAdminSettings.newBuilderForEmulator(
+                    bigtableEmulator.getMappedPort(BIGTABLE_EMULATOR_PORT))
+                .setProjectId(PROJECT_ID)
+                .setInstanceId(INSTANCE_ID)
+                .build());
+    testAdminClient.createTable(
+        CreateTableRequest.of("event-store").addFamily("event", GCRules.GCRULES.maxVersions(1)));
+  }
+
   @Test
   public void
       givenCompetingEventHasEqualTimeDifferentPayload_whenPeekedViaIterator_thenNextReturnsActualEvent()
           throws Exception {
     final EventEnvelope e = dummyEvent(1);
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
       iterator.next();
 
@@ -56,9 +107,8 @@ public class LocalFileSystemEventLogTest {
             null,
             "pojo:io.ulzha.spive.test.DeleteProcess",
             "{\"processId\": \"00000000-0000-0000-0000-000000000000\"}");
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
       iterator.next();
 
@@ -74,9 +124,8 @@ public class LocalFileSystemEventLogTest {
   public void givenNoCompetingEvent_whenAppendedViaIterator_thenNextReturnsAppendedEvent()
       throws Exception {
     final EventEnvelope e = dummyEvent(2);
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
       iterator.next();
       iterator.next();
@@ -89,11 +138,10 @@ public class LocalFileSystemEventLogTest {
   }
 
   @Test
-  public void givenEmptyLog_whenAppendedViaIterator_shouldReadExpectedEventAndBlock()
-      throws Exception {
+  public void givenEmptyLog_whenAppendedViaIterator_shouldReadExpectedEventAndBlock() {
     final EventEnvelope e = dummyEvent(0);
-    final Path filePath = emptyTempFile();
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = emptyTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
 
       final EventEnvelope actual = iterator.appendOrPeek(e);
@@ -109,10 +157,10 @@ public class LocalFileSystemEventLogTest {
   }
 
   @Test
-  public void givenEmptyLog_whenAppended_shouldReadExpectedEventAndBlock() throws Exception {
+  public void givenEmptyLog_whenAppended_shouldReadExpectedEventAndBlock() {
     final EventEnvelope e = dummyEvent(0);
-    final Path filePath = emptyTempFile();
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = emptyTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
 
       final boolean appended = eventLog.appendIfPrevTimeMatch(e, EventTime.INFINITE_PAST);
@@ -133,9 +181,8 @@ public class LocalFileSystemEventLogTest {
   @Test
   public void givenUnclosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndBlock()
       throws Exception {
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
@@ -156,8 +203,8 @@ public class LocalFileSystemEventLogTest {
   @Test
   public void givenUnclosedLog_whenReadTillTheEndAndAppended_shouldReadExpectedEventsAndBlock()
       throws Exception {
-    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
@@ -196,9 +243,8 @@ public class LocalFileSystemEventLogTest {
   @Test
   public void givenClosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndNotBlock()
       throws Exception {
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("OneEventClosed.jsonl")).getPath());
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    final UUID logId = copyOneEventClosedToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
@@ -209,25 +255,15 @@ public class LocalFileSystemEventLogTest {
     }
   }
 
-  // Well this guard would incur overhead for KV stores, we don't want that I think
-  // @Test
-  // public void
-  // givenTwoEventsInLog_whenAppendingSpuriouslyBeforeFirst_shouldDoNothingAndReturnFalse()
-  //     throws Exception {
-  // ...
-  //     final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
-  // ...
-  //     final boolean appended = eventLog.appendIfPrevTimeMatch(event2, eventTime1);
-  // ...
-  // }
+  // TODO some sort of guard against spurious buggy appends at random prevTime... But low overhead
 
   @Test
   public void givenTwoEventsInLog_whenAppendingBeforeFirst_shouldDoNothingAndReturnFalse()
       throws Exception {
-    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
-    final byte[] bytesOrig = Files.readAllBytes(filePath);
+    final UUID logId = copyTwoEventsToTempLog();
+    final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
       final EventEnvelope event1 =
           new EventEnvelope(
@@ -236,17 +272,17 @@ public class LocalFileSystemEventLogTest {
       assertFalse(appended);
     }
 
-    final byte[] bytes = Files.readAllBytes(filePath);
-    assertThat(bytes, is(bytesOrig));
+    final List<RowDumpEntry> dump = dumpAllRows(logId);
+    assertThat(dump, is(dumpOrig));
   }
 
   @Test
   public void givenTwoEventsInLog_whenReadingAndAppendingAfterFirst_shouldDoNothingAndReturnFalse()
       throws Exception {
-    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
-    final byte[] bytesOrig = Files.readAllBytes(filePath);
+    final UUID logId = copyTwoEventsToTempLog();
+    final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final var iterator = eventLog.iterator();
 
       assertTrue(iterator.hasNext());
@@ -263,17 +299,17 @@ public class LocalFileSystemEventLogTest {
       assertTrue(iterator.hasNext());
     }
 
-    final byte[] bytes = Files.readAllBytes(filePath);
-    assertThat(bytes, is(bytesOrig));
+    final List<RowDumpEntry> dump = dumpAllRows(logId);
+    assertThat(dump, is(dumpOrig));
   }
 
   @Test
   public void givenTwoEventsInLog_whenAppendingTwoMore_shouldAppendAndReturnTrue()
       throws Exception {
-    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
-    final byte[] bytesOrig = Files.readAllBytes(filePath);
+    final UUID logId = copyTwoEventsToTempLog();
+    final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
       final EventTime eventTime3 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 0);
       final EventTime eventTime4 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 1);
@@ -292,17 +328,17 @@ public class LocalFileSystemEventLogTest {
       assertTrue(appended4);
     }
 
-    final byte[] bytes = Files.readAllBytes(filePath);
-    assertTrue(bytes.length > bytesOrig.length);
-    assertThat(Arrays.copyOfRange(bytes, 0, bytesOrig.length), is(bytesOrig));
+    final List<RowDumpEntry> dump = dumpAllRows(logId);
+    assertTrue(dump.size() > dumpOrig.size());
+    assertIterableEquals(dump.subList(0, dumpOrig.size()), dumpOrig);
   }
 
   @Test
   public void whenAppendingSameTimeAsPrevTime_shouldThrow() throws Exception {
-    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
-    final byte[] bytesOrig = Files.readAllBytes(filePath);
+    final UUID logId = copyTwoEventsToTempLog();
+    final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
       final EventEnvelope event2 =
           new EventEnvelope(
@@ -311,16 +347,16 @@ public class LocalFileSystemEventLogTest {
           IllegalArgumentException.class, () -> eventLog.appendIfPrevTimeMatch(event2, eventTime2));
     }
 
-    final byte[] bytes = Files.readAllBytes(filePath);
-    assertThat(bytes, is(bytesOrig));
+    final List<RowDumpEntry> dump = dumpAllRows(logId);
+    assertThat(dump, is(dumpOrig));
   }
 
   @Test
   public void givenClosedLog_whenAppendingOneMore_shouldThrow() throws Exception {
-    final Path filePath = copyResourceToTempFile("OneEventClosed.jsonl");
-    final byte[] bytesOrig = Files.readAllBytes(filePath);
+    final UUID logId = copyOneEventClosedToTempLog();
+    final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
-    try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
       final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 0);
       final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
       final EventEnvelope event2 =
@@ -333,8 +369,8 @@ public class LocalFileSystemEventLogTest {
           IllegalStateException.class, () -> eventLog.appendIfPrevTimeMatch(event2, eventTime1));
     }
 
-    final byte[] bytes = Files.readAllBytes(filePath);
-    assertThat(bytes, is(bytesOrig));
+    final List<RowDumpEntry> dump = dumpAllRows(logId);
+    assertThat(dump, is(dumpOrig));
   }
 
   private EventEnvelope dummyEvent(int i) {
@@ -345,23 +381,115 @@ public class LocalFileSystemEventLogTest {
         "\"WHAM!\"");
   }
 
-  private Path copyResourceToTempFile(final String name) throws IOException {
-    final Path filePathOrig =
-        Path.of(Objects.requireNonNull(getClass().getResource(name)).getPath());
-
-    final File file = File.createTempFile("spive_test_", "__" + name);
-    file.deleteOnExit();
-    final Path filePath = file.toPath();
-    Files.copy(filePathOrig, filePath, StandardCopyOption.REPLACE_EXISTING);
-
-    return filePath;
+  private record RowDumpEntry(List<RowCell> cells, List<String> values) {
+    private static RowDumpEntry fromRow(Row row) {
+      return new RowDumpEntry(
+          row.getCells(),
+          row.getCells().stream().map(cell -> cell.getValue().toStringUtf8()).toList());
+    }
+    // comp
   }
 
-  private Path emptyTempFile() throws IOException {
-    final File file = File.createTempFile("spive_test_", "__Events.jsonl");
-    file.deleteOnExit();
-    final Path filePath = file.toPath();
+  private List<RowDumpEntry> dumpAllRows(UUID logId) {
+    final List<RowDumpEntry> dump = new ArrayList<>();
 
-    return filePath;
+    var stream =
+        testDataClient.readRows(
+            Query.create("event-store")
+                .prefix(logId + ":")
+                .filter(
+                    FILTERS
+                        .chain()
+                        .filter(FILTERS.limit().cellsPerColumn(1))
+                        .filter(FILTERS.family().exactMatch("event"))));
+    for (Row row : stream) {
+      dump.add(RowDumpEntry.fromRow(row));
+    }
+
+    return dump;
+  }
+
+  private UUID copyTwoEventsToTempLog() {
+    final UUID logId = UUID.randomUUID();
+
+    EventTime prevTime = EventTime.INFINITE_PAST;
+
+    String rowKey = logId + ":" + prevTime.toOrderPreservingString();
+    RowMutation m =
+        RowMutation.create("event-store", rowKey)
+            .setCell(
+                "event",
+                "metadata",
+                "{\"time\": \"1111-11-11T00:00:00.000Z#0\", \"type\": \"pojo:io.ulzha.spive.test.CreateProcess\"}")
+            .setCell(
+                "event",
+                "payload",
+                "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"]}");
+    testDataClient.mutateRow(m);
+    prevTime = EventTime.fromString("1111-11-11T00:00:00.000Z#0");
+
+    rowKey = logId + ":" + prevTime.toOrderPreservingString();
+    m =
+        RowMutation.create("event-store", rowKey)
+            .setCell(
+                "event",
+                "metadata",
+                "{\"time\": \"1111-11-11T00:00:00.000Z#1\", \"type\": \"pojo:io.ulzha.spive.test.DeleteProcess\"}")
+            .setCell(
+                "event", "payload", "{\"processId\": \"00000000-0000-0000-0000-000000000000\"}");
+    testDataClient.mutateRow(m);
+
+    return logId;
+  }
+
+  private UUID copyOneEventClosedToTempLog() {
+    final UUID logId = UUID.randomUUID();
+
+    EventTime prevTime = EventTime.INFINITE_PAST;
+
+    String rowKey = logId + ":" + prevTime.toOrderPreservingString();
+    RowMutation m =
+        RowMutation.create("event-store", rowKey)
+            .setCell(
+                "event",
+                "metadata",
+                "{\"time\": \"1111-11-11T00:00:00.000Z#0\", \"type\": \"pojo:io.ulzha.spive.test.CreateProcess\"}")
+            .setCell(
+                "event",
+                "payload",
+                "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"]}");
+    testDataClient.mutateRow(m);
+    prevTime = EventTime.fromString("1111-11-11T00:00:00.000Z#0");
+
+    rowKey = logId + ":" + prevTime.toOrderPreservingString();
+    m = RowMutation.create("event-store", rowKey).setCell("event", "metadata", "");
+    testDataClient.mutateRow(m);
+
+    return logId;
+  }
+  // private UUID copyResourceToTempLog(final String name) throws IOException {
+  //   final Path filePathOrig =
+  //       Path.of(Objects.requireNonNull(getClass().getResource(name)).getPath());
+  //   final UUID logId = UUID.randomUUID();
+
+  //   EventTime prevTime = EventTime.INFINITE_PAST;
+  //   for (String line: Files.readAllLines(filePathOrig)) {
+  //     final String newRowKey = toRowKey(prevTime);
+  //     final String metadataJson = Json.serializeEventMetadata(event);
+  //     final RowMutation m = RowMutation.create("event-store", logId.toString())
+  //         .setCell("event", prevEventTime.toOrderPreservingString(), line);
+  //     if (line.equals("{}")) {
+
+  //     } else {
+  //       ;
+  //     }
+  //     testDataClient.mutateRow(m);
+  //   };
+
+  //   return logId;
+  // }
+
+  private UUID emptyTempLog() {
+    return UUID.randomUUID();
   }
 }
