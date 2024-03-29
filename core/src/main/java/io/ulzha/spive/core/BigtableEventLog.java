@@ -42,10 +42,10 @@ public final class BigtableEventLog implements EventLog {
    * @return the next event, or null to signify a closed log.
    */
   private EventEnvelope read(final EventEnvelope prevEvent) throws IOException {
-    final String start = (prevEvent == null ? null : toRowKey(prevEvent.time()));
+    final String start = toRowKey(prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time());
     final Query query =
         Query.create(TABLE_ID)
-            .range(start, null)
+            .range(start, endRowKey())
             .filter(
                 FILTERS
                     .chain()
@@ -147,6 +147,10 @@ public final class BigtableEventLog implements EventLog {
 
   private String toRowKey(EventTime eventTime) {
     return logId + ":" + eventTime.toOrderPreservingString();
+  }
+
+  private String endRowKey() {
+    return logId + ";";
   }
 
   @Override

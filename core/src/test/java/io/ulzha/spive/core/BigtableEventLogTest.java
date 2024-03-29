@@ -387,7 +387,6 @@ public class BigtableEventLogTest {
           row.getCells(),
           row.getCells().stream().map(cell -> cell.getValue().toStringUtf8()).toList());
     }
-    // comp
   }
 
   private List<RowDumpEntry> dumpAllRows(UUID logId) {
@@ -467,27 +466,6 @@ public class BigtableEventLogTest {
 
     return logId;
   }
-  // private UUID copyResourceToTempLog(final String name) throws IOException {
-  //   final Path filePathOrig =
-  //       Path.of(Objects.requireNonNull(getClass().getResource(name)).getPath());
-  //   final UUID logId = UUID.randomUUID();
-
-  //   EventTime prevTime = EventTime.INFINITE_PAST;
-  //   for (String line: Files.readAllLines(filePathOrig)) {
-  //     final String newRowKey = toRowKey(prevTime);
-  //     final String metadataJson = Json.serializeEventMetadata(event);
-  //     final RowMutation m = RowMutation.create("event-store", logId.toString())
-  //         .setCell("event", prevEventTime.toOrderPreservingString(), line);
-  //     if (line.equals("{}")) {
-
-  //     } else {
-  //       ;
-  //     }
-  //     testDataClient.mutateRow(m);
-  //   };
-
-  //   return logId;
-  // }
 
   private UUID emptyTempLog() {
     return UUID.randomUUID();
