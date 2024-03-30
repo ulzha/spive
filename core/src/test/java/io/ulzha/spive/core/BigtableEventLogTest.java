@@ -264,7 +264,7 @@ public class BigtableEventLogTest {
     final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
     try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
-      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
+      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00Z"), 0);
       final EventEnvelope event1 =
           new EventEnvelope(
               eventTime1, UUID.randomUUID(), "pojo:io.ulzha.spive.test.InceptProcess", "\"EIEIO\"");
@@ -289,7 +289,7 @@ public class BigtableEventLogTest {
       final EventEnvelope event1 = iterator.next();
       final EventEnvelope event2 =
           new EventEnvelope(
-              new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1),
+              new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1),
               UUID.randomUUID(),
               "pojo:io.ulzha.spive.test.DeleteProcess",
               "\"BRRRRR\"");
@@ -310,7 +310,7 @@ public class BigtableEventLogTest {
     final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
     try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
-      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
       final EventTime eventTime3 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 0);
       final EventTime eventTime4 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 1);
       final EventEnvelope event3 =
@@ -339,7 +339,7 @@ public class BigtableEventLogTest {
     final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
     try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
-      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
       final EventEnvelope event2 =
           new EventEnvelope(
               eventTime2, UUID.randomUUID(), "pojo:io.ulzha.spive.test.InceptProcess", "\"EIEIO\"");
@@ -357,8 +357,8 @@ public class BigtableEventLogTest {
     final List<RowDumpEntry> dumpOrig = dumpAllRows(logId);
 
     try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
-      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 0);
-      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 0);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
       final EventEnvelope event2 =
           new EventEnvelope(
               eventTime2,
@@ -419,13 +419,13 @@ public class BigtableEventLogTest {
             .setCell(
                 "event",
                 "metadata",
-                "{\"time\": \"1111-11-11T00:00:00.000Z#0\", \"type\": \"pojo:io.ulzha.spive.test.CreateProcess\"}")
+                "{\"time\": \"1111-11-11T00:00:00Z#0\", \"type\": \"pojo:io.ulzha.spive.test.CreateProcess\"}")
             .setCell(
                 "event",
                 "payload",
                 "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"]}");
     testDataClient.mutateRow(m);
-    prevTime = EventTime.fromString("1111-11-11T00:00:00.000Z#0");
+    prevTime = EventTime.fromString("1111-11-11T00:00:00Z#0");
 
     rowKey = logId + ":" + prevTime.toOrderPreservingString();
     m =
@@ -433,7 +433,7 @@ public class BigtableEventLogTest {
             .setCell(
                 "event",
                 "metadata",
-                "{\"time\": \"1111-11-11T00:00:00.000Z#1\", \"type\": \"pojo:io.ulzha.spive.test.DeleteProcess\"}")
+                "{\"time\": \"1111-11-11T00:00:00Z#1\", \"type\": \"pojo:io.ulzha.spive.test.DeleteProcess\"}")
             .setCell(
                 "event", "payload", "{\"processId\": \"00000000-0000-0000-0000-000000000000\"}");
     testDataClient.mutateRow(m);
@@ -452,13 +452,13 @@ public class BigtableEventLogTest {
             .setCell(
                 "event",
                 "metadata",
-                "{\"time\": \"1111-11-11T00:00:00.000Z#0\", \"type\": \"pojo:io.ulzha.spive.test.CreateProcess\"}")
+                "{\"time\": \"1111-11-11T00:00:00Z#0\", \"type\": \"pojo:io.ulzha.spive.test.CreateProcess\"}")
             .setCell(
                 "event",
                 "payload",
                 "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"]}");
     testDataClient.mutateRow(m);
-    prevTime = EventTime.fromString("1111-11-11T00:00:00.000Z#0");
+    prevTime = EventTime.fromString("1111-11-11T00:00:00Z#0");
 
     rowKey = logId + ":" + prevTime.toOrderPreservingString();
     m = RowMutation.create("event-store", rowKey).setCell("event", "metadata", "");

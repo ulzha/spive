@@ -215,7 +215,7 @@ public class LocalFileSystemEventLogTest {
   // givenTwoEventsInLog_whenAppendingSpuriouslyBeforeFirst_shouldDoNothingAndReturnFalse()
   //     throws Exception {
   // ...
-  //     final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
+  //     final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00Z"), 0);
   // ...
   //     final boolean appended = eventLog.appendIfPrevTimeMatch(event2, eventTime1);
   // ...
@@ -228,7 +228,7 @@ public class LocalFileSystemEventLogTest {
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00.000Z"), 0);
+      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-01T00:00:00Z"), 0);
       final EventEnvelope event1 =
           new EventEnvelope(
               eventTime1, UUID.randomUUID(), "pojo:io.ulzha.spive.test.InceptProcess", "\"EIEIO\"");
@@ -253,7 +253,7 @@ public class LocalFileSystemEventLogTest {
       final EventEnvelope event1 = iterator.next();
       final EventEnvelope event2 =
           new EventEnvelope(
-              new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1),
+              new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1),
               UUID.randomUUID(),
               "pojo:io.ulzha.spive.test.DeleteProcess",
               "\"BRRRRR\"");
@@ -274,7 +274,7 @@ public class LocalFileSystemEventLogTest {
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
       final EventTime eventTime3 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 0);
       final EventTime eventTime4 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 1);
       final EventEnvelope event3 =
@@ -303,7 +303,7 @@ public class LocalFileSystemEventLogTest {
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
       final EventEnvelope event2 =
           new EventEnvelope(
               eventTime2, UUID.randomUUID(), "pojo:io.ulzha.spive.test.InceptProcess", "\"EIEIO\"");
@@ -321,8 +321,8 @@ public class LocalFileSystemEventLogTest {
     final byte[] bytesOrig = Files.readAllBytes(filePath);
 
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
-      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 0);
-      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00.000Z"), 1);
+      final EventTime eventTime1 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 0);
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
       final EventEnvelope event2 =
           new EventEnvelope(
               eventTime2,

@@ -78,7 +78,7 @@ copy_args=\
 ' 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94'\
 ' io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=localhost;port=8086'\
 ' 2c543574-f3ac-4b4c-8a5b-a5e188b9bc94'\
-' 2021-11-15T12:00:00.000Z#2'
+' 2021-11-15T12:00:00Z#2'
 $MVN exec:java@copy-event-log -pl tools \
   -Dexec.args="$copy_args"
 # expect SpiveDev0 to checkpoint through the log
