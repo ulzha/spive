@@ -62,7 +62,8 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
   /**
    * Efficient interface for reading the log in sequence and appending to it. No removals supported.
    *
-   * <p>Not thread-safe - event loop and output gateway perform synchronization (when necessary).
+   * <p>Not thread-safe - event loop and output gateway perform synchronization through
+   * ConcurrentAppendIterator (when necessary).
    */
   public static interface AppendIterator extends Iterator<EventEnvelope> {
     /**
@@ -89,6 +90,8 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
     default EventEnvelope appendOrPeek(EventEnvelope event) {
       throw new UnsupportedOperationException("appendOrPeek");
     }
+
+    boolean wouldBlock();
   }
 
   public AppendIterator iterator();

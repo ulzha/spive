@@ -52,6 +52,12 @@ public class InMemoryEventLog implements EventLog {
     private int i = 0;
 
     @Override
+    public boolean wouldBlock() {
+      // FIXME
+      return false;
+    }
+
+    @Override
     public boolean hasNext() {
       // FIXME block and null terminate
       return i < list.size();

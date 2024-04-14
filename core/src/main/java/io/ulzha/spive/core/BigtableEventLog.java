@@ -2,7 +2,6 @@ package io.ulzha.spive.core;
 
 import static com.google.cloud.bigtable.data.v2.models.Filters.FILTERS;
 
-import com.google.api.gax.rpc.ServerStream;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.models.ConditionalRowMutation;
 import com.google.cloud.bigtable.data.v2.models.Mutation;
@@ -34,14 +33,7 @@ public final class BigtableEventLog implements EventLog {
     this.logId = logId;
   }
 
-  /**
-   * Reads the next event after prevEvent.
-   *
-   * <p>Will block after the last row until more events are appended or the log is closed.
-   *
-   * @return the next event, or null to signify a closed log.
-   */
-  private EventEnvelope read(final EventEnvelope prevEvent) throws IOException {
+  private Iterator<Row> query(final EventEnvelope prevEvent) {
     final String start = toRowKey(prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time());
     final Query query =
         Query.create(TABLE_ID)
@@ -51,39 +43,20 @@ public final class BigtableEventLog implements EventLog {
                     .chain()
                     .filter(FILTERS.limit().cellsPerColumn(1))
                     .filter(FILTERS.family().exactMatch(EVENT_COLUMN_FAMILY)));
-    Row row = null;
-
-    while (row == null) {
-      final ServerStream<Row> stream = this.dataClient.readRows(query);
-      final Iterator<Row> iterator = stream.iterator();
-      if (iterator.hasNext()) {
-        // TODO buffer ahead, instead of querying one at a time, for reasonable throughput
-        stream.cancel();
-        row = iterator.next();
-      } else {
-        try {
-          Thread.sleep(1000);
-          // TODO notification path, to act more quickly than this polling loop
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          throw new RuntimeException(e);
-        }
-      }
-      // TODO catch timeouts and other errors that are likely intermittent, and retry
-    }
-
-    final List<RowCell> cells = row.getCells();
-    final String metadataJson = cells.get(0).getValue().toStringUtf8();
-
-    if (metadataJson.length() != 0) {
-      EventEnvelope event =
-          Json.deserializeEventMetadata(metadataJson, cells.get(1).getValue().toStringUtf8());
-      // TODO assert that each one is keyed exactly toRowKey(previous event time read)
-      return event;
-    } else {
-      return null;
-    }
+    return dataClient.readRows(query).iterator();
   }
+
+  /**
+   * Reads the next event after prevEvent.
+   *
+   * <p>Will block after the last row until more events are appended or the log is closed.
+   *
+   * <p>Note: AppendIteratorImpl is a more efficient way to read many events sequentially, as it
+   * keeps ServerStream open.
+   *
+   * @return the next event, or null to signify a closed log.
+   */
+  // private EventEnvelope read(final EventEnvelope prevEvent)
 
   /**
    * Bigtable does not offer the ability to do a reverse scan. So we do a bit of binary search to
@@ -142,7 +115,7 @@ public final class BigtableEventLog implements EventLog {
 
   @Override
   public void close() {
-    // TODO close a ServerStream here if one is carried... Probably won't be? Make read() private?
+    // TODO explicitly cancel all iterator ServerStreams that may have not been fully consumed?
   }
 
   private String toRowKey(EventTime eventTime) {
@@ -159,15 +132,67 @@ public final class BigtableEventLog implements EventLog {
   }
 
   private class AppendIteratorImpl implements AppendIterator {
+    private Iterator<Row> serverStreamIterator;
     private EventEnvelope prevEvent;
     private EventEnvelope nextEvent;
+
+    public AppendIteratorImpl() {
+      this.serverStreamIterator = query(prevEvent);
+    }
+
+    /**
+     * Reads the next event after prevEvent.
+     *
+     * <p>Will block after the last row until more events are appended or the log is closed.
+     *
+     * @return the next event, or null to signify a closed log.
+     */
+    private EventEnvelope read() throws IOException {
+      System.out.println("Entering read() with " + prevEvent);
+      while (!serverStreamIterator.hasNext()) {
+        System.out.println("In wait loop...");
+        try {
+          Thread.sleep(1000);
+          // TODO notification path, to act more quickly than this polling loop
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new RuntimeException(e);
+        }
+        serverStreamIterator = query(prevEvent);
+        // TODO catch timeouts and other errors that are likely intermittent, and retry
+      }
+
+      final Row row = serverStreamIterator.next();
+      final List<RowCell> cells = row.getCells();
+      final String metadataJson = cells.get(0).getValue().toStringUtf8();
+
+      if (metadataJson.length() != 0) {
+        EventEnvelope event =
+            Json.deserializeEventMetadata(metadataJson, cells.get(1).getValue().toStringUtf8());
+        // TODO assert that each one is keyed exactly toRowKey(previous event time read)
+        return event;
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public boolean wouldBlock() {
+      // unsure if there is a need to be explicit about blocking I/O (isReceiveReady) as well? Or
+      // need new name? This just tells whether there are more events
+      if (serverStreamIterator.hasNext()) {
+        return false;
+      }
+      serverStreamIterator = query(prevEvent);
+      return !serverStreamIterator.hasNext();
+    }
 
     /** Will block after the last event until more events are appended or the log is closed. */
     @Override
     public boolean hasNext() {
       if (nextEvent == null) {
         try {
-          nextEvent = read(prevEvent);
+          nextEvent = read();
           if (prevEvent != null
               && nextEvent != null
               && nextEvent.time().compareTo(prevEvent.time()) <= 0) {
@@ -181,7 +206,6 @@ public final class BigtableEventLog implements EventLog {
         }
       }
       if (nextEvent == null) {
-        close();
         return false;
       }
       return true;
@@ -192,6 +216,11 @@ public final class BigtableEventLog implements EventLog {
       if (!hasNext()) {
         throw new NoSuchElementException();
       }
+      System.out.println("Assigning and returning " + nextEvent);
+      // why no "Got event" printout?
+      if (nextEvent.serializedPayload().contains("CliccTracc")) {
+        throw new RuntimeException("Doing it here!");
+      }
       prevEvent = nextEvent;
       nextEvent = null;
       return prevEvent;
@@ -200,6 +229,11 @@ public final class BigtableEventLog implements EventLog {
     @Override
     public EventEnvelope appendOrPeek(EventEnvelope event) {
       final EventTime prevTime = (prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time());
+      if (event.time().compareTo(prevTime) <= 0) {
+        throw new IllegalArgumentException(
+            "event must have time later than that of the preceding event");
+      }
+
       if (BigtableEventLog.this.appendIfPrevTimeMatch(event, prevTime)) {
         nextEvent = event;
       } else {

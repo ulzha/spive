@@ -20,6 +20,7 @@ import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.cloud.bigtable.data.v2.models.RowMutation;
 import io.ulzha.spive.lib.EventEnvelope;
+import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventTime;
 import java.io.IOException;
 import java.time.Duration;
@@ -27,6 +28,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -197,6 +203,89 @@ public class BigtableEventLogTest {
       Assertions.assertThrows(
           ConditionTimeoutException.class,
           () -> await().atMost(Duration.ofSeconds(1)).until(iterator::hasNext));
+    }
+  }
+
+  @Test
+  public void givenIteratorBlocked_whenAppendedViaLog_shouldUnblockAndReadExpectedEvent()
+      throws Exception {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
+      final CountDownLatch latch = new CountDownLatch(2);
+      final ExecutorService executor = Executors.newSingleThreadExecutor();
+      final Future<?> act =
+          executor.submit(
+              () -> {
+                final var iterator = eventLog.iterator();
+
+                iterator.next();
+                iterator.next();
+                latch.countDown();
+
+                final EventEnvelope event3Read = iterator.next();
+                latch.countDown();
+
+                assertThat(event3Read.typeTag(), is("pojo:io.ulzha.spive.test.WhamProcess"));
+                assertThat(event3Read.serializedPayload(), is("\"WHAM!\""));
+              });
+
+      await().atMost(Duration.ofSeconds(1)).until(latch::getCount, is(1L));
+      // assert blocking to expect more events, after two were read
+      Assertions.assertThrows(
+          ConditionTimeoutException.class,
+          () -> await().atMost(Duration.ofSeconds(1)).until(latch::getCount, is(0L)));
+
+      final EventTime eventTime2 = new EventTime(Instant.parse("1111-11-11T00:00:00Z"), 1);
+      final EventTime eventTime3 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 0);
+      final EventEnvelope event3 =
+          new EventEnvelope(
+              eventTime3, UUID.randomUUID(), "pojo:io.ulzha.spive.test.WhamProcess", "\"WHAM!\"");
+      final boolean appended = eventLog.appendIfPrevTimeMatch(event3, eventTime2);
+      assertTrue(appended);
+
+      act.get(2, TimeUnit.SECONDS);
+    }
+  }
+
+  @Test
+  public void
+      givenEventIteratorBlocked_whenAppendedViaEventIterator_shouldUnblockAndReadExpectedEvent()
+          throws Exception {
+    final UUID logId = copyTwoEventsToTempLog();
+    try (BigtableEventLog eventLog = new BigtableEventLog(testDataClient, logId)) {
+      final EventIterator eventIterator = new EventIterator(eventLog.iterator());
+
+      final CountDownLatch latch = new CountDownLatch(2);
+      final ExecutorService executor = Executors.newSingleThreadExecutor();
+      final Future<?> act =
+          executor.submit(
+              () -> {
+                eventIterator.next();
+                eventIterator.next();
+                latch.countDown();
+
+                final EventEnvelope event3Read = eventIterator.next();
+                latch.countDown();
+
+                assertThat(event3Read.typeTag(), is("pojo:io.ulzha.spive.test.WhamProcess"));
+                assertThat(event3Read.serializedPayload(), is("\"WHAM!\""));
+              });
+
+      await().atMost(Duration.ofSeconds(1)).until(latch::getCount, is(1L));
+      // assert blocking to expect more events, after two were read
+      Assertions.assertThrows(
+          ConditionTimeoutException.class,
+          () -> await().atMost(Duration.ofSeconds(1)).until(latch::getCount, is(0L)));
+
+      final EventTime eventTime3 = new EventTime(Instant.parse("1111-11-11T00:00:00.111Z"), 0);
+      final EventEnvelope event3 =
+          new EventEnvelope(
+              eventTime3, UUID.randomUUID(), "pojo:io.ulzha.spive.test.WhamProcess", "\"WHAM!\"");
+      final EventEnvelope event3Peeked = eventIterator.appendOrPeek(event3);
+      assertTrue(event3Peeked == event3);
+
+      // this time it must be fast. Perhaps also whenAppendedViaLog?
+      act.get(1, TimeUnit.MILLISECONDS);
     }
   }
 

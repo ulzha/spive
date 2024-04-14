@@ -203,6 +203,15 @@ public final class LocalFileSystemEventLog implements EventLog {
       }
     }
 
+    @Override
+    public boolean wouldBlock() {
+      try (FileLock lock = iterChannel.lock()) {
+        return iterChannel.position() == iterChannel.size();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     /** Will block after the last event until more events are appended or the log is closed. */
     @Override
     public boolean hasNext() {

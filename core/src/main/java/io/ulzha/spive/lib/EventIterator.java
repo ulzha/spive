@@ -1,6 +1,8 @@
 package io.ulzha.spive.lib;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 /**
@@ -9,10 +11,14 @@ import java.util.Queue;
  *
  * <p>In most respects, delegates to EventLog.AppendIterator.
  *
- * <p>Not thread-safe - event loop and output gateway perform synchronization (when necessary).
+ * <p>The appendOrPeek method is thread-safe, and would wake up hasNext() resp. next() if they were
+ * blocked.
  */
 // CoordinableEventIterator? LockingEventIterator? EventIteratorChannel vs EventLogChannel?
-public class EventIterator implements EventLog.AppendIterator {
+// EventLog.ConcurrentAppendIterator? Instance.ConcurrentAppendIterator and Instance.Main?
+// lib.instance? dist?
+// Yet another layer to come, for multiple inputs, and watermark awareness?
+public class EventIterator implements Iterator<EventEnvelope> {
   private final EventLog.AppendIterator delegate;
   // may accrue 1 event that's been just emitted by a sporadic workload, or alternatively n
   // consecutive events that have been emitted (deterministically, as direct or indirect
@@ -27,7 +33,16 @@ public class EventIterator implements EventLog.AppendIterator {
   }
 
   @Override
-  public boolean hasNext() {
+  public synchronized boolean hasNext() {
+    while (knownEvents.isEmpty() && delegate.wouldBlock()) {
+      System.out.println("In snazzy wait loop...");
+      try {
+        wait(1000);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
+      }
+    }
     if (knownEvents.isEmpty()) {
       return delegate.hasNext();
     } else {
@@ -36,7 +51,11 @@ public class EventIterator implements EventLog.AppendIterator {
   }
 
   @Override
-  public EventEnvelope next() {
+  public synchronized EventEnvelope next() {
+    if (!hasNext()) {
+      throw new NoSuchElementException();
+    }
+
     final EventEnvelope event;
 
     if (knownEvents.isEmpty()) {
@@ -53,8 +72,7 @@ public class EventIterator implements EventLog.AppendIterator {
    * A bit different docstring than AppendIterator; here {@code next()} is guaranteed to eventually
    * return the appended events, in sequence, after knownEvents are exhausted first.
    */
-  @Override
-  public EventEnvelope appendOrPeek(final EventEnvelope event) {
+  public synchronized EventEnvelope appendOrPeek(final EventEnvelope event) {
     final EventEnvelope actualEvent = delegate.appendOrPeek(event);
     if (actualEvent == event) {
       lastTimeEmitted = event.time();
@@ -64,6 +82,7 @@ public class EventIterator implements EventLog.AppendIterator {
           "delegate violated appendOrPeek contract - next() should have returned the peeked event");
     }
     knownEvents.add(actualEvent);
+    notify();
     return actualEvent;
   }
 
