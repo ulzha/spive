@@ -36,8 +36,7 @@ public class LocalFileSystemEventLogTest {
       givenCompetingEventHasEqualTimeDifferentPayload_whenPeekedViaIterator_thenNextReturnsActualEvent()
           throws Exception {
     final EventEnvelope e = dummyEvent(1);
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final var iterator = eventLog.iterator();
       iterator.next();
@@ -62,8 +61,7 @@ public class LocalFileSystemEventLogTest {
             null,
             "pojo:io.ulzha.spive.test.DeleteProcess",
             "{\"processId\": \"00000000-0000-0000-0000-000000000000\"}");
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final var iterator = eventLog.iterator();
       iterator.next();
@@ -80,8 +78,7 @@ public class LocalFileSystemEventLogTest {
   public void givenNoCompetingEvent_whenAppendedViaIterator_thenNextReturnsAppendedEvent()
       throws Exception {
     final EventEnvelope e = dummyEvent(2);
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final var iterator = eventLog.iterator();
       iterator.next();
@@ -139,8 +136,7 @@ public class LocalFileSystemEventLogTest {
   @Test
   public void givenUnclosedLog_whenReadTillTheEnd_shouldReadExpectedEventsAndBlock()
       throws Exception {
-    final Path filePath =
-        Path.of(Objects.requireNonNull(getClass().getResource("TwoEvents.jsonl")).getPath());
+    final Path filePath = copyResourceToTempFile("TwoEvents.jsonl");
     try (LocalFileSystemEventLog eventLog = new LocalFileSystemEventLog(filePath)) {
       final var iterator = eventLog.iterator();
 
