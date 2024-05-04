@@ -8,6 +8,7 @@ import com.google.cloud.bigtable.data.v2.models.Mutation;
 import com.google.cloud.bigtable.data.v2.models.Query;
 import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
+import com.google.protobuf.ByteString;
 import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
@@ -148,9 +149,10 @@ public final class BigtableEventLog implements EventLog {
      * @return the next event, or null to signify a closed log.
      */
     private EventEnvelope read() throws IOException {
-      System.out.println("Entering read() with " + prevEvent);
+      // System.out.println("Entering read() in " + Thread.currentThread() + " on " + this + "'s " +
+      // serverStreamIterator + " with " + prevEvent);
       while (!serverStreamIterator.hasNext()) {
-        System.out.println("In wait loop...");
+        System.out.println("In clumsy sleep loop...");
         try {
           Thread.sleep(1000);
           // TODO notification path, to act more quickly than this polling loop
@@ -163,26 +165,49 @@ public final class BigtableEventLog implements EventLog {
       }
 
       final Row row = serverStreamIterator.next();
+      requireMatch(row, toRowKey(prevEvent == null ? EventTime.INFINITE_PAST : prevEvent.time()));
       final List<RowCell> cells = row.getCells();
       final String metadataJson = cells.get(0).getValue().toStringUtf8();
 
       if (metadataJson.length() != 0) {
         EventEnvelope event =
             Json.deserializeEventMetadata(metadataJson, cells.get(1).getValue().toStringUtf8());
-        // TODO assert that each one is keyed exactly toRowKey(previous event time read)
         return event;
       } else {
         return null;
       }
     }
 
+    private void requireMatch(final Row row, final String expectedKey) {
+      final ByteString actualKey = row.getKey();
+      System.out.println("Actual row: '" + actualKey.toStringUtf8() + "'");
+      if (!actualKey.isValidUtf8() || !actualKey.toStringUtf8().equals(expectedKey)) {
+        throw new InternalException(
+            String.format(
+                "Corrupt row key sequence: the row after %s should be keyed %s but was %s",
+                prevEvent.time(),
+                "'" + expectedKey + "'",
+                (actualKey.isValidUtf8()
+                    ? "'" + actualKey.toStringUtf8() + "'"
+                    : "invalid utf8, " + actualKey)));
+      }
+    }
+
     @Override
     public boolean wouldBlock() {
       // unsure if there is a need to be explicit about blocking I/O (isReceiveReady) as well? Or
-      // need new name? This just tells whether there are more events
-      if (serverStreamIterator.hasNext()) {
+      // need new name?
+      if (nextEvent != null || serverStreamIterator.hasNext()) {
         return false;
       }
+      // unneeded? The above already tells almost certainly whether there are more events?
+      // Figure later if and where we too uninterruptibly wait
+      // final ServerStream<Row> headServerStream = query(prevEvent);
+      // try {
+      //   return !headServerStream.iterator().hasNext();
+      // } finally {
+      //   headServerStream.cancel();
+      // }
       serverStreamIterator = query(prevEvent);
       return !serverStreamIterator.hasNext();
     }
@@ -205,21 +230,13 @@ public final class BigtableEventLog implements EventLog {
           throw new RuntimeException(e);
         }
       }
-      if (nextEvent == null) {
-        return false;
-      }
-      return true;
+      return nextEvent != null;
     }
 
     @Override
     public EventEnvelope next() {
       if (!hasNext()) {
         throw new NoSuchElementException();
-      }
-      System.out.println("Assigning and returning " + nextEvent);
-      // why no "Got event" printout?
-      if (nextEvent.serializedPayload().contains("CliccTracc")) {
-        throw new RuntimeException("Doing it here!");
       }
       prevEvent = nextEvent;
       nextEvent = null;
