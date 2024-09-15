@@ -1,11 +1,11 @@
 /** @jsxImportSource react */
 
 import { Button } from "@mui/material";
-import HelpIcon from "@mui/icons-material/Help";
+import { Help } from "@mui/icons-material";
 
 export default function HelpButton() {
   return (
-    <Button href="#support" startIcon={<HelpIcon />}>
+    <Button href="#support" startIcon={<Help />}>
       Help
     </Button>
   );
