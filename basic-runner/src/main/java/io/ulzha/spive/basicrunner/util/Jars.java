@@ -21,7 +21,7 @@ public class Jars {
   private static final Logger LOG = LoggerFactory.getLogger(Jars.class);
 
   // Example:
-  // https://repo.maven.apache.org/maven2/io/norberg/auto-matter/0.26.0/auto-matter-0.26.0.jar
+  // https://repo.maven.apache.org/maven2/io/ab-cd/excellent-app/0.26.0/excellent-app-0.26.0.jar
   static final Pattern MAVEN_CENTRAL_RE =
       Pattern.compile(
           "^https://repo.maven.apache.org/maven2/[^/]+/([a-z0-9_/-]+)/([^/]+)/([^/]+)/([^/]+\\.jar)$");

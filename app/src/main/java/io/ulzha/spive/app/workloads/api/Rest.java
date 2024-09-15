@@ -13,6 +13,11 @@ import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.agg.Timeline;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventTime;
+import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,6 +50,12 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
     // FIXME nontrivial generation of UUID, to make the event belong to the intended partition
     final UUID uuid = UUID.randomUUID();
 
+    try {
+      validateArtifactUrl(request.artifactUrl());
+    } catch (IOException e) {
+      throw HttpStatusException.of(HttpStatus.UNPROCESSABLE_ENTITY, e);
+    }
+
     final CreateProcess event =
         new CreateProcess(
             uuid,
@@ -65,6 +76,38 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
       return HttpResponse.ofJson(HttpStatus.CREATED, uuid);
     }
     throw HttpStatusException.of(HttpStatus.CONFLICT);
+  }
+
+  private void validateArtifactUrl(String artifactUrl) throws IOException {
+    final File dir = new File("/mnt/artifact-repo");
+    final File[] files = dir.listFiles();
+    if (files != null) {
+      System.out.println("Files: " + files + " " + files.length);
+      for (final File file : files) {
+        System.out.println("File found: " + file.getName());
+      }
+    } else {
+      System.out.println("No files found");
+    }
+
+    final String jarUrl = "jar:" + artifactUrl.split(";")[0] + "!/";
+    final URL url = new URL(jarUrl);
+    final URLConnection connection = url.openConnection();
+
+    // TODO merge with basic-runner's validation function?
+    // Jar would not necessarily be reachable from control plane. Runner's validation can be awaited
+    // by control plane, it can see heartbeat not started. Here we just check well-formedness maybe?
+    // For methods and modifiers validation,
+    // https://docs.oracle.com/javase/tutorial/deployment/jar/jarclassloader.html what this doing?
+    if (!(connection instanceof JarURLConnection)) {
+      throw new IOException("Not a JAR URL");
+    }
+    ((JarURLConnection) connection).getManifest();
+    // manifest.getEntries().keySet().stream()
+    //     .forEach(key -> System.err.println("I just had a manifest entry: " + key));
+
+    // Tthe jar should be kept in state? Shared with runners from there?... Just a checksum surely?
+    // Generally, external large objects handling in apps logic needs a facilitating mechanism
   }
 
   public record TileSnapshot(

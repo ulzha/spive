@@ -19,6 +19,9 @@ $MVN clean package dependency:go-offline -am -pl app,basic-runner,tools
 # 2. prepare runners and event stores
 # (initialize local filesystem)
 # (alt. structure the logs so they are mountable directly)
+export FS_ARTIFACT_REPO_DIR="$(pwd)/.spive/$USER-dev/dev-0/artifact-repo"
+rm -r "$FS_ARTIFACT_REPO_DIR" || true
+mkdir -p "$FS_ARTIFACT_REPO_DIR"
 export FS_EVENT_STORE_DIR="$(pwd)/.spive/$USER-dev/dev-0/event-store"
 rm -r "$FS_EVENT_STORE_DIR" || true
 mkdir -p "$FS_EVENT_STORE_DIR"
@@ -38,12 +41,13 @@ do echo "retrying in 1 s"; sleep 1; done
 
 # 4. launch SpiveDevBootstrap with local log
 # (alt. run SpiveInstance$Main.main with local log, no need to run basic-runner? Doesn't matter much if chicken first or egg first)
+cp app/target/spive-0.0.1-SNAPSHOT.jar "$FS_ARTIFACT_REPO_DIR"
 mkdir -p "$FS_EVENT_STORE_DIR/93ff4295-5a8c-4181-b50b-3d7345643581"
 cp tools/SpiveDevBootstrap.jsonl "$FS_EVENT_STORE_DIR/93ff4295-5a8c-4181-b50b-3d7345643581/events.jsonl"
 run_bootstrap_request='{
   "threadGroup": {
     "name": "foo",
-    "artifactUrl": "file:///mnt/app/target/spive-0.0.1-SNAPSHOT.jar",
+    "artifactUrl": "file:///mnt/artifact-repo/spive-0.0.1-SNAPSHOT.jar",
     "mainClass": "io.ulzha.spive.app.spive.gen.SpiveInstance$Main",
     "args": [
       "io.ulzha.spive.core.LocalFileSystemEventStore;basePath=/mnt/event-store",
@@ -89,8 +93,9 @@ do echo "retrying in 1 s"; sleep 1; done
 
 # 8. call API to launch one "hello world" style app
 $MVN clean package -f example/clicc-tracc
+cp example/clicc-tracc/app/target/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar "$FS_ARTIFACT_REPO_DIR"
 run_clicc_tracc_request='{
-  "artifactUrl": "file:///mnt/app/target/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar",
+  "artifactUrl": "file:///mnt/artifact-repo/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar;mainClass=io.ulzha.spive.example.clicctracc.app.spive.gen.CliccTraccInstance$Main",
   "availabilityZones": ["dev-1"],
   "inputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"],
   "outputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"]

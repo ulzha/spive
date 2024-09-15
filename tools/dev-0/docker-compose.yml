@@ -7,7 +7,7 @@ services:
   dev-1:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:
-    - "$PWD/example/clicc-tracc/app/target:/mnt/app/target"
+    - "$FS_ARTIFACT_REPO_DIR:/mnt/artifact-repo"
     ports:
     - "8431:8430"
     environment:
@@ -15,7 +15,7 @@ services:
   dev-0:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:
-    - "$PWD/app/target:/mnt/app/target"
+    - "$FS_ARTIFACT_REPO_DIR:/mnt/artifact-repo"
     ports:
     - "8430:8430"
     - "8440:8440"
@@ -25,7 +25,7 @@ services:
   dev-bootstrap:
     image: "$BASIC_RUNNER_IMAGE_NAME"
     volumes:
-    - "$PWD/app/target:/mnt/app/target"
+    - "$FS_ARTIFACT_REPO_DIR:/mnt/artifact-repo"
     - "$FS_EVENT_STORE_DIR:/mnt/event-store"
     ports:
     - "8429:8430"

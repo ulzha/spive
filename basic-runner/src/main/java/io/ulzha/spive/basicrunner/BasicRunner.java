@@ -180,7 +180,9 @@ public final class BasicRunner {
           record.umbilical,
           descriptor.args().toArray(new String[0]));
     } catch (IOException e) {
-      // TODO semi-opaque?
+      // TODO semi-opaque? Or, to the contrary, don't add any runner exceptions to the umbilical,
+      // only those thrown by artifact code? Useful invariant to distinguish concerns between data
+      // plane and control plane?
       record.umbilical.addError(null, e);
       throw new HandledException(e);
     }
