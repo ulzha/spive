@@ -45,7 +45,7 @@
     "react-dom": "18.2.0",
     "typescript": "5.4.5",
     "undici": "*",
-    "vite": "5.3.5",
+    "vite": ">=5.3.6",
     "vite-tsconfig-paths": "^4.2.1"
   },
   "dependencies": {
@@ -55,7 +55,8 @@
     "@mui/material": "5.13.0",
     "@mui/x-data-grid": "6.4.0",
     "extensionless": "^1.9.9",
-    "fix-esm-import-path": "^1.10.0"
+    "fix-esm-import-path": "^1.10.0",
+    "rollup": ">=4.22.4"
   },
   "prettier": {
     "printWidth": 120
