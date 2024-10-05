@@ -1,7 +1,7 @@
-:local(.events) {
+.events {
   padding: 10px;
 
-  .MuiFormControl-root {
+  :global .MuiFormControl-root {
     margin-bottom: 10px;
     width: 400px;
   }
@@ -10,28 +10,28 @@
     font-size: 0.875rem;
   }
 
-  .MuiDataGrid-columnHeaders {
+  :global .MuiDataGrid-columnHeaders {
     background-color: #ffffff;
   }
 
-  .odd {
+  :global .odd {
     background-color: #f2f2f2;
   }
 
-  .even {
+  :global .even {
     background-color: #f8f8f8;
   }
 
-  .MuiDataGrid-cell[data-field="eventTime"] {
+  :global .MuiDataGrid-cell[data-field="eventTime"] {
     padding-right: 0;
   }
 
   /* come on */
-  .MuiDataGrid-cell[data-field="took"] > div {
+  :global .MuiDataGrid-cell[data-field="took"] > div {
     text-align: right;
   }
 
-  .MuiDataGrid-cell[data-field="details"] .status {
+  :global .MuiDataGrid-cell[data-field="details"] .status {
     width: 12px;
     height: 12px;
     float: left;
@@ -40,7 +40,7 @@
     margin-right: 10px;
   }
 
-  .MuiDataGrid-cell[data-field="details"] > div span:last-child {
+  :global .MuiDataGrid-cell[data-field="details"] > div span:last-child {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;

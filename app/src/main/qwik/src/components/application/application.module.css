@@ -1,38 +1,38 @@
-:local(.applications) {
-  .MuiDataGrid-root,
-  .MuiDataGrid-cell,
-  .MuiDataGrid-cell:focus,
-  .MuiDataGrid-cell:focus-within,
-  .MuiDataGrid-columnHeader:focus,
-  .MuiDataGrid-columnHeader:focus-within,
-  .MuiDataGrid-columnHeaders,
-  .MuiDataGrid-footerContainer {
+.applications {
+  :global .MuiDataGrid-root,
+  :global .MuiDataGrid-cell,
+  :global .MuiDataGrid-cell:focus,
+  :global .MuiDataGrid-cell:focus-within,
+  :global .MuiDataGrid-columnHeader:focus,
+  :global .MuiDataGrid-columnHeader:focus-within,
+  :global .MuiDataGrid-columnHeaders,
+  :global .MuiDataGrid-footerContainer {
     border: 0;
     outline: 0;
   }
 
-  .even {
+  :global .even {
     background-color: #f8f8f8;
   }
 
-  .span {
+  :global .span {
     background-color: #f2f2f2;
     border-top: 1px solid #d9d9d9;
     border-bottom: 1px solid #d9d9d9;
   }
 
   /* come on */
-  .MuiDataGrid-cell > div {
+  :global .MuiDataGrid-cell > div {
     width: 100%;
   }
 
-  .MuiDataGrid-cell[data-field="rank"],
-  .MuiDataGrid-columnHeader[data-field="rank"] {
+  :global .MuiDataGrid-cell[data-field="rank"],
+  :global .MuiDataGrid-columnHeader[data-field="rank"] {
     padding: 0;
     align-items: start;
   }
 
-  .MuiDataGrid-row > .MuiDataGrid-cell[data-field="timeline"] {
+  :global .MuiDataGrid-row > .MuiDataGrid-cell[data-field="timeline"] {
     overflow: visible;
 
     /* ref div, otherwise pointless */
@@ -45,7 +45,7 @@
         top: 16px;
       }
 
-      .range-picker {
+      :global .range-picker {
         position: absolute;
         top: 8px;
         left: 200px;
@@ -59,11 +59,11 @@
     }
   }
 
-  .timeline:not(.range-selected) .range-picker {
+  :global .timeline:not(.range-selected) .range-picker {
     display: none;
   }
 
-  .timeline-axis {
+  :global .timeline-axis {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -71,12 +71,12 @@
     outline: 1px solid pink;
   }
 
-  .MuiCardHeader-content {
+  :global .MuiCardHeader-content {
     flex: 0 1 auto;
     margin-right: 20px;
   }
 
-  .MuiCardHeader-action {
+  :global .MuiCardHeader-action {
     flex: 1;
     display: flex;
     /* FIXME stop jumping, or rather instead of ButtonGroup jumping to the left have #legend-toggle jump to the right */
@@ -88,11 +88,11 @@
     }
   }
 
-  .MuiDialog-paper {
+  :global .MuiDialog-paper {
     max-width: 800px;
   }
 
-  .MuiFormGroup-row {
+  :global .MuiFormGroup-row {
     align-items: baseline;
   }
 }

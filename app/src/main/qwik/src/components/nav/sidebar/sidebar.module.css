@@ -1,4 +1,4 @@
-:local(.sidebar) {
+.sidebar {
   min-width: 48px;
   height: 100vh;
   background: #171717;

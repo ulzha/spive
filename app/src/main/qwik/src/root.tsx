@@ -15,11 +15,9 @@ export default component$(() => {
   return (
     <QwikCityProvider>
       <head>
-        <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width" />
         <meta name="theme-color" content="#000000" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="stylesheet" type="text/css" href="/applications.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
         <link rel="icon" href="/favicon.png" />
         <link rel="preload" type="font/woff2" href="/fonts/LINESeedSans_W_Rg.woff2" as="font" crossOrigin="anonymous" />
