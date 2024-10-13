@@ -57,7 +57,7 @@ public class BasicRunnerGateway extends Gateway {
   }
 
   private void doStartInstance(RunThreadGroupRequest request, String runnerUrl) {
-    System.out.println("Starting " + request.threadGroup().name() + " on " + runnerUrl);
+    LOG.info("Starting " + request.threadGroup().name() + " on " + runnerUrl);
     // TODO idempotent?
 
     final URI requestUri = URI.create(runnerUrl + "/thread_groups").normalize();

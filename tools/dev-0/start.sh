@@ -14,7 +14,8 @@ DC="docker compose -f tools/dev-0/docker-compose.yml"
 MVN="mvnd -Dfmt.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmvnd.connectTimeout=60s"
 
 # 1. build app as a jar, and more
-$MVN clean package dependency:go-offline -am -pl app,basic-runner,tools
+rm -r ~/.m2/repository/io/ulzha/spive* || true
+$MVN clean install -am -pl app,basic-runner,tools
 
 # 2. prepare runners and event stores
 # (initialize local filesystem)
@@ -94,14 +95,14 @@ do echo "retrying in 1 s"; sleep 1; done
 # 8. call API to launch one "hello world" style app
 $MVN clean package -f example/clicc-tracc
 cp example/clicc-tracc/app/target/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar "$FS_ARTIFACT_REPO_DIR"
-run_clicc_tracc_request='{
+deploy_clicc_tracc_request='{
   "artifactUrl": "file:///mnt/artifact-repo/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar;mainClass=io.ulzha.spive.example.clicctracc.app.spive.gen.CliccTraccInstance$Main",
   "availabilityZones": ["dev-1"],
   "inputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"],
   "outputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"]
 }'
 until
-  $CURL -X PUT -H "Content-Type: application/json" -d "$run_clicc_tracc_request" -i http://localhost:8440/api/applications/CliccTracc/0.0.1-alpha
+  $CURL -X PUT -H "Content-Type: application/json" -d "$deploy_clicc_tracc_request" -i http://localhost:8440/api/applications/CliccTracc/0.0.1-alpha
 do echo "retrying in 1 s"; sleep 1; done
 # expect SpiveDev0 to watch the instance and append progress events to the log
 until

@@ -30,7 +30,6 @@ import io.ulzha.spive.app.workloads.watchdog.WatchLoop;
 import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
 import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
-import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.util.InterruptableSchedulable;
 import java.net.URI;
 import java.util.HashMap;
@@ -121,20 +120,20 @@ public class Spive implements SpiveInstance {
 
   @Override
   public void accept(final CreateEventLog event) {
-    System.out.println("Accepting " + event + ", start: " + EventTime.fromString(event.start()));
+    // System.out.println("Accepting " + event + ", start: " + EventTime.fromString(event.start()));
     final Stream stream = platform.streamsById.get(event.streamId());
     stream.eventLogIds.put(new Stream.PartitionRange("*"), event.logId());
   }
 
   @Override
   public void accept(final CreateType event) {
-    System.out.println("Accepting " + event);
+    // System.out.println("Accepting " + event);
     platform.types.add(new Type());
   }
 
   @Override
   public void accept(final CreateStream event) {
-    System.out.println("Accepting " + event);
+    // System.out.println("Accepting " + event);
     assert ("local".equals(event.eventStore())); // assert it's a class that exists?
     // TODO ensure (upon emitting) that name-version and id are not duplicated
     final Stream stream = new Stream(event.name(), event.streamId());
@@ -235,9 +234,9 @@ public class Spive implements SpiveInstance {
                 parts[1],
                 List.of(
                     "io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=bigtable-emulator;port=8086",
-                    "2c543574-f3ac-4b4c-8a5b-a5e188b9bc94",
+                    event.logIds().get(0).toString(),
                     "io.ulzha.spive.core.BigtableEventStore;projectId=user-dev;instanceId=spive-dev-0;hostname=bigtable-emulator;port=8086",
-                    "2c543574-f3ac-4b4c-8a5b-a5e188b9bc94",
+                    event.logIds().get(0).toString(),
                     "dev-1",
                     "*")));
 

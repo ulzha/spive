@@ -11,25 +11,26 @@
 - [ ] Graph the arrivals smoothly with ~5s delay (even smaller on focus)
 - [ ] Visualize errors (first occurrence of a blocker, by exception type, and the fraction of partitions affected)
 - [ ] Scroll left to seamlessly pan to a lower resolution historical graph
+- [ ] CLI log tailer - slight improvement over bare -euxo and docker compose. Single pane of interactive pseudographics mode. The dev script, the bootstrap container, the platform it attempts to bootstrap, etc. Just scrollable independently, errors highlighted (yellow when LLM "would warn" like 404 and such, orange when actual warnings); later also time correlatable with Spīve-specific inference
 - [ ] Have UI quickly filter/query streams by time span or key/partition (tour de force - generate code example for doing the same thing as UI does in CLI, Scio, BigQuery, etc)
 - [ ] Regenerate app.spive.gen for examples/ in CI
 - [ ] DockerRunner, QuickBasicRunner (InProcessThreadRunner?)
 - [ ] 5 minute "Getting Started" guide + a HelloWorld app - how to generate app.spive.gen, develop and run locally. (Cookiecutter kind of thing but able to function offline, once cached)
 - [ ] Example of deploy of a self-contained offline-produced jar (probably an IDE extension can expand app.spive.gen); infer I/O streams interactively incl. new types; visual UI to connect to existing ones or otherwise
-- [ ] Have UI provide debugging instructions (locally, remotely)
+- [ ] Have UI provide debugging instructions how to replay all or just a subset of partitions, for debugging/troubleshooting, as a new version remotely or in a completely different (local) platform deployment. (UUIDs stay the same, they're deterministic... So maybe get smart with "UU")
 - [ ] Examples of tests (event definition language, named snapshots as JUnit rules, capturers, matchers... git inspired from d3) - some examples of likely and non-obvious bugs included
 - [ ] Example with best-effort graceful shutdown for workloads and gateways (just to clarify the extent of non-guarantee)
 - [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by an hourly batch scan?) Debouncing perhaps useful in some cases?
 - [ ] Example advanced distributed data structure implementation (real time toplist?)
 - [ ] Visualize workload logs (and metrics) somehow in between events as well... or just link to Stackdriver? Champion [golden signals](https://sre.google/sre-book/monitoring-distributed-systems/), aligned to timeline (with its warning and error hues)... or to the deploy log (because that's real-ish time, whereas applications may be far from it)? Embedded from 3rd party sources like that? Should have a way to view logs sorted by event time? Example with Open Telemetry and some of its supporting receivers? Grafana Mimir
-- [ ] Example interactive application, web page updating itself until you see your writes (React/Redux?) (Also where does the fanout lie for building one result set from a massively sharded backend? In a sidecar? Or rather, fan-in updates to an index in front, like ElasticSearch, and get away with only single gets from backend?)
+- [ ] Example interactive application, web page updating itself until you see your writes (Also where does the fanout lie for building one result set from a massively sharded backend? In a sidecar? Or rather, fan-in updates to an index in front, like ElasticSearch, and get away with only single gets from backend?)
 - [ ] Compute checksums and sanity check for nondeterminism (error on replay - alt. warning if tolerated... Of a suppressed kind?)
 - [ ] Compute diffs between streams
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
 - [ ] Example minor upgrade (involves inspection of diffs)
 - [ ] Example major upgrade flow (must be trivial to add a new field to CreateFoo event, for example. New Stream - copy Types -> edit? Then copy Stream with defaults? When to deploy the process? What to do with partially applied side effects when handlers of the old process are interrupted?)
 - [ ] PoC cost visualization (in control plane timeline a.k.a. deploy log, as annotations sourced from a separate app) - cost+trend of each replay, and cost+trend of nominal operation between deploys
-- [ ] Dark mode, HTML mode, Zen mode
+- [ ] Dark mode, HTML (noscript) mode, Zen mode
 - [ ] Support distributed synchronization of snapshot workloads across shards (may fail on network partition. Scheduling in advance increases reliability) (may need to freeze partition layout to deterministically produce dataset files... And have some sort of stable unique identifier)
 - [ ] Pause function ("wait for input" workload shorthand?) in UI to pause a partition/instance/the whole world at a given event time, indefinitely - useful for scheduled maintenance of external systems, debugging, etc.
 - [ ] Example of point-in-time consistent operation on all child entities from app SDK (relies on a synchronization solution in the control plane, as per above)
@@ -37,9 +38,9 @@
 - [ ] Maintain a read-only copy in a LocalFileSystemEventLog to recover quicker and make regular restarts (new code deployments) cheap. (Even when facing a network split? We want to avoid Spīve failure cascading to apps.)
 - [ ] SpiveScaler accepting only strategies, not hard-configured values. Support custom autoscalers as code, targeting cost/latency objectives, taking budget, request rate, etc, as well as historical state into account. Forecast a few hours ahead instead of merely trailing. Default strategy to autoscale to budget. (Redeploy/catchup throughput throttled as a separate position in budget?)
 - [ ] SpiveScaler supporting overrides (lower latency for planned demo circumstances, more instances for a planned launch, force single instance for simple low tier applications, etc)... Respect manual overrides made directly via Spive UI during an incident when SpiveScaler is down? Do not be concerned with scaling of event stores - they belong to inventory?
-- [ ] Intuitive UI for creation of sandboxes, frictionless launch and cleanup of multiple deployments of an application. Just a few options - select the version to deploy, select whether all side effects should be redone (from start or from a point in event time) (or should only the deviating ones be redone/undone, or none), select whether a whole new copy of inventory should be provisioned (i.e. a hermetic sandbox), select debugging options (e.g. enable debug flag/socket, pause at a given event time/condition, leave instances alive after exiting normally)
+- [ ] Intuitive UI for creation of sandboxes, frictionless launch and cleanup of multiple deployments of an application. Just a few options - select the version to deploy, select whether all side effects should be redone (from start or from a point in event time) (or should only the deviating ones be redone/undone, or none), select whether a whole new copy of inventory should be provisioned (i.e. a hermetic sandbox), select debugging options (e.g. enable debug flag/socket, pause at a given event time/condition, leave instances alive after exiting normally), select a subset of partitions
 - [ ] An example CustomBlueGreenDeployment application showcasing how GHE events and Spīve API enables custom infrastructure automation for orchestrating your own application(s) deployments and their configurations. Generally useful for fleet management, ad-hoc experimentation, incident handling etc. Can watch the underlying for patterns in unhappy path events, timing out partitions, expedite scaling, or imperatively optimize (not to be confused with business logic/signals)
-- [ ] SpiveOptimizer as a separate infra application? (Or yet another workload rather? Prefer unidirectional control flow, so keep in the same application if it writes to its own input?)
+- [ ] SpiveOptimizer as a separate infra application
 - [ ] Advanced retry behavior (somewhere between SpiveScaler and SpiveOptimizer?) that includes splitting of partition ranges, throttling, bumping of system resources, etc. - automate of [menial manual work](https://sre.google/sre-book/eliminating-toil/) and alleviate on-call stress.
 - [ ] Example optimization rules (throttle calls toward external systems when they don't offer backpressure; less urgent batch workloads to execute in off-peak hours; transparently geo-replicate streams at some level; save money by lazily spinning up instances for unimportant partitions; ...)
 - [ ] Service discovery... (How to balance with support for sharding? Path-based routing enough? Or should we look at StatefulSet and GKE ingress instead?)
@@ -53,7 +54,7 @@
 - [ ] An example load tester application (for a gateway)
 - [ ] An example custom environment runner (GPU, Azure, ...)
 - [ ] An example Python application (Trio for async workloads? Requests hopefully support it already? "generally asyncio simply prints and discards unhandled exceptions from Tasks")
-- [ ] An example Scala application? Go application?
+- [ ] An example Scala application? Go? Rust? C++?
 - [ ] Configurable timeouts/moneyouts, per time interval, and/or per event
 - [ ] Document the [contract](API.md#Contract), a nice two-sided list of what concerns don't exist and what concerns do
 - [ ] Document migration from 3rd party event-sourcing systems, a tutorial/script on how to import change data stored in any ordered/timestamped format of your choice
@@ -86,7 +87,7 @@
 - [ ] Split tool, also exemplifying forking/decoration/piggyback flow - can emit two event logs from one, without reading twice?
 - [ ] Basic compaction tool. (Must not screw with consequential streaks... Can there be a protective measure?)
 - [ ] SpiveCompactor as a separate infra application. (Only for compactable applications that provide the compaction job logic.) (Compactions can be batch, Kappa architecture meets Lambda architecture.) (Compaction also to play a role in GDPR/PII data deletion?) Compaction to generate historical graph? (Doubt)
-- [ ] Example compaction job as a reduce operator in packaged alongside event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
+- [ ] Example compaction job as a reduce operator packaged alongside event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
 - [ ] SpiveArchiver as a related infra application
 - [ ] Investigate snapshotting the process memory at a low level... Though this wouldn't work across code versions... (No need to snapshot workloads or gateways, which deal with all the impure things like handles and resources. All the instance state in memory must be completely at rest between events. If we support spill to disk, must capture that too.) https://github.com/google/snappy-start, CRIU
 - [ ] Support Observable state, to notify concurrent workloads when something changes (without breaking memory snapshotting). More specific convenience APIs, like observable EventLoop.currentEventTime (doubt)?

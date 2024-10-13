@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,8 +39,13 @@ public class Jars {
    */
   private static String getValidJarName(final String artifactUrl) {
     if (artifactUrl.startsWith("file:///")) {
-      return "spive-0.0.1.jar";
+      try {
+        return Paths.get(new URI(artifactUrl).getPath()).getFileName().toString();
+      } catch (URISyntaxException e) {
+        throw new InternalException("Invalid artifactUrl: " + artifactUrl, e);
+      }
     }
+
     final Matcher matcher = MAVEN_CENTRAL_RE.matcher(artifactUrl);
 
     if (!matcher.matches()) {

@@ -10,7 +10,7 @@ package io.ulzha.spive.lib;
  * is supposed to safeguard against the particular problem, to the best of your understanding.
  */
 // TODO more classes to point out non-core (contributed to platform) origins, as well as conditions
-// when storage corruption is a likely factor rather than bugs
+// when storage corruption or control plane misconfiguration is a likely factor rather than bugs
 public class InternalException extends RuntimeException {
   static final long serialVersionUID = 42L;
 

@@ -13,7 +13,6 @@ import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.agg.Timeline;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventTime;
-import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -79,17 +78,6 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
   }
 
   private void validateArtifactUrl(String artifactUrl) throws IOException {
-    final File dir = new File("/mnt/artifact-repo");
-    final File[] files = dir.listFiles();
-    if (files != null) {
-      System.out.println("Files: " + files + " " + files.length);
-      for (final File file : files) {
-        System.out.println("File found: " + file.getName());
-      }
-    } else {
-      System.out.println("No files found");
-    }
-
     final String jarUrl = "jar:" + artifactUrl.split(";")[0] + "!/";
     final URL url = new URL(jarUrl);
     final URLConnection connection = url.openConnection();
@@ -106,7 +94,7 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
     // manifest.getEntries().keySet().stream()
     //     .forEach(key -> System.err.println("I just had a manifest entry: " + key));
 
-    // Tthe jar should be kept in state? Shared with runners from there?... Just a checksum surely?
+    // The jar should be kept in state? Shared with runners from there?... Just a checksum surely?
     // Generally, external large objects handling in apps logic needs a facilitating mechanism
   }
 

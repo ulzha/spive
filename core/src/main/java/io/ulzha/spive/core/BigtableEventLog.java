@@ -180,7 +180,6 @@ public final class BigtableEventLog implements EventLog {
 
     private void requireMatch(final Row row, final String expectedKey) {
       final ByteString actualKey = row.getKey();
-      System.out.println("Actual row: '" + actualKey.toStringUtf8() + "'");
       if (!actualKey.isValidUtf8() || !actualKey.toStringUtf8().equals(expectedKey)) {
         throw new InternalException(
             String.format(
