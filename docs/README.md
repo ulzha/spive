@@ -9,13 +9,13 @@ Danger: very aspirational [README-driven development](https://tom.preston-werner
 
 ## Quick Start
 
-A basic "walking skeleton" can be launched in a `docker compose` environment:
-
-    ./tools/dev-0/start.sh
-
 Teaser trailer (not there yet):
 
 ![](screenshot.png "UI mockup showing event timelines of three applications. One of them colored to indicate warnings, and a cause in the form of an exception stacktrace can be easily identified.")
+
+(TODO hello world example, operations flow)
+
+See [API reference](API.md).
 
 ## Why
 
@@ -56,7 +56,17 @@ Under the hood, the Spīve abstractions around event handling unlock a slew of b
 
 Another upside is that the persisted events are easily available for offline analytical processing in notebooks and batch pipelines, with minimal effort to extract accurate data. No more "data collection as an afterthought".
 
-## Limitations and tradeoffs
+## Use Cases
+
+(TODO gallery style:
+- Fast transactions, arbitrary read volumes, thanks to in-memory state
+- State machines, workflows and sagas
+- Near-real time trading decisions
+- Streaming and batch processes that ship data in and out of backend services are also made efficient to write and test, and deploy alongside the services
+- The long, fat tail of custom, smallish and business critical systems
+- Many Big Data problems can just as well benefit from event-sourcing model, especially if the problem is [embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel))
+
+### Limitations and tradeoffs
 
 Spīve can be thought of as a workflow engine, akin to e.g. [AWS Simple Workflow Service](https://docs.aws.amazon.com/amazonswf/latest/developerguide/swf-welcome.html) or [Temporal](https://github.com/temporalio/temporal), or [Infinitic](https://github.com/infiniticio/infinitic), yet it centers on a different, lower level of abstraction. Spīve runs relatively "close to metal", in terms of concepts supported by its SDK.
 
@@ -64,30 +74,18 @@ Spīve UI, on the other hand, is centered on serving the high level picture with
 
 DevOps-friendly and microservices-friendly, this platform as a whole is heavily optimized for [flow](https://en.wikipedia.org/wiki/Flow_state), meaning that development and maintenance operations on interconnected live applications can be conducted rapidly and coherently, even at extremely large production scale. A knock-on effect is joy-sparking reliability and manageability of your codebase — absent of many maintenance-focused concerns, codebases become easier to evolve in a modular fashion, and less prone to deteriorate in clarity (accrue suboptimal hacks) when touched by any number of autonomous contributing teams.
 
-Use-case wise, Spīve most readily works for backend services serving low write volumes, and quite arbitrary read volumes. State machines, workflows and sagas are common patterns. Moreover, near-real time pipelines and batch processes that ship data in and out of the backend are also made efficient to write and test, and deploy alongside the services, in a greatly unified development experience.
-
-For (sub)systems receiving very frequent writes, Spīve may not be particularly easy to use and scale out of the box — good old <abbr title="key-value">KV</abbr> stores, <abbr title="Relational Database Management System">RDBMS</abbr>es, or specialized graph databases may be the way to go, unless you are looking at Spīve exactly as a suitable control plane to roll your own custom in-memory data structures and indexes in. For transporting large files such as video and multimedia, Spīve events are not your first choice either — consider using an off-the-shelf object store resp. <abbr title="Content Delivery Network">CDN</abbr>, and just managing file metadata in Spīve.
-
-On a scale from "a highly optimized query engine for detecting near-Earth asteroids on a specialized astronomy mainframe" to "a Jenga tower which we keep tweaking to ship features our users value", quite a lot of software systems fall in the latter group — custom, smallish and business critical systems. This "long, fat tail" tends to exhibit significant engineering overhead and accidental complexity. Seeking to remedy this, Spīve platform is adamant to provide sensible default behaviors, readily trades off processor cycles in favor of reducing human toil, tightens the development feedback loop, and speeds up recovery from eventual incidents.
-
-Many Big Data problems can just as well benefit from event-sourcing model, especially if the problem is [embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel). In any case, Spīve is not a blob store, nor yet another Big Data analytics engine with faster queries or anything of that sort. Spīve API makes different tradeoffs than those familiar to Beam or Hadoop users:
+To look at Spīve as yet another streaming data analysis engine, would be misleading. Spīve does act as a framework to handle large amounts of data (streams can be seen as large datasets consisting of events) in parallel, but the API makes different tradeoffs than those commonplace in Beam or Hadoop ecosystems:
 
 - Serializability of [event handler](API.md#Event_handlers) code to transfer it to distributed workers is not required — on the contrary, the application code (image, resp. jar) is deployed and executed as-built, usually on a set of virtual machine instances.
 - Control of per-instance in-memory state using the native constructs of the programming language is facilitated, avoiding superfluous indirection.
-- Event handling logic is designed to be single threaded: among simplicity benefits, it should be particularly noted that stacktraces in case of errors tend to be informative and pointing to the relevant places in business logic. Meanwhile, the necessary parallelism for maintaining acceptable performance is achieved via partitioning of streams, resp. by sharding of processes into multiple instances.
-- Complementing synchronous event handling, Spīve sports [workloads](API.md#Workloads) that run concurrently with event handlers. Workloads are perfectly suitable for serving requests off the in-memory state with low latency and high availability, among other things.
+- Event handling logic is designed to be single threaded: among simplicity benefits, it should be particularly noted that stacktraces in case of errors tend to be informative and pointing to the relevant places in business logic. Meanwhile, the necessary parallelism for performance is achieved via partitioning of streams, resp. by sharding of processes into multiple instances.
+- Complementing synchronous event handling, Spīve sports asynchronous [workloads](API.md#Workloads) that run concurrently with event handlers. Workloads are perfectly suitable for serving requests off the in-memory state with low latency and high availability, among other things.
 
 Spīve ultimately provides safeguards so that out-of-order events are never observed by the business logic, which is of great help to easily reason about the correctness of application behavior. This needs to be reconciled with the real world circumstances where information may happen to arrive out-of-order though. Instead of exposing late arrival of events as a complicating condition in business logic, Spīve chooses to primarily address this problem through first class versioning of streams, resp. processes, along with convenience automation and orchestration to migrate the world (the dependency graph downstream of the corrupt stream, and their hitherto created side effects) to a corrected version of the event order. (Cf. n-temporal models, backdating.) This comes with recomputation costs that may be formidable yet feasible, a tradeoff for overall productivity gain.
 
 Depending on how suitable your application is for the event-sourcing paradigm, Spīve provides predictably low overhead; "you don't pay for what you don't use".
 
 Last but not least, on the flipside of Spīve's conceptual simplicity lies its ubiquity. Wide variety of supported types of event stores, and adaptation into diverse execution environments allow Spīve to prove itself early, and use your cloud or on-premise resources efficiently as your appetite grows.
-
-## Usage
-
-(TODO hello world example, development flow, operations flow)
-
-See [API reference](API.md).
 
 ## Contributing
 
@@ -102,6 +100,12 @@ Backend and application examples are currently developed as a Maven project usin
     mvnd clean verify
 
 Frontend uses Qwik, D3 and Material UI. See the respective [README.md](../app/src/main/qwik/README.md) file for instructions.
+
+A basic "walking skeleton" can be launched in a `docker compose` environment:
+
+    ./tools/dev-0/start.sh
+
+(TODO screenshots and more detail on development flow)
 
 ### Conventions and opinions
 
