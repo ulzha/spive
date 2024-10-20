@@ -66,6 +66,7 @@ public interface CliccTraccInstance {
     //    }
 
     public static void main(final Umbilical umbilical, final String... args) throws Exception {
+      // TODO round to millis to be less spammy, toggle on full precision per app if really needed?
       final Supplier<Instant> wallClockTime = Instant::now;
       String logExitStatus = "nominally";
 

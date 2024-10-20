@@ -107,6 +107,10 @@ A basic "walking skeleton" can be launched in a `docker compose` environment:
 
 (TODO screenshots and more detail on development flow)
 
+Code generation when .st templates have been updated:
+
+    ./code-gen/run.sh
+
 ### Conventions and opinions
 
 (TODO code, architecture, UX conventions and opinions)
