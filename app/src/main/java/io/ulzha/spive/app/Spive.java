@@ -31,7 +31,6 @@ import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
 import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
 import io.ulzha.spive.util.InterruptableSchedulable;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -218,7 +217,7 @@ public class Spive implements SpiveInstance {
         new Process.Instance(
             event.instanceId(),
             process,
-            URI.create(event.runnerUrl()).resolve("/" + event.instanceId()));
+            runner.umbilicalUri(event.instanceId(), event.runnerUrl()));
     process.instances.add(newInstance);
     // final Process.Shard shard = somehow lookup shard
     // process.shards.get(shard).add(newInstance);

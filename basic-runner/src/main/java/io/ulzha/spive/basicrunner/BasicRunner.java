@@ -15,8 +15,6 @@ import io.ulzha.spive.lib.HandledException;
 import io.ulzha.spive.lib.OpaqueException;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -158,11 +156,7 @@ public final class BasicRunner {
       // TODO not start arbitrarily many on a single machine
       thread.start();
 
-      // TODO with deterministic umbilicalUri
-      return Http.response(
-          StatusCode.ACCEPTED,
-          "http://somethingsomething/api/v0/thread_groups/%s/heartbeat"
-              .formatted(URLEncoder.encode(name, StandardCharsets.UTF_8)));
+      return Http.response(StatusCode.ACCEPTED);
     } else {
       // already exists
       return Http.response(StatusCode.CONFLICT);

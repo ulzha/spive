@@ -12,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +70,7 @@ public class BasicRunnerGateway extends Gateway {
               .timeout(Duration.ofSeconds(5))
               .POST(requestBody)
               .build();
-      final HttpResponse<String> httpResponse = sendRetrying(httpRequest);
-      // TODO return and assert deterministic umbilicalUri?
-      LOG.info("RunThreadGroupResponse: " + httpResponse.body());
+      sendRetrying(httpRequest);
     } catch (InterruptedException e) {
       // FIXME probably need to sprinkle accept() methods with `throws InterruptedException`
       Thread.currentThread().interrupt();
@@ -113,5 +112,12 @@ public class BasicRunnerGateway extends Gateway {
         Thread.sleep(1000);
       }
     } // FIXME retry forever unless permanent
+  }
+
+  // Must be deterministic and known here? Or perhaps may be ephemeral state and come from runner?
+  // Two replicas potentially polling different URLs for the same instance would be confusing at the
+  // very least
+  public URI umbilicalUri(UUID instanceId, String runnerUrl) {
+    return URI.create(runnerUrl.replaceAll("/?$", "/thread_groups/") + instanceId + "/");
   }
 }

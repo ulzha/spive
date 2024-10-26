@@ -21,7 +21,7 @@ public class BasicRunnerClient {
   }
 
   public GetThreadGroupHeartbeatResponse getHeartbeat() throws InterruptedException {
-    final HttpRequest request = HttpRequest.newBuilder().uri(uri).build();
+    final HttpRequest request = HttpRequest.newBuilder().uri(uri.resolve("heartbeat")).build();
     try {
       final HttpResponse<String> response =
           client.send(request, HttpResponse.BodyHandlers.ofString());
