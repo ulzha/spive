@@ -2,10 +2,17 @@ package io.ulzha.spive.app.model.agg;
 
 import io.ulzha.spive.app.events.InstanceIopw;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Timeline {
+  public Timeline() {
+    for (Scale scale : Scale.values()) {
+      tiles.put(scale, new TreeMap<>());
+    }
+  }
+
   public enum Scale {
     SECOND,
     MINUTE,
@@ -43,7 +50,7 @@ public class Timeline {
       // to emit; maps to wall clock time and not really to event time
       ) {}
 
-  public Map<Scale, TreeMap<Instant, Tile>> tiles;
+  public Map<Scale, TreeMap<Instant, Tile>> tiles = new HashMap<>();
 
   public Instant getMinuteEnd() {
     return getEnd(Scale.MINUTE);

@@ -112,6 +112,7 @@ public class Spive implements SpiveInstance {
   @Override
   public void accept(final InstanceIopw event) {
     Process.Instance instance = platform.getInstanceById(event.instanceId());
+    instance.timeline.update(event);
   }
 
   @Override

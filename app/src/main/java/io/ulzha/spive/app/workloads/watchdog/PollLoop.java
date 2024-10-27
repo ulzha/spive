@@ -107,8 +107,10 @@ class PollLoop {
       if (currEnd != null) {
         return currEnd;
       }
-      return process.startTime.instant;
+      if (process.startTime != null) {
+        return process.startTime.instant;
+      }
     }
-    return Instant.now(); // doesn't matter, instance has been deleted
+    return null;
   }
 }

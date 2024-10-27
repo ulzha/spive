@@ -75,7 +75,10 @@ public class Process {
   public List<String> availabilityZones;
 
   public Set<Stream> inputStreams = new HashSet<>();
-  public EventTime startTime; // same for all the input streams
+  // Same for all the input streams. Also restricts output events to be this or later.
+  // Can be null, whereby no constraints are placed on output event times - spontaneous events can
+  // occur before start times of input streams, also in PAST.
+  public EventTime startTime; // = EventTime.INFINITE_PAST?
   public Set<Workload> workloads = new HashSet<>();
   public Set<Stream> outputStreams = new HashSet<>();
   public Set<Gateway> gateways = new HashSet<>();

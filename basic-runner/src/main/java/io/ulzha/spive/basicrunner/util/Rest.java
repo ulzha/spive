@@ -111,6 +111,9 @@ public class Rest {
   public static String queryParam(HttpExchange exchange, String name) {
     final Map<String, String> queryParams = new HashMap<String, String>();
     final String query = exchange.getRequestURI().getQuery();
+    if (query == null) {
+      return null;
+    }
     final String[] pairs = query.split("&");
     for (String pair : pairs) {
       int idx = pair.indexOf("=");

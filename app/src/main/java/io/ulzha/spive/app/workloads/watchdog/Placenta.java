@@ -44,8 +44,11 @@ public class Placenta implements UmbilicalReader {
     // TODO validate sequences again?
 
     for (ProgressUpdatesList list : response.sample()) {
-      accumulatedHeartbeat.put(list.eventTime(), list.progressUpdates());
+      if (list.eventTime() != null) {
+        accumulatedHeartbeat.put(list.eventTime(), list.progressUpdates());
+      }
       // FIXME accumulate updates instead of replacing
+      // what about unknownEventTimeSample... Simplify silly indirection away and commonize types?
     }
 
     // maybe a bit silly indirection; keeping HeartbeatSnapshot class (common module as such) clean

@@ -5,6 +5,7 @@ import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.HistoryBuffer.Iopw;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
+import java.time.Instant;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -19,7 +20,9 @@ public class FakePlacenta implements UmbilicalReader {
   @Override
   public HeartbeatSnapshot updateHeartbeat() {
     for (var list : snapshot.sample()) {
-      accumulatedHeartbeat.put(list.eventTime(), list.progressUpdates());
+      if (list.eventTime() != null) {
+        accumulatedHeartbeat.put(list.eventTime(), list.progressUpdates());
+      }
     }
     return snapshot;
   }
@@ -35,7 +38,7 @@ public class FakePlacenta implements UmbilicalReader {
   }
 
   @Override
-  public List<Iopw> updateIopws() throws InterruptedException {
+  public List<Iopw> updateIopws(Instant start) throws InterruptedException {
     // TODO
     return List.of();
   }

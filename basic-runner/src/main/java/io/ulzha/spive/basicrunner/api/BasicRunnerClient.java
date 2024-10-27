@@ -1,7 +1,7 @@
 package io.ulzha.spive.basicrunner.api;
 
+import io.ulzha.spive.basicrunner.util.Json;
 import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,7 +11,7 @@ import java.time.Instant;
 
 // BasicRunnerObserver? Package together or otherwise clarify relationship with BasicRunnerGateway?
 public class BasicRunnerClient {
-  private static final Jsonb jsonb = JsonbBuilder.create();
+  private static final Jsonb jsonb = Json.create();
   private final HttpClient client;
   private final URI uri;
 

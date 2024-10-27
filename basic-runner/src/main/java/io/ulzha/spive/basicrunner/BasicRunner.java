@@ -278,7 +278,8 @@ public final class BasicRunner {
    */
   private static Http.Response<GetThreadGroupIopwsResponse> getThreadGroupIopws(
       HttpExchange exchange) {
-    final Instant start = Instant.parse(Rest.queryParam(exchange, "start"));
+    final String startParam = Rest.queryParam(exchange, "start");
+    final Instant start = (startParam == null ? null : Instant.parse(startParam));
     final ThreadGroupRecord record = RECORDS.get(Rest.pathParam(exchange, "name"));
 
     if (record == null) {

@@ -60,7 +60,7 @@ public class HistoryBuffer {
 
     for (var entry : iopws) {
       for (var iopw : entry) {
-        if (iopw.windowEnd().compareTo(start) > 0) {
+        if (start == null || iopw.windowEnd().compareTo(start) > 0) {
           if (end == null) {
             end = iopw.windowEnd().truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS);
           }
