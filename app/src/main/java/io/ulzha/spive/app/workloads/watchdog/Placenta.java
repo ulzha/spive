@@ -32,7 +32,6 @@ public class Placenta implements UmbilicalReader {
   private final BasicRunnerClient client;
   // TODO cap
   private TreeMap<EventTime, List<ProgressUpdate>> accumulatedHeartbeat = new TreeMap<>();
-  private Instant lastIopwEnd = null;
 
   public Placenta(final HttpClient httpClient, final Process.Instance instance) {
     this.client = new BasicRunnerClient(httpClient, instance.umbilicalUri);
@@ -74,12 +73,8 @@ public class Placenta implements UmbilicalReader {
   //  }
 
   @Override
-  public List<HistoryBuffer.Iopw> updateIopws() throws InterruptedException {
-    final GetThreadGroupIopwsResponse response = client.getIopws(lastIopwEnd);
-    final List<HistoryBuffer.Iopw> iopws = response.iopws();
-    if (iopws.size() > 0) {
-      lastIopwEnd = iopws.get(iopws.size() - 1).windowEnd();
-    }
+  public List<HistoryBuffer.Iopw> updateIopws(Instant start) throws InterruptedException {
+    final GetThreadGroupIopwsResponse response = client.getIopws(start);
     return response.iopws();
   }
 }

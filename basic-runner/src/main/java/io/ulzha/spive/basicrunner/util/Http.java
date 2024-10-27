@@ -80,6 +80,7 @@ public class Http {
 
       if (e != null) {
         LOG.error("Internal server error", e);
+        // TODO try out how the server respawns threads
         throw e;
       }
     };

@@ -82,7 +82,7 @@ class PollLoop {
     // only, via frontend?
 
     // TODO skimp on this and prioritize just progress and status change when in distress
-    for (var iopw : placenta.updateIopws()) {
+    for (var iopw : placenta.updateIopws(selectTimelineIopwToPoll(instance))) {
       output.emitIf(
           () -> instance.process != null,
           new InstanceIopw(
@@ -92,5 +92,23 @@ class PollLoop {
               iopw.nInputEvents(),
               iopw.nOutputEvents()));
     }
+  }
+
+  /**
+   * Avoids refetching timeline iopws; also decides when to skip forward instead of a backfill of
+   * undue length.
+   *
+   * <p>TODO takes into account where errors and warnings are seen in heartbeat.
+   */
+  private Instant selectTimelineIopwToPoll(final Process.Instance instance) {
+    final Process process = instance.process;
+    if (process != null) {
+      final Instant currEnd = instance.timeline.getMinuteEnd();
+      if (currEnd != null) {
+        return currEnd;
+      }
+      return process.startTime.instant;
+    }
+    return Instant.now(); // doesn't matter, instance has been deleted
   }
 }

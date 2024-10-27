@@ -153,7 +153,7 @@ public class Process {
 
     public volatile InstanceStatus status;
 
-    // The link to our control plane BasicRunnerGateway which launches and tracks this instance.
+    // The link used by control plane (runner gateway) to track the launched instance.
     public URI umbilicalUri;
 
     // aggregate precomputed for frontend visualization purposes

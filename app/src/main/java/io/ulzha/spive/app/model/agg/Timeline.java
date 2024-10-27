@@ -1,7 +1,9 @@
 package io.ulzha.spive.app.model.agg;
 
+import io.ulzha.spive.app.events.InstanceIopw;
 import java.time.Instant;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class Timeline {
   public enum Scale {
@@ -28,22 +30,46 @@ public class Timeline {
       // Compaction effects... Visible when?
       Instant windowStart, // inclusive
       Instant windowEnd, // exclusive
-      int nInputEventsUnknown, // > 0 would mean blurred
-      int nInputEventsIncoming,
+      long nInputEventsUnknown, // > 0 would mean blurred
+      long nInputEventsIncoming,
       // "events in progress" blinking would be just a front-end approximation, rendered from the
       // difference between newest and preceding snapshot of a tile
 
-      int nInputEventsOk,
-      int nInputEventsWarning,
-      int nInputEventsError,
-      int nOutputEvents
+      long nInputEventsOk,
+      long nInputEventsWarning,
+      long nInputEventsError,
+      long nOutputEvents
       // unsure how output gateway errors would be represented when workloads spontaneously attempt
       // to emit; maps to wall clock time and not really to event time
       ) {}
 
-  public Map<Scale, Map<Instant, Tile>> tiles;
+  public Map<Scale, TreeMap<Instant, Tile>> tiles;
 
-  // public void update(InstanceIopw iopw) {
-  //   Instant windowStart =
-  // }
+  public Instant getMinuteEnd() {
+    return getEnd(Scale.MINUTE);
+  }
+
+  public Instant getEnd(final Scale scale) {
+    if (tiles.get(scale).isEmpty()) {
+      return null;
+    }
+    return tiles.get(scale).lastEntry().getValue().windowEnd();
+  }
+
+  public void update(final InstanceIopw iopw) {
+    // TODO update - aggregate across multiple input streams
+    tiles
+        .get(Scale.MINUTE)
+        .put(
+            iopw.windowStart(),
+            new Tile(
+                iopw.windowStart(),
+                iopw.windowEnd(),
+                0,
+                0,
+                0,
+                0,
+                iopw.nInputEvents(),
+                iopw.nOutputEvents()));
+  }
 }

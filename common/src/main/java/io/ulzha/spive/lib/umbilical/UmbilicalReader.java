@@ -11,7 +11,7 @@ public interface UmbilicalReader {
 
   EventTime getNextEventTime(EventTime t);
 
-  List<HistoryBuffer.Iopw> updateIopws() throws InterruptedException;
+  List<HistoryBuffer.Iopw> updateIopws(Instant start) throws InterruptedException;
 
   // should refactor these away to use explicit indicators structure (typed and consistent) from
   // runner. Pretending we lose it and re-interpreting the sample is premature/pointless

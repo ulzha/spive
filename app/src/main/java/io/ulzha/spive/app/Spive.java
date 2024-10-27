@@ -110,7 +110,9 @@ public class Spive implements SpiveInstance {
   }
 
   @Override
-  public void accept(final InstanceIopw event) {}
+  public void accept(final InstanceIopw event) {
+    Process.Instance instance = platform.getInstanceById(event.instanceId());
+  }
 
   @Override
   public void accept(final InstanceProgress event) {
@@ -246,8 +248,8 @@ public class Spive implements SpiveInstance {
   public void accept(final DeleteInstance event) {
     Process.Instance instance = platform.instancesById.remove(event.instanceId());
     instance.process.instances.remove(instance);
-    instance.process = null;
-    // runner.stopInstance(...);
+    instance.process = null; // kind of stupid that this is the soft deletion flag
+    // TODO runner.stopInstance(...);
     // for idempotency, the runner perhaps can enumerate all instances it has running, and count
     // absence as success
   }
