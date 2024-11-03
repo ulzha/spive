@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class CliccTracc implements CliccTraccInstance {
   private static final Logger LOG = LoggerFactory.getLogger(CliccTracc.class);
   private final CliccTraccOutputGateway output;
-  private Instant lastClicc;
+  private volatile Instant lastClicc;
 
   public CliccTracc(CliccTraccOutputGateway output) {
     this.output = output;
@@ -31,46 +31,56 @@ public class CliccTracc implements CliccTraccInstance {
   }
 
   public class Metronome implements Runnable {
-    // ephemeral state in workloads is ok, so long as we are ok with it getting emptied on redeploy
-    // TODO must clicc the first one ahead of time, to count as durable against adversary redeploy?
-    // Or a special "started" event?
-    private Instant start;
-
-    private Instant nextClicc(Instant lastClicc, Instant start) {
-      if (lastClicc == null) {
-        return start.truncatedTo(ChronoUnit.HOURS).plus(1, ChronoUnit.HOURS);
-      } else {
-        return lastClicc.plus(1, ChronoUnit.HOURS);
-      }
+    private Instant initClicc(Instant x) {
+      return x.truncatedTo(ChronoUnit.HOURS);
     }
 
-    private void clicc(Instant end) {
-      while (output.emitIf(
-          () -> nextClicc(lastClicc, start).isBefore(end),
-          new Clicc(),
-          new EventTime(nextClicc(lastClicc, start))))
-        ;
+    private Instant nextClicc(Instant prevClicc) {
+      return prevClicc.plus(1, ChronoUnit.HOURS);
+    }
+
+    private boolean isImpendingClicc(Instant tentative) {
+      // tentative may be many hours ahead of the last event in the log - rule out such adversity
+      return lastClicc == null || tentative == nextClicc(lastClicc);
+    }
+
+    private Instant cliccUntil(Instant end) {
+      Instant tentative = (lastClicc == null ? initClicc(end) : nextClicc(lastClicc));
+      while (tentative.isBefore(end)) {
+        final EventTime cliccTime = new EventTime(tentative);
+        LOG.info(
+            "Emit "
+                + cliccTime
+                + ": "
+                + output.emitIf(() -> isImpendingClicc(cliccTime.instant), new Clicc(), cliccTime));
+        // NB we don't know how much closer we are now putting tentative to end
+        // (it could be even backward in the first iteration, the first emitIf coming across
+        // existing past events. Even if Metronome is only started after catching up with
+        // preexisting events, on clean process start there's zero of them)
+        tentative = nextClicc(lastClicc == null ? tentative : lastClicc);
+      }
+      return tentative;
     }
 
     @Override
     public void run() {
       try {
-        start = Instant.now();
         while (true) {
           // TODO pluggable Clock and pluggable sleep - for testing and offset/scaled time. Can't
           // seem to google any off-the-shelf "emulated time" library... emulated.Thread.sleep
           // collaboration may be affected by emitting eventTimes arbitrarily far removed from any
           // predictable clock
           Instant now = Instant.now();
-          Instant impending = now.truncatedTo(ChronoUnit.HOURS).plus(1, ChronoUnit.HOURS);
-          LOG.info("Cliccing: " + impending);
-          clicc(impending);
+          LOG.info("Cliccing up to: " + now);
+          Instant impending = cliccUntil(now);
           long sleepMs = impending.toEpochMilli() - now.toEpochMilli();
           LOG.info("Sleeping for: " + sleepMs);
           Thread.sleep(sleepMs);
+          // NB we don't know how long we've slept
+          // (we generally don't know how much slowdown/hanging a given replica experiences, wrt
+          // healthy ones that may be concurrently cliccing forward)
         }
       } catch (Exception e) {
-        LOG.error("Definitely not here?", e);
         throw new RuntimeException(e);
       }
     }
