@@ -28,6 +28,7 @@ public class BasicRunnerClient {
       if (response.statusCode() != 200) {
         throw new RuntimeException("HTTP " + response.statusCode() + ": " + response.body());
       }
+      System.out.println("Very good heartbeat: " + response.body());
       return jsonb.fromJson(response.body(), GetThreadGroupHeartbeatResponse.class);
     } catch (IOException e) {
       throw new RuntimeException(e);

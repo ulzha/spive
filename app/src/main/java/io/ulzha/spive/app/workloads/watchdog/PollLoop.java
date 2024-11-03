@@ -10,6 +10,7 @@ import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventTime;
+import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.lib.umbilical.HeartbeatSnapshot;
 import io.ulzha.spive.lib.umbilical.UmbilicalReader;
 import java.time.Instant;
@@ -50,14 +51,15 @@ class PollLoop {
    * fine here, we don't need redundant InstanceProgress or InstanceStatusChange.
    */
   public void pollOnce() throws InterruptedException {
-    assert (instance.id != null);
-    assert (instance.timeoutMillis > 0);
-    assert (instance.checkpoint != null);
-    assert (instance.status != null);
+    if (instance.id == null) throw new InternalException("Precondition failed");
+    if (instance.timeoutMillis <= 0) throw new InternalException("Precondition failed");
+    if (instance.checkpoint == null) throw new InternalException("Precondition failed");
+    if (instance.status == null) throw new InternalException("Precondition failed");
 
     HeartbeatSnapshot snapshot = placenta.updateHeartbeat();
 
     final EventTime checkpoint = snapshot.checkpoint();
+    System.out.println("Instance " + instance.id + " checkpoint: " + checkpoint);
     output.emitIf(
         () ->
             instance.process != null

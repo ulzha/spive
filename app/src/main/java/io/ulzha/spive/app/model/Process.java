@@ -152,9 +152,9 @@ public class Process {
     public volatile int timeoutMillis;
 
     // Latest known successfully handled event time
-    public volatile EventTime checkpoint;
+    public volatile EventTime checkpoint = EventTime.INFINITE_PAST;
 
-    public volatile InstanceStatus status;
+    public volatile InstanceStatus status = InstanceStatus.NOMINAL;
 
     // The link used by control plane (runner gateway) to track the launched instance.
     public URI umbilicalUri;

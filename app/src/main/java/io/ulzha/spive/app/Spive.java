@@ -30,6 +30,7 @@ import io.ulzha.spive.app.workloads.watchdog.WatchLoop;
 import io.ulzha.spive.basicrunner.api.BasicRunnerGateway;
 import io.ulzha.spive.basicrunner.api.RunThreadGroupRequest;
 import io.ulzha.spive.basicrunner.api.ThreadGroupDescriptor;
+import io.ulzha.spive.lib.InternalException;
 import io.ulzha.spive.util.InterruptableSchedulable;
 import java.util.HashMap;
 import java.util.List;
@@ -136,7 +137,11 @@ public class Spive implements SpiveInstance {
   @Override
   public void accept(final CreateStream event) {
     // System.out.println("Accepting " + event);
-    assert ("local".equals(event.eventStore())); // assert it's a class that exists?
+    if (!List.of(
+            "io.ulzha.spive.core.BigtableEventStore",
+            "io.ulzha.spive.core.LocalFileSystemEventStore")
+        .contains(event.eventStore().split(";")[0])) throw new InternalException("Not implemented");
+    // assert it's a class that exists?
     // TODO ensure (upon emitting) that name-version and id are not duplicated
     final Stream stream = new Stream(event.name(), event.streamId());
     platform.streamsById.put(stream.id, stream);

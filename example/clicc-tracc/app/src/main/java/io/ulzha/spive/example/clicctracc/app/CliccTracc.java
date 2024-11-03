@@ -32,11 +32,13 @@ public class CliccTracc implements CliccTraccInstance {
 
   public class Metronome implements Runnable {
     private Instant initClicc(Instant x) {
-      return x.truncatedTo(ChronoUnit.HOURS);
+      // return x.truncatedTo(ChronoUnit.HOURS);
+      return Instant.ofEpochMilli(x.toEpochMilli() / 1000 / 2 * 2 * 1000);
     }
 
     private Instant nextClicc(Instant prevClicc) {
-      return prevClicc.plus(1, ChronoUnit.HOURS);
+      // return prevClicc.plus(1, ChronoUnit.HOURS);
+      return prevClicc.plus(2, ChronoUnit.SECONDS);
     }
 
     private boolean isImpendingClicc(Instant tentative) {
@@ -53,6 +55,7 @@ public class CliccTracc implements CliccTraccInstance {
                 + cliccTime
                 + ": "
                 + output.emitIf(() -> isImpendingClicc(cliccTime.instant), new Clicc(), cliccTime));
+        // NB lastClicc can still be null, it's part of state, only updated via event handlers
         // NB we don't know how much closer we are now putting tentative to end
         // (it could be even backward in the first iteration, the first emitIf coming across
         // existing past events. Even if Metronome is only started after catching up with
