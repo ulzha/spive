@@ -37,8 +37,14 @@ public class Timeline {
       // Compaction effects... Visible when?
       Instant windowStart, // inclusive
       Instant windowEnd, // exclusive
-      long nInputEventsUnknown, // > 0 would mean blurred
+
+      // > 0 would mean blurred... For any app with sporadic workloads, the current minute is by
+      // definition unknown and constantly has blur?
+      long nInputEventsUnknown,
+
+      // all input streams, non-owned and owned (own output that gets read and handled)
       long nInputEventsIncoming,
+
       // "events in progress" blinking would be just a front-end approximation, rendered from the
       // difference between newest and preceding snapshot of a tile
 
@@ -78,5 +84,6 @@ public class Timeline {
                 0,
                 iopw.nInputEvents(),
                 iopw.nOutputEvents()));
+    System.out.println("Minutely scale updated with " + iopw);
   }
 }

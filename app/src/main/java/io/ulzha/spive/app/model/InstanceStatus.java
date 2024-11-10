@@ -12,7 +12,7 @@ public enum InstanceStatus {
   // already taken longer than the allotted handlerTimeout.
   // This can recover to NOMINAL if the handler eventually succeeds. Nevertheless Spive will spawn
   // a new instance, ready to replace this one if the slowness goes away in the newly spawned one.
-  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK? DELINQUENT?)
+  TIMEOUT, // (WARNING? MANY_WARNINGS? SETBACK? DELINQUENT? STALL?)
   // This currently would only detect handler timeout if heartbeat was detected on handler start.
   // TODO track log sizes and issue TIMEOUT if an instance takes too long to even start handling.
 
@@ -26,6 +26,10 @@ public enum InstanceStatus {
   // Will never recover to NOMINAL. Spive will spawn a new instance and replace this one if the
   // errors go away in the newly spawned one.
   ERROR,
+  // But how to disown?... Many aggregations, all point-in-time operations become
+  // meaningless/impossible in presence of stuck partitions.
+  // How to call it when the app logic is known to be free of immediate consequential events and
+  // free of aggregations?
 
   // The end of a closed input stream was reached, or a workload exited normally.
   // Spive will shut the instance down (and eventually the process, if all instances exit).

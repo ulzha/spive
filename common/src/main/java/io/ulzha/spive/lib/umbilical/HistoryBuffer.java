@@ -17,7 +17,7 @@ public class HistoryBuffer {
   private static class IopwCounter {
     Instant windowStart;
     Instant windowEnd;
-    long nInputEvents;
+    long nInputEvents; // TODO ok, stall, error
     long nOutputEvents;
   }
 

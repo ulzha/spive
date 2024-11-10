@@ -287,6 +287,7 @@ public class Umbilical {
       synchronized (heartbeat) {
         list.add(update);
         heartbeat.nInputEventsTotal++;
+        buffer.aggregateIopw(eventTime.instant, 1, 0);
       }
     } else {
       list.add(update);
