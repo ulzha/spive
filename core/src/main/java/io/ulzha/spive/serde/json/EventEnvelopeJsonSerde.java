@@ -1,4 +1,4 @@
-package io.ulzha.spive.util;
+package io.ulzha.spive.serde.json;
 
 import static jakarta.json.Json.createParser;
 
@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.UUID;
 
-public class Json {
+public class EventEnvelopeJsonSerde {
   public static String serializeEventMetadata(EventEnvelope event) {
     return "{"
         + (event.id() == null ? "" : "\"id\":\"" + event.id().toString() + "\",")

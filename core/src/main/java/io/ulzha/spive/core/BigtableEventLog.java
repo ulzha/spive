@@ -13,7 +13,7 @@ import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InternalException;
-import io.ulzha.spive.util.Json;
+import io.ulzha.spive.serde.json.EventEnvelopeJsonSerde;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +87,7 @@ public final class BigtableEventLog implements EventLog {
     }
 
     final String newRowKey = toRowKey(prevTime);
-    final String metadataJson = Json.serializeEventMetadata(event);
+    final String metadataJson = EventEnvelopeJsonSerde.serializeEventMetadata(event);
 
     // sets cell only if it does not exist
     ConditionalRowMutation mutation =
@@ -171,7 +171,8 @@ public final class BigtableEventLog implements EventLog {
 
       if (metadataJson.length() != 0) {
         EventEnvelope event =
-            Json.deserializeEventMetadata(metadataJson, cells.get(1).getValue().toStringUtf8());
+            EventEnvelopeJsonSerde.deserializeEventMetadata(
+                metadataJson, cells.get(1).getValue().toStringUtf8());
         return event;
       } else {
         return null;

@@ -11,8 +11,6 @@ import jakarta.json.bind.JsonbBuilder;
  * schemas/libraries are used for serialization and deserialization of a given Stream. Also removes
  * serialization concerns from Process code.
  *
- * <p>(TODO learn lessons from Kafka Serde<T> or something?)
- *
  * <p>(TODO should invalid inputs be precluded at deploy time? E.g. a Process expecting non-null
  * should not be deployable to consume a Stream that can contain nulls there? Or just require the
  * Types to be matching between Stream and Process and non-evolvable during Stream's lifetime?)
@@ -30,11 +28,26 @@ public class Type {
   //  Object programmingLanguageFormat; // language, datatype, semantics (validation contract?)
   public final Class<?> programmingLanguageFormat;
 
-  private static final Jsonb jsonb = JsonbBuilder.create();
+  private final Jsonb jsonb;
 
   private Type(String name, Class<?> programmingLanguageFormat) {
     this.name = name;
     this.programmingLanguageFormat = programmingLanguageFormat;
+    // An implementation, such as EventTimeJsonbSerde, should be packaged with spive.app or
+    // spive.lib somehow... Now we leech it off basic-runner. FIXME
+    if (name.equals("io.ulzha.spive.app.events.InstanceProgress")) {
+      try {
+        this.jsonb =
+            (Jsonb)
+                Class.forName("io.ulzha.spive.basicrunner.serde.json.BasicRunnerJsonbSerde")
+                    .getMethod("create")
+                    .invoke(null);
+      } catch (Exception e) {
+        throw new InternalException("Type " + name + " lacks implementation", e);
+      }
+    } else {
+      this.jsonb = JsonbBuilder.create();
+    }
   }
 
   /**

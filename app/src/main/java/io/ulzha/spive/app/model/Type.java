@@ -16,4 +16,10 @@ public class Type {
   UUID typeId;
   String name;
   @Nullable Map<String, String> fieldTypeTags;
+
+  public Type(UUID typeId, String name, @Nullable Map<String, String> fieldTypeTags) {
+    this.typeId = typeId;
+    this.name = name;
+    this.fieldTypeTags = fieldTypeTags;
+  }
 }

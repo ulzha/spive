@@ -3,6 +3,7 @@ package io.ulzha.spive.basicrunner.util;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import io.ulzha.spive.basicrunner.serde.json.BasicRunnerJsonbSerde;
 import jakarta.annotation.Nullable;
 import jakarta.json.bind.Jsonb;
 import java.io.IOException;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Http {
   private static final Logger LOG = LoggerFactory.getLogger(Http.class);
-  private static final Jsonb JSONB = Json.create();
+  private static final Jsonb JSONB = BasicRunnerJsonbSerde.create();
 
   private enum ExchangeAttribute {
     HTTP_START_TIME,

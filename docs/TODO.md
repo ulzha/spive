@@ -21,8 +21,10 @@
 - [ ] Examples of tests (event definition language, named snapshots as JUnit rules, capturers, matchers... git inspired from d3) - some examples of likely and non-obvious bugs included
 - [ ] Example with best-effort graceful shutdown for workloads and gateways (just to clarify the extent of non-guarantee)
 - [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by an hourly batch scan?) Debouncing perhaps useful in some cases?
+- [ ] An example application retrieving events for history display as a user-facing feature
 - [ ] Example advanced distributed data structure implementation (real time toplist?)
-- [ ] Visualize workload logs (and metrics) somehow in between events as well... or just link to Stackdriver? Champion [golden signals](https://sre.google/sre-book/monitoring-distributed-systems/), aligned to timeline (with its warning and error hues)... or to the deploy log (because that's real-ish time, whereas applications may be far from it)? Embedded from 3rd party sources like that? Should have a way to view logs sorted by event time? Example with Open Telemetry and some of its supporting receivers? Grafana Mimir
+- [ ] Visualize workload logs somehow in between events as well... or just link to Stackdriver? Champion [golden signals](https://sre.google/sre-book/monitoring-distributed-systems/), aligned to timeline (with its warning and error hues)... or to the deploy log (because that's real-ish time, whereas applications may be far from it)? Should have a way to view logs sorted by event time?
+- [ ] Wall clock time view for metrics, in- or excluding instances that are in catchup... Embedded from 3rd party sources like that? Example with Open Telemetry, Grafana Mimir
 - [ ] Example interactive application, web page updating itself until you see your writes (Also where does the fanout lie for building one result set from a massively sharded backend? In a sidecar? Or rather, fan-in updates to an index in front, like ElasticSearch, and get away with only single gets from backend?)
 - [ ] Compute checksums and sanity check for nondeterminism (error on replay - alt. warning if tolerated... Of a suppressed kind?)
 - [ ] Compute diffs between streams
@@ -95,6 +97,7 @@
 - [ ] Fluid namespacing, decoupled from view grouping/favoriting (not displayed when unambiguous, trivial adding of a layer, assisted merging)... Coupled with ownership structure?
 - [ ] Seamless rename refactor (trivial to move namespaces when ownership changes? One-commit rename of the application itself?)
 - [ ] CRUDdy application helpers, with a state-keeping model (document model) defined abstractly and code-generated? When consuming multiple input streams, a document model joining them together can also be code-generated? Simplified side effect replay - only send the latest state of the document?
+- [ ] Periodically archivable application helpers, aware that only a limited event history matters? Like in bookkeeping, with montly reporting, or in trading, with a daily cycle.
 - [ ] Stream and event handler design should facilitate rekeying (e.g. `channel` -> `channel+priority` should not cause much code change, but enable queue management, if that's not at odds with the application logic. Same for `something` -> `something+s2cell` - not much code change, but enables geosharding)
 - [ ] Grouping of companion applications which consume a given application's events (a compactor, a generated backup replicator, a generated optimization attempt, etc.) close together with the primary application for UI intuitiveness. (And for risky event visibility, and for cost visibility.)
 

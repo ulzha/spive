@@ -1,4 +1,4 @@
-package io.ulzha.spive.basicrunner.util;
+package io.ulzha.spive.basicrunner.serde.json;
 
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.ProgressUpdate;
@@ -25,7 +25,7 @@ import java.util.List;
  * {"instant":{"nano":0,"epochSecond":1611255601},"warning":null,"error":null}, but rather
  * {"instant":"2021-01-21T19:00:02Z"}.
  */
-public class Json {
+public class BasicRunnerJsonbSerde {
   public static Jsonb create() {
     return JsonbBuilder.create(
         new JsonbConfig()

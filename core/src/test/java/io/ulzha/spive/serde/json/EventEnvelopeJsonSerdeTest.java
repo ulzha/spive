@@ -1,4 +1,4 @@
-package io.ulzha.spive.util;
+package io.ulzha.spive.serde.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-public class JsonTest {
+public class EventEnvelopeJsonSerdeTest {
   @Test
   void testRoundTripEventMetadataWithoutPayload() {
     EventEnvelope event =
@@ -17,10 +17,10 @@ public class JsonTest {
             UUID.fromString("1-3-5-7-9"),
             "pojr:ot.Hercule",
             null);
-    String s = Json.serializeEventMetadata(event);
+    String s = EventEnvelopeJsonSerde.serializeEventMetadata(event);
     assertEquals(
         "{\"id\":\"00000001-0003-0005-0007-000000000009\",\"time\":\"2021-01-21T19:27:04.010Z#2\",\"type\":\"pojr:ot.Hercule\"}",
         s);
-    assertEquals(event, Json.deserializeEventMetadata(s, null));
+    assertEquals(event, EventEnvelopeJsonSerde.deserializeEventMetadata(s, null));
   }
 }

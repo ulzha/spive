@@ -179,21 +179,30 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
 ##### *i. Patch*
 
-  A "patch" upgrade refers to when you deploy a new version of your application merely to fix a performance problem or fix its logic in a fully backward compatible way (e.g., emit improved detected language messages for audios for the future). The names and schemas of your output streams do not change. You have established that the output events that your earlier versions created are still correct as far as your contract with your downstream applications goes, in other words they do not need to be bulk updated or revoked.
+  A "patch" upgrade refers to when you deploy a new version of your application merely to fix a crash, a performance problem, or touch up its logic, in a fully backward compatible way. (E.g., you have a stateless microapplication that consumes an event stream about newly uploaded content, and asynchronously emits detected language events for each new piece uploaded. You have developed better language detection logic for future content, or, say, a third-party language detection provider has changed their URL and you need to migrate to the new one.)
+  * The names and schemas of your output streams do not change.
+  * You have established that the output events that your earlier versions created remain correct, as far as your contract with your downstream applications goes. In other words, they do not need to be bulk updated or revoked.
+  * Note on inputful applications: eventual replay of the new code version, over the preexisting events in its input streams thus far, must yield the same exact output events as the previous version. To satisfy this, a hardcoded condition may be needed, maintaining the old logic and toggling on new logic at a specific event time. (Such conditions are a bit of a code smell. Performing a #minor upgrade might suit better here, with more overhead but with fewer constraints.)
+
+  (Can be a deferred one? Can patch chain be maintained indefinitely, juggling artifact versions behind the scenes? Won't suit stateful apps.)
 
   For this case, Spīve lets you launch the new version of the application with replay from the beginning of its input streams, compare outputs with the previous version to verify whatever aspects you would like, and at a certain point in event time swap the new version's output in place of the original output stream, transparently to downstream applications and without causing a replay in them.
+
+  (Can be different event times by partition group? If a crash is to be fixed with this, then application of the patch at crash event time is desirable; alas, other instances have meanwhile progressed forward... Look into non-instantaneous upgrade, despite the lots of bookkeeping? Or the transient portion can be an edit?)
 
   Operations-wise, a patch upgrade results in the appearance of a new input version in your consumer dashboards, with corresponding color-coding in the UI, which helps them troubleshoot, in case the upgrade does trigger bugs.
 
 ##### *ii. Minor*
 
-  A "minor" upgrade refers to a bug fix, or a logic change, whereby the name and schema stays backward compatible, along with the business contract around your output, but the history of events needs to be overwritten. E.g. there may be buggy events you have to delete as if they never happened, or new/late events that you have to retroactively splice in at the correct points in event time.
+  A "minor" upgrade refers to a bug fix, or a logic change, whereby the name and schema stays backward compatible, along with the business contract around your output, but the history of output events needs to be overwritten. E.g. there may be buggy events you have to delete as if they never happened or produce corrected versions via improved output logic, there may also be new/late events that you have to retroactively splice in at the correct points in event time.
 
   For this case, Spīve lets you spin up the new version of the application with a new version of its output stream, and it will automatically propagate the effects to downstream applications, by creating new instances and replaying from the beginning of the new version. This incurs recomputation cost (which can be estimated) but should incur no downtime or manual work (unless downstream applications have opted out of automated minor version following).
 
   It may sometimes be faster to produce the new output stream from the old one by means of a "migration script" application and afterwards perform a patch upgrade to the intended application logic.
 
-  Operations-wise, a minor upgrade results in the appearance of a new input version in your consumer dashboards, with corresponding color-coding in the UI, which helps them troubleshoot, in case the upgrade does trigger bugs. Caveat regarding [semver](https://semver.org/): a minor upgrade yields an observable change of Stream contents, so operationally a minor upgrade is not necessarily frictionless/backwards compatible for consumers, yet the semantics of those contents are backwards compatible, which is why we name it "minor".
+  Operations-wise, a minor upgrade results in the appearance of a new input version in your consumer dashboards, with corresponding color-coding in the UI, which helps them troubleshoot, in case the upgrade does trigger bugs.
+
+  Caveat regarding [semver](https://semver.org/): a minor upgrade yields an observable change of Stream contents, so operationally a minor upgrade is not necessarily frictionless/backwards compatible for consumers; yet the semantics of those contents must be backwards compatible, which is why we name it "minor".
 
 ##### *iii. Major*
 

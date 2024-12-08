@@ -4,7 +4,7 @@ import io.ulzha.spive.lib.EventEnvelope;
 import io.ulzha.spive.lib.EventLog;
 import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.InternalException;
-import io.ulzha.spive.util.Json;
+import io.ulzha.spive.serde.json.EventEnvelopeJsonSerde;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -59,7 +59,7 @@ public final class LocalFileSystemEventLog implements EventLog {
       }
     }
 
-    return Json.deserializeEventEnvelope(line);
+    return EventEnvelopeJsonSerde.deserializeEventEnvelope(line);
   }
 
   //  LocalFileSystemEventLog position(EventTime newTime) {
@@ -67,7 +67,7 @@ public final class LocalFileSystemEventLog implements EventLog {
 
   private static boolean append(EventEnvelope event, FileChannel channel) throws IOException {
     final Writer writer = Channels.newWriter(channel, StandardCharsets.UTF_8);
-    writer.append(Json.serializeEventEnvelope(event));
+    writer.append(EventEnvelopeJsonSerde.serializeEventEnvelope(event));
     writer.append('\n');
     writer.flush();
     return true;

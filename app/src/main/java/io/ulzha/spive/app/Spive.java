@@ -131,7 +131,7 @@ public class Spive implements SpiveInstance {
   @Override
   public void accept(final CreateType event) {
     // System.out.println("Accepting " + event);
-    platform.types.add(new Type());
+    platform.types.add(new Type(event.typeId(), event.name(), event.fieldTypeTags()));
   }
 
   @Override

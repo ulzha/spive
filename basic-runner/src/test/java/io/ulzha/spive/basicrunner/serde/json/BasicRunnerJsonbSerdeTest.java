@@ -1,4 +1,4 @@
-package io.ulzha.spive.basicrunner.util;
+package io.ulzha.spive.basicrunner.serde.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class JsonTest {
-  private Jsonb jsonb = Json.create();
+public class BasicRunnerJsonbSerdeTest {
+  private Jsonb jsonb = BasicRunnerJsonbSerde.create();
 
   @Test
   void testRoundTripGetThreadGroupHeartbeatResponseUnknownTimes() {
