@@ -54,17 +54,17 @@ public class AppIoc {
       // TODO default void accept(final Clicc event, final Instant eventInstant) {}
     }
 
-    public String getTypeVarName() {
+    public String getSerdeVarName() {
       String name = getName();
-      return name.substring(0, 1).toLowerCase() + name.substring(1) + "Type";
+      return name.substring(0, 1).toLowerCase() + name.substring(1) + "Serde";
     }
 
-    public String getType() {
+    public String getSerde() {
       return """
-               private static final Type %s =
-                   Type.fromTypeTag("%s");
+               private static final EventSerde %s =
+                   EventSerde.forTypeTag("%s");
              """
-          .formatted(getTypeVarName(), getTypeTag());
+          .formatted(getSerdeVarName(), getTypeTag());
       // (protobuf Any, anyone? type_url: "type.googleapis.com/company.entity.Foo")
     }
 
@@ -78,7 +78,7 @@ public class AppIoc {
                  return emitIf(check, %s, payload, eventTime);
                }
              """
-          .formatted(getName(), getTypeVarName(), getName(), getTypeVarName());
+          .formatted(getName(), getSerdeVarName(), getName(), getSerdeVarName());
     }
 
     public String getEmitConsequential() {
@@ -87,7 +87,7 @@ public class AppIoc {
                  emitConsequential(%s, payload);
                }
              """
-          .formatted(getName(), getTypeVarName());
+          .formatted(getName(), getSerdeVarName());
     }
 
     public String getTypeTag() {

@@ -36,7 +36,7 @@ public class Event {
   // identification...?
   public UUID id;
 
-  public Type type; // a.k.a. serde? tag?
+  public EventSerde serde;
   // (A tuple of POXO class and serde id+version that wrote it)
   // (Capture also instance that wrote it? In case a zombie runner needs to be hunted down.)
   // (And serde id+version that read it? This would be constant for the duration of a process?)
@@ -44,14 +44,14 @@ public class Event {
   // io.ulzha.spive.app.events... or not relative to io.ulzha.spive at all... should it repeat
   // the `time` field always?
 
-  public Event(EventTime time, UUID id, Type type, Object payload) {
+  public Event(EventTime time, UUID id, EventSerde serde, Object payload) {
     this.time = time;
     this.id = id;
-    this.type = type;
+    this.serde = serde;
     this.payload = payload;
   }
 
-  public Event(Type type) {
-    this.type = type;
+  public Event(EventSerde serde) {
+    this.serde = serde;
   }
 }

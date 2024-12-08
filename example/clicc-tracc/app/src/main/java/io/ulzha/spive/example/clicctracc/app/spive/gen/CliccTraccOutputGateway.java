@@ -6,8 +6,8 @@ import io.ulzha.spive.example.clicctracc.app.events.Clicc;
 import io.ulzha.spive.lib.EventGateway;
 import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLock;
+import io.ulzha.spive.lib.EventSerde;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.function.Supplier;
@@ -34,18 +34,18 @@ public class CliccTraccOutputGateway extends EventGateway {
     super(umbilicus, eventIterator, wallClockTime, eventLock);
   }
 
-  private static final Type cliccType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.example.clicctracc.app.events.Clicc");
+  private static final EventSerde cliccSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.example.clicctracc.app.events.Clicc");
 
   public boolean emitIf(Supplier<Boolean> check, Clicc payload) {
-    return emitIf(check, cliccType, payload);
+    return emitIf(check, cliccSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, Clicc payload, EventTime eventTime) {
-    return emitIf(check, cliccType, payload, eventTime);
+    return emitIf(check, cliccSerde, payload, eventTime);
   }
 
   public void emitConsequential(Clicc payload) {
-    emitConsequential(cliccType, payload);
+    emitConsequential(cliccSerde, payload);
   }
 }

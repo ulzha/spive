@@ -6,8 +6,8 @@ import io.ulzha.spive.example.copy.app.events.CreateFoo;
 import io.ulzha.spive.lib.EventGateway;
 import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLock;
+import io.ulzha.spive.lib.EventSerde;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.function.Supplier;
@@ -29,18 +29,18 @@ public class CopyOutputGateway extends EventGateway {
     super(umbilicus, eventIterator, wallClockTime, eventLock);
   }
 
-  private static final Type createFooType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.example.copy.app.events.CreateFoo");
+  private static final EventSerde createFooSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.example.copy.app.events.CreateFoo");
 
   public boolean emitIf(Supplier<Boolean> check, CreateFoo payload) {
-    return emitIf(check, createFooType, payload);
+    return emitIf(check, createFooSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateFoo payload, EventTime eventTime) {
-    return emitIf(check, createFooType, payload, eventTime);
+    return emitIf(check, createFooSerde, payload, eventTime);
   }
 
   public void emitConsequential(CreateFoo payload) {
-    emitConsequential(createFooType, payload);
+    emitConsequential(createFooSerde, payload);
   }
 }

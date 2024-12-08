@@ -92,7 +92,7 @@ public class EventGateway extends Gateway {
    * <p>TODO emitWhen version that evaluates check on every transition? Or is that higher level API
    */
   // `Predicate<Spive> check`? So it's clearer what state is accessible?
-  protected <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload) {
+  protected <T> boolean emitIf(Supplier<Boolean> check, EventSerde serde, T payload) {
     try {
       // Await until at least the latest event written by this gateway is read back. Otherwise,
       // when a sporadic workload attempts to emit multiple events in a quick succession, the second
@@ -134,7 +134,7 @@ public class EventGateway extends Gateway {
         //        return;
         //      }
         if (check.get()) {
-          final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+          final Event event = new Event(eventTime, UUID.randomUUID(), serde, payload);
           final EventEnvelope wanted = EventEnvelope.wrap(event);
           final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
           if (actual == wanted) {
@@ -162,7 +162,8 @@ public class EventGateway extends Gateway {
    *
    * <p>TODO possible to provide fairer guarantees than haphazard competition?
    */
-  protected <T> boolean emitIf(Supplier<Boolean> check, Type type, T payload, EventTime eventTime) {
+  protected <T> boolean emitIf(
+      Supplier<Boolean> check, EventSerde serde, T payload, EventTime eventTime) {
     try {
       awaitAdvancing();
 
@@ -173,7 +174,7 @@ public class EventGateway extends Gateway {
             && (eventIterator.lastTimeEmitted == null
                 || eventIterator.lastTimeEmitted.compareTo(eventTime) < 0)) {
           if (check.get()) {
-            final Event event = new Event(eventTime, UUID.randomUUID(), type, payload);
+            final Event event = new Event(eventTime, UUID.randomUUID(), serde, payload);
             final EventEnvelope wanted = EventEnvelope.wrap(event);
             final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
             if (actual == wanted) {
@@ -267,12 +268,12 @@ public class EventGateway extends Gateway {
   // emitAlso?
   // emitEffect?
   // emitTherefore?
-  protected <T> void emitConsequential(Type type, T payload) {
+  protected <T> void emitConsequential(EventSerde serde, T payload) {
     try {
       try {
         eventLock.lockConsequential();
         final EventTime eventTime = nextConsequentialTime();
-        final Event event = new Event(eventTime, null, type, payload);
+        final Event event = new Event(eventTime, null, serde, payload);
         final EventEnvelope wanted = EventEnvelope.wrap(event);
         final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
         if (actual == wanted) {

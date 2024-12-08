@@ -6,8 +6,8 @@ AppOutputGateway(app, events) ::= <<
 import io.ulzha.spive.lib.EventGateway;
 import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLock;
+import io.ulzha.spive.lib.EventSerde;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.function.Supplier;
@@ -38,7 +38,7 @@ public class %app.name%OutputGateway extends EventGateway {
     super(umbilicus, eventIterator, wallClockTime, eventLock);
   }
 
-%events:{e | %e.type%}; separator="\n"%
+%events:{e | %e.serde%}; separator="\n"%
 %events:{e | %e.emitIf%}; separator="\n"%
 %events:{e | %e.emitConsequential%}; separator="\n"%
 }

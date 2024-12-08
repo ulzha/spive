@@ -6,8 +6,8 @@ import io.ulzha.spive.app.events.CreateInstance;
 import io.ulzha.spive.lib.EventGateway;
 import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLock;
+import io.ulzha.spive.lib.EventSerde;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import io.ulzha.spive.scaler.app.events.ScaleProcess;
 import java.time.Instant;
@@ -35,33 +35,33 @@ public class SpiveScalerOutputGateway extends EventGateway {
     super(umbilicus, eventIterator, wallClockTime, eventLock);
   }
 
-  private static final Type createInstanceType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateInstance");
+  private static final EventSerde createInstanceSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.CreateInstance");
 
-  private static final Type scaleProcessType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.scaler.app.events.ScaleProcess");
+  private static final EventSerde scaleProcessSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.scaler.app.events.ScaleProcess");
 
   public boolean emitIf(Supplier<Boolean> check, CreateInstance payload) {
-    return emitIf(check, createInstanceType, payload);
+    return emitIf(check, createInstanceSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateInstance payload, EventTime eventTime) {
-    return emitIf(check, createInstanceType, payload, eventTime);
+    return emitIf(check, createInstanceSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, ScaleProcess payload) {
-    return emitIf(check, scaleProcessType, payload);
+    return emitIf(check, scaleProcessSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, ScaleProcess payload, EventTime eventTime) {
-    return emitIf(check, scaleProcessType, payload, eventTime);
+    return emitIf(check, scaleProcessSerde, payload, eventTime);
   }
 
   public void emitConsequential(CreateInstance payload) {
-    emitConsequential(createInstanceType, payload);
+    emitConsequential(createInstanceSerde, payload);
   }
 
   public void emitConsequential(ScaleProcess payload) {
-    emitConsequential(scaleProcessType, payload);
+    emitConsequential(scaleProcessSerde, payload);
   }
 }

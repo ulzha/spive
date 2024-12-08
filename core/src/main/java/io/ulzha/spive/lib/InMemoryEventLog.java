@@ -85,7 +85,7 @@ public class InMemoryEventLog implements EventLog {
   /** for testing only */
   public List<Object> asPayloadList() {
     return list.stream()
-        .map(event -> Type.fromTypeTag(event.typeTag()).deserialize(event.serializedPayload()))
+        .map(event -> EventSerde.forTypeTag(event.typeTag()).deserialize(event.serializedPayload()))
         .collect(Collectors.toList());
   }
 

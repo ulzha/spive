@@ -15,8 +15,8 @@ import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.lib.EventGateway;
 import io.ulzha.spive.lib.EventIterator;
 import io.ulzha.spive.lib.EventLock;
+import io.ulzha.spive.lib.EventSerde;
 import io.ulzha.spive.lib.EventTime;
-import io.ulzha.spive.lib.Type;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.time.Instant;
 import java.util.function.Supplier;
@@ -43,154 +43,154 @@ public class SpiveOutputGateway extends EventGateway {
     super(umbilicus, eventIterator, wallClockTime, eventLock);
   }
 
-  private static final Type createEventLogType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateEventLog");
+  private static final EventSerde createEventLogSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.CreateEventLog");
 
-  private static final Type createInstanceType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateInstance");
+  private static final EventSerde createInstanceSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.CreateInstance");
 
-  private static final Type createProcessType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateProcess");
+  private static final EventSerde createProcessSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.CreateProcess");
 
-  private static final Type createStreamType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateStream");
+  private static final EventSerde createStreamSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.CreateStream");
 
-  private static final Type createTypeType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.CreateType");
+  private static final EventSerde createTypeSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.CreateType");
 
-  private static final Type deleteInstanceType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.DeleteInstance");
+  private static final EventSerde deleteInstanceSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.DeleteInstance");
 
-  private static final Type deleteProcessType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.DeleteProcess");
+  private static final EventSerde deleteProcessSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.DeleteProcess");
 
-  private static final Type instanceIopwType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.InstanceIopw");
+  private static final EventSerde instanceIopwSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.InstanceIopw");
 
-  private static final Type instanceProgressType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.InstanceProgress");
+  private static final EventSerde instanceProgressSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.InstanceProgress");
 
-  private static final Type instanceStatusChangeType =
-      Type.fromTypeTag("pojo:io.ulzha.spive.app.events.InstanceStatusChange");
+  private static final EventSerde instanceStatusChangeSerde =
+      EventSerde.forTypeTag("pojo:io.ulzha.spive.app.events.InstanceStatusChange");
 
   public boolean emitIf(Supplier<Boolean> check, CreateEventLog payload) {
-    return emitIf(check, createEventLogType, payload);
+    return emitIf(check, createEventLogSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateEventLog payload, EventTime eventTime) {
-    return emitIf(check, createEventLogType, payload, eventTime);
+    return emitIf(check, createEventLogSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateInstance payload) {
-    return emitIf(check, createInstanceType, payload);
+    return emitIf(check, createInstanceSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateInstance payload, EventTime eventTime) {
-    return emitIf(check, createInstanceType, payload, eventTime);
+    return emitIf(check, createInstanceSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateProcess payload) {
-    return emitIf(check, createProcessType, payload);
+    return emitIf(check, createProcessSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateProcess payload, EventTime eventTime) {
-    return emitIf(check, createProcessType, payload, eventTime);
+    return emitIf(check, createProcessSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateStream payload) {
-    return emitIf(check, createStreamType, payload);
+    return emitIf(check, createStreamSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateStream payload, EventTime eventTime) {
-    return emitIf(check, createStreamType, payload, eventTime);
+    return emitIf(check, createStreamSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateType payload) {
-    return emitIf(check, createTypeType, payload);
+    return emitIf(check, createTypeSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, CreateType payload, EventTime eventTime) {
-    return emitIf(check, createTypeType, payload, eventTime);
+    return emitIf(check, createTypeSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, DeleteInstance payload) {
-    return emitIf(check, deleteInstanceType, payload);
+    return emitIf(check, deleteInstanceSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, DeleteInstance payload, EventTime eventTime) {
-    return emitIf(check, deleteInstanceType, payload, eventTime);
+    return emitIf(check, deleteInstanceSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, DeleteProcess payload) {
-    return emitIf(check, deleteProcessType, payload);
+    return emitIf(check, deleteProcessSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, DeleteProcess payload, EventTime eventTime) {
-    return emitIf(check, deleteProcessType, payload, eventTime);
+    return emitIf(check, deleteProcessSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, InstanceIopw payload) {
-    return emitIf(check, instanceIopwType, payload);
+    return emitIf(check, instanceIopwSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, InstanceIopw payload, EventTime eventTime) {
-    return emitIf(check, instanceIopwType, payload, eventTime);
+    return emitIf(check, instanceIopwSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, InstanceProgress payload) {
-    return emitIf(check, instanceProgressType, payload);
+    return emitIf(check, instanceProgressSerde, payload);
   }
 
   public boolean emitIf(Supplier<Boolean> check, InstanceProgress payload, EventTime eventTime) {
-    return emitIf(check, instanceProgressType, payload, eventTime);
+    return emitIf(check, instanceProgressSerde, payload, eventTime);
   }
 
   public boolean emitIf(Supplier<Boolean> check, InstanceStatusChange payload) {
-    return emitIf(check, instanceStatusChangeType, payload);
+    return emitIf(check, instanceStatusChangeSerde, payload);
   }
 
   public boolean emitIf(
       Supplier<Boolean> check, InstanceStatusChange payload, EventTime eventTime) {
-    return emitIf(check, instanceStatusChangeType, payload, eventTime);
+    return emitIf(check, instanceStatusChangeSerde, payload, eventTime);
   }
 
   public void emitConsequential(CreateEventLog payload) {
-    emitConsequential(createEventLogType, payload);
+    emitConsequential(createEventLogSerde, payload);
   }
 
   public void emitConsequential(CreateInstance payload) {
-    emitConsequential(createInstanceType, payload);
+    emitConsequential(createInstanceSerde, payload);
   }
 
   public void emitConsequential(CreateProcess payload) {
-    emitConsequential(createProcessType, payload);
+    emitConsequential(createProcessSerde, payload);
   }
 
   public void emitConsequential(CreateStream payload) {
-    emitConsequential(createStreamType, payload);
+    emitConsequential(createStreamSerde, payload);
   }
 
   public void emitConsequential(CreateType payload) {
-    emitConsequential(createTypeType, payload);
+    emitConsequential(createTypeSerde, payload);
   }
 
   public void emitConsequential(DeleteInstance payload) {
-    emitConsequential(deleteInstanceType, payload);
+    emitConsequential(deleteInstanceSerde, payload);
   }
 
   public void emitConsequential(DeleteProcess payload) {
-    emitConsequential(deleteProcessType, payload);
+    emitConsequential(deleteProcessSerde, payload);
   }
 
   public void emitConsequential(InstanceIopw payload) {
-    emitConsequential(instanceIopwType, payload);
+    emitConsequential(instanceIopwSerde, payload);
   }
 
   public void emitConsequential(InstanceProgress payload) {
-    emitConsequential(instanceProgressType, payload);
+    emitConsequential(instanceProgressSerde, payload);
   }
 
   public void emitConsequential(InstanceStatusChange payload) {
-    emitConsequential(instanceStatusChangeType, payload);
+    emitConsequential(instanceStatusChangeSerde, payload);
   }
 }
