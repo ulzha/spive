@@ -42,7 +42,7 @@ public class UmbilicalTest {
             is(t0),
             nullValue(),
             containsEssentially(new ProgressUpdate(), ProgressUpdate.createSuccess())));
-    assertThat(actual.nInputEventsTotal(), is(1L));
+    assertThat(actual.nInputEventsHandled(), is(1L));
   }
 
   @Test
@@ -67,7 +67,7 @@ public class UmbilicalTest {
             nullValue(),
             containsEssentially(new ProgressUpdate(), ProgressUpdate.createSuccess())));
     assertThat(actual.checkpoint(), is(t4));
-    assertThat(actual.nInputEventsTotal(), is(5L));
+    assertThat(actual.nInputEventsHandled(), is(5L));
   }
 
   @Test
@@ -91,7 +91,7 @@ public class UmbilicalTest {
     assertThat(actual.sample().get(0).eventTime(), is(t0));
     assertThat(actual.sample().get(1).eventTime(), is(t1));
     assertThat(actual.checkpoint(), is(t0));
-    assertThat(actual.nInputEventsTotal(), is(1L));
+    assertThat(actual.nInputEventsHandled(), is(1L));
   }
 
   @Test
@@ -114,7 +114,7 @@ public class UmbilicalTest {
     assertThat(
         actual.sample().get(9).eventTime(), is(EventTime.fromString("2021-12-10T12:00:00Z#11")));
     assertThat(actual.checkpoint(), is(EventTime.fromString("2021-12-10T12:00:00Z#11")));
-    assertThat(actual.nInputEventsTotal(), is(12L));
+    assertThat(actual.nInputEventsHandled(), is(12L));
   }
 
   @Test
@@ -140,7 +140,7 @@ public class UmbilicalTest {
     final EventTime tLatestSuccess = EventTime.fromString("2024-02-15T15:00:00Z#11");
     assertThat(actual.sample().get(1).eventTime(), is(tLatestSuccess));
     assertThat(actual.checkpoint(), is(tLatestSuccess));
-    assertThat(actual.nInputEventsTotal(), is(12L));
+    assertThat(actual.nInputEventsHandled(), is(12L));
   }
 
   //  @Test

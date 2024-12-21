@@ -28,7 +28,7 @@ public class BasicRunnerJsonbSerdeTest {
 
     assertRoundTrip(
         r,
-        "{\"sample\":[{\"eventTime\":null,\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\",\"error\":\"ARRRR\"}]}],\"checkpoint\":null,\"nInputEventsTotal\":0,\"nOutputEventsTotal\":0}",
+        "{\"sample\":[{\"eventTime\":null,\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\",\"error\":\"ARRRR\"}]}],\"checkpoint\":null,\"nInputEventsHandled\":0,\"nOutputEvents\":0}",
         GetThreadGroupHeartbeatResponse.class);
   }
 
@@ -42,7 +42,7 @@ public class BasicRunnerJsonbSerdeTest {
 
     assertRoundTrip(
         r,
-        "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsTotal\":0,\"nOutputEventsTotal\":0}",
+        "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsHandled\":0,\"nOutputEvents\":0}",
         GetThreadGroupHeartbeatResponse.class);
 
     updates.add(new ProgressUpdate(Instant.parse("2021-01-21T19:00:01Z"), false, null, null));
@@ -51,7 +51,7 @@ public class BasicRunnerJsonbSerdeTest {
         new GetThreadGroupHeartbeatResponse(sample, t1, 1, 0);
     assertRoundTrip(
         r1,
-        "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\"},{\"instant\":\"2021-01-21T19:00:02Z\",\"success\":true}]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsTotal\":1,\"nOutputEventsTotal\":0}",
+        "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\"},{\"instant\":\"2021-01-21T19:00:02Z\",\"success\":true}]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsHandled\":1,\"nOutputEvents\":0}",
         GetThreadGroupHeartbeatResponse.class);
 
     final EventTime t2 = EventTime.fromString("2021-01-29T12:34:56.789Z#13");
@@ -68,7 +68,7 @@ public class BasicRunnerJsonbSerdeTest {
         new GetThreadGroupHeartbeatResponse(sample, t1, 1, 0);
     assertRoundTrip(
         r2,
-        "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\"},{\"instant\":\"2021-01-21T19:00:02Z\",\"success\":true}]},{\"eventTime\":\"2021-01-29T12:34:56.789Z#13\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-29T12:34:57.789Z\"},{\"instant\":\"2021-01-29T12:34:58.789Z\",\"error\":\"java.lang.RuntimeException\\n\\tat io.ulzha.spive.Dummy(Dummy.java:42)\"}]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsTotal\":1,\"nOutputEventsTotal\":0}",
+        "{\"sample\":[{\"eventTime\":\"2021-01-21T19:00:00.123456789Z#0\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-21T19:00:01Z\"},{\"instant\":\"2021-01-21T19:00:02Z\",\"success\":true}]},{\"eventTime\":\"2021-01-29T12:34:56.789Z#13\",\"partition\":null,\"progressUpdates\":[{\"instant\":\"2021-01-29T12:34:57.789Z\"},{\"instant\":\"2021-01-29T12:34:58.789Z\",\"error\":\"java.lang.RuntimeException\\n\\tat io.ulzha.spive.Dummy(Dummy.java:42)\"}]}],\"checkpoint\":\"2021-01-21T19:00:00.123456789Z#0\",\"nInputEventsHandled\":1,\"nOutputEvents\":0}",
         GetThreadGroupHeartbeatResponse.class);
   }
 
@@ -83,8 +83,8 @@ public class BasicRunnerJsonbSerdeTest {
 
     assertRoundTrip(
         r,
-        "{\"iopws\":[{\"nInputEvents\":13,\"nOutputEvents\":6,\"windowEnd\":\"2023-10-09T19:00:00Z\",\"windowStart\":\"2023-10-09T18:59:00Z\"},{\"nInputEvents\":11,\"nOutputEvents\":4,\"windowEnd\":\"2023-10-09T19:01:00Z\",\"windowStart\":\"2023-10-09T19:00:00Z\"}]}",
-        // "{\"iopws\":[{\"windowStart\":\"2023-10-09T18:59:00Z\",\"windowEnd\":\"2023-10-09T19:00:00Z\",\"nInputEvents\":13,\"nOutputEvents\":6},{\"windowStart\":\"2023-10-09T19:00:00Z\",\"windowEnd\":\"2023-10-09T19:01:00Z\",\"nInputEvents\":11,\"nOutputEvents\":4}]}",
+        "{\"iopws\":[{\"nInputEventsHandledOk\":13,\"nOutputEvents\":6,\"windowEnd\":\"2023-10-09T19:00:00Z\",\"windowStart\":\"2023-10-09T18:59:00Z\"},{\"nInputEventsHandledOk\":11,\"nOutputEvents\":4,\"windowEnd\":\"2023-10-09T19:01:00Z\",\"windowStart\":\"2023-10-09T19:00:00Z\"}]}",
+        // "{\"iopws\":[{\"windowStart\":\"2023-10-09T18:59:00Z\",\"windowEnd\":\"2023-10-09T19:00:00Z\",\"nInputEventsHandledOk\":13,\"nOutputEvents\":6},{\"windowStart\":\"2023-10-09T19:00:00Z\",\"windowEnd\":\"2023-10-09T19:01:00Z\",\"nInputEventsHandledOk\":11,\"nOutputEvents\":4}]}",
         GetThreadGroupIopwsResponse.class);
   }
 

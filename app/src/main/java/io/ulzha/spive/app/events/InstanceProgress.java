@@ -18,12 +18,17 @@ public record InstanceProgress(
     UUID instanceId, // partition key
     EventTime checkpoint,
     // (eventually reformulate in terms of watermark?)
-    long nInputEventsTotal, // successfully handled input events since start of instance's lifetime
-    // until checkpoint, inclusive
-    long nOutputEventsTotal // successfully emitted output events. Some can account for events after
+
+    // Successfully handled input events since start of instance's lifetime until checkpoint,
+    // inclusive.
+    long nInputEventsHandled,
+
+    // Output events emitted since start of instance's lifetime. Some can account for events _after_
     // checkpoint, freshly emitted from spontaneous workloads or from the subsequent event's ongoing
     // handling. Output-only applications (not event-sourced) would always see checkpoint at
-    // INFINITE_PAST and just nOutputEventsTotal growing
+    // INFINITE_PAST and just nOutputEvents growing.
+    long nOutputEvents
+
     // TODO byte[] sparkline...
     // Compact individual timings, histograms perhaps...
     // Or separate channels for that, for SpiveScaler to observe

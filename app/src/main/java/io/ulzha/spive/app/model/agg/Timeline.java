@@ -45,13 +45,16 @@ public class Timeline {
       // all input streams, non-owned and owned (own output that gets read and handled)
       long nInputEventsIncoming,
 
-      // "events in progress" blinking would be just a front-end approximation, rendered from the
+      // "events in progress" blinking could be just a front-end approximation, rendered from the
       // difference between newest and preceding snapshot of a tile
-
-      long nInputEventsOk,
-      long nInputEventsWarning,
-      long nInputEventsError,
+      // or maybe these counts help, but they would be inferred from heartbeat(s), not from iopws
+      long nInputEventsInProgress,
+      long nInputEventsInStall,
+      long nInputEventsInError,
+      long nInputEventsHandledOk,
+      long nInputEventsHandledStall,
       long nOutputEvents
+
       // unsure how output gateway errors would be represented when workloads spontaneously attempt
       // to emit; maps to wall clock time and not really to event time
       ) {}
@@ -82,7 +85,9 @@ public class Timeline {
                 0,
                 0,
                 0,
-                iopw.nInputEvents(),
+                0,
+                iopw.nInputEventsHandledOk(),
+                0,
                 iopw.nOutputEvents()));
     System.out.println("Minutely scale updated with " + iopw);
   }

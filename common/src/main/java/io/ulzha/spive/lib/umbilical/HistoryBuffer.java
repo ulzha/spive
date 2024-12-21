@@ -9,20 +9,21 @@ import java.util.List;
 /**
  * HeartbeatHistory?
  *
- * <p>History is kept as a best effort, to not overfill storage available, and is not guaranteed to
- * be complete. Should be enough, most of the time, to fill in the gaps that occur when control
- * plane experiences downtime and the runner process outlives it.
+ * <p>History is kept as a best effort, to not overfill storage available on runner, and is not
+ * guaranteed to be complete. Should be enough, most of the time, to fill in the gaps that occur
+ * when control plane experiences downtime and the runner process outlives it.
  */
 public class HistoryBuffer {
   private static class IopwCounter {
     Instant windowStart;
     Instant windowEnd;
-    long nInputEvents; // TODO ok, stall, error
+    // TODO stall
+    long nInputEventsHandledOk;
     long nOutputEvents;
   }
 
   public static record Iopw(
-      Instant windowStart, Instant windowEnd, long nInputEvents, long nOutputEvents) {}
+      Instant windowStart, Instant windowEnd, long nInputEventsHandledOk, long nOutputEvents) {}
 
   // TODO let spill to disk?
   // TODO check the concurrent iteration guarantee
@@ -30,7 +31,7 @@ public class HistoryBuffer {
       new ConcurrentEvictingQueue<>(4 * 7 * 24 * 60);
   private IopwCounter currIopw = null;
 
-  public void aggregateIopw(Instant instant, long dInputEvents, long dOutputEvents) {
+  public void aggregateIopw(Instant instant, long dInputEventsHandledOk, long dOutputEvents) {
     if (currIopw == null) {
       currIopw = new IopwCounter();
       currIopw.windowStart = instant.truncatedTo(ChronoUnit.MINUTES);
@@ -42,14 +43,14 @@ public class HistoryBuffer {
               new Iopw(
                   currIopw.windowStart,
                   currIopw.windowEnd,
-                  currIopw.nInputEvents,
+                  currIopw.nInputEventsHandledOk,
                   currIopw.nOutputEvents)));
       final IopwCounter nextIopw = new IopwCounter();
       nextIopw.windowStart = currIopw.windowEnd;
       nextIopw.windowEnd = nextIopw.windowStart.plus(1, ChronoUnit.MINUTES);
       currIopw = nextIopw;
     }
-    currIopw.nInputEvents += dInputEvents;
+    currIopw.nInputEventsHandledOk += dInputEventsHandledOk;
     currIopw.nOutputEvents += dOutputEvents;
   }
 

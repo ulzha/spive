@@ -112,8 +112,8 @@ public class Umbilical {
       return new HeartbeatSnapshot(
           sample,
           getLastHandledEventTime(sample),
-          heartbeat.nInputEventsTotal,
-          heartbeat.nOutputEventsTotal);
+          heartbeat.nInputEventsHandled,
+          heartbeat.nOutputEvents);
     }
   }
 
@@ -286,7 +286,7 @@ public class Umbilical {
     } else if (update.success()) {
       synchronized (heartbeat) {
         list.add(update);
-        heartbeat.nInputEventsTotal++;
+        heartbeat.nInputEventsHandled++;
         buffer.aggregateIopw(eventTime.instant, 1, 0);
       }
     } else {
@@ -310,8 +310,8 @@ public class Umbilical {
     AtomicReference<ConcurrentProgressUpdatesList> unknownEventTimeSample = new AtomicReference<>();
     private final SortedMap<EventTime, ConcurrentProgressUpdatesList> sample =
         new ConcurrentSkipListMap<>();
-    public long nInputEventsTotal;
-    public long nOutputEventsTotal;
+    public long nInputEventsHandled;
+    public long nOutputEvents;
 
     private void truncate(final EventTime eventTimeToKeep) {
       if (sample.size() > 9 || unknownEventTimeSample.get() != null && sample.size() == 9) {
@@ -368,8 +368,8 @@ public class Umbilical {
     }
   }
 
-  public void aggregateIopw(Instant instant, long dInputEvents, long dOutputEvents) {
-    buffer.aggregateIopw(instant, dInputEvents, dOutputEvents);
+  public void aggregateIopw(Instant instant, long dInputEventsHandled, long dOutputEvents) {
+    buffer.aggregateIopw(instant, dInputEventsHandled, dOutputEvents);
   }
 
   public List<Iopw> getIopwsList(final Instant start) {

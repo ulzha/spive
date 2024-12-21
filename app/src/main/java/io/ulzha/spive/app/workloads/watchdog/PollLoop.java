@@ -67,7 +67,7 @@ class PollLoop {
                 && instance.checkpoint != null
                 && instance.checkpoint.compareTo(checkpoint) < 0,
         new InstanceProgress(
-            instance.id, checkpoint, snapshot.nInputEventsTotal(), snapshot.nOutputEventsTotal()));
+            instance.id, checkpoint, snapshot.nInputEventsHandled(), snapshot.nOutputEvents()));
 
     final InstanceStatusChange instanceStatusChange =
         statusTracker.getStatus(instance.timeoutMillis);
@@ -91,7 +91,7 @@ class PollLoop {
               instance.id,
               iopw.windowStart(),
               iopw.windowEnd(),
-              iopw.nInputEvents(),
+              iopw.nInputEventsHandledOk(),
               iopw.nOutputEvents()));
     }
   }

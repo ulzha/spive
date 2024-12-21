@@ -8,12 +8,12 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
 import java.util.List;
 
 @JsonbNillable(true)
-@JsonbPropertyOrder({"sample", "checkpoint", "nInputEventsTotal", "nOutputEventsTotal"})
+@JsonbPropertyOrder({"sample", "checkpoint", "nInputEventsHandled", "nOutputEvents"})
 public record GetThreadGroupHeartbeatResponse(
     List<ProgressUpdatesList> sample,
     @Nullable EventTime checkpoint,
-    long nInputEventsTotal,
-    long nOutputEventsTotal) {
+    long nInputEventsHandled,
+    long nOutputEvents) {
 
   // maybe a bit silly indirection; keeping HeartbeatSnapshot class (common module as such) clean of
   // API/serde concerns
@@ -22,8 +22,8 @@ public record GetThreadGroupHeartbeatResponse(
     return new GetThreadGroupHeartbeatResponse(
         heartbeatSnapshot.sample(),
         heartbeatSnapshot.checkpoint(),
-        heartbeatSnapshot.nInputEventsTotal(),
-        heartbeatSnapshot.nOutputEventsTotal());
+        heartbeatSnapshot.nInputEventsHandled(),
+        heartbeatSnapshot.nOutputEvents());
   }
 
   public static GetThreadGroupHeartbeatResponse create(final Umbilical umbilical) {
@@ -31,7 +31,7 @@ public record GetThreadGroupHeartbeatResponse(
     return new GetThreadGroupHeartbeatResponse(
         heartbeatSnapshot.sample(),
         heartbeatSnapshot.checkpoint(),
-        heartbeatSnapshot.nInputEventsTotal(),
-        heartbeatSnapshot.nOutputEventsTotal());
+        heartbeatSnapshot.nInputEventsHandled(),
+        heartbeatSnapshot.nOutputEvents());
   }
 }

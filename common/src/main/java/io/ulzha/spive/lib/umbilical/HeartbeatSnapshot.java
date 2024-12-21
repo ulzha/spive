@@ -13,5 +13,5 @@ import java.util.List;
 public record HeartbeatSnapshot(
     List<ProgressUpdatesList> sample,
     @Nullable EventTime checkpoint,
-    long nInputEventsTotal,
-    long nOutputEventsTotal) {}
+    long nInputEventsHandled,
+    long nOutputEvents) {}

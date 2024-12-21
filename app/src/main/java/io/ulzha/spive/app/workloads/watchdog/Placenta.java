@@ -53,11 +53,12 @@ public class Placenta implements UmbilicalReader {
 
     // maybe a bit silly indirection; keeping HeartbeatSnapshot class (common module as such) clean
     // of API/serde concerns
+    // TODO generate? Other serialization formats like gRPC would provide just that, generated code
     return new HeartbeatSnapshot(
         response.sample(),
         response.checkpoint(),
-        response.nInputEventsTotal(),
-        response.nOutputEventsTotal());
+        response.nInputEventsHandled(),
+        response.nOutputEvents());
   }
 
   @Override
