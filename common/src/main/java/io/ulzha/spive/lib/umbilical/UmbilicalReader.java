@@ -34,7 +34,7 @@ public interface UmbilicalReader {
   }
 
   // overdue
-  static boolean isTimeout(List<ProgressUpdate> updates, int timeoutMillis, Instant now) {
+  static boolean isStall(List<ProgressUpdate> updates, int timeoutMillis, Instant now) {
     return !isSuccess(updates)
         && !isError(updates)
         && updates.get(0).instant().plusMillis(timeoutMillis).isBefore(now);
@@ -53,16 +53,16 @@ public interface UmbilicalReader {
   }
 
   /**
-   * @return computed timeout instant and the first warning before that, if any
+   * @return computed stall instant and the first warning before that, if any
    */
-  static ProgressUpdate getTimeoutUpdate(List<ProgressUpdate> updates, int timeoutMillis) {
+  static ProgressUpdate getStallUpdate(List<ProgressUpdate> updates, int timeoutMillis) {
     if (updates.size() == 0) {
       throw new IllegalArgumentException("list is empty");
     }
-    final Instant timeoutInstant = updates.get(0).instant().plusMillis(timeoutMillis);
+    final Instant stallInstant = updates.get(0).instant().plusMillis(timeoutMillis);
     String firstWarning = null;
     for (var update : updates) {
-      if (!update.instant().isBefore(timeoutInstant)) {
+      if (!update.instant().isBefore(stallInstant)) {
         break;
       }
       if (update.warning() != null) {
@@ -70,6 +70,6 @@ public interface UmbilicalReader {
         break;
       }
     }
-    return new ProgressUpdate(timeoutInstant, false, firstWarning, null);
+    return new ProgressUpdate(stallInstant, false, firstWarning, null);
   }
 }

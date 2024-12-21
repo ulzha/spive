@@ -99,7 +99,7 @@ public class Spive implements SpiveInstance {
         //            output.emit(new CreateInstance());
         //        }
         break;
-      case TIMEOUT:
+      case STALL:
         // ... ~same
         break;
       case EXIT:

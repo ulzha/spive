@@ -71,7 +71,7 @@ const content = (
     <Item
       className="legend-swatch color-ok"
       primaryText="OK"
-      secondaryText="Green bars indicate events which have been handled successfully, and for which no warnings have been reported by runners."
+      secondaryText="Green bars indicate events which have been handled successfully, and for which no stall warnings have been reported by runners."
       collapsibleText={
         <p>
           TODO output events
@@ -81,8 +81,8 @@ const content = (
     />
 
     <Item
-      className="legend-swatch color-warning"
-      primaryText="Warning"
+      className="legend-swatch color-stall"
+      primaryText="Stall"
       secondaryText="Orange bars indicate events whose handling has stalled or run into intermittent failures."
       collapsibleText={
         <>
@@ -93,7 +93,7 @@ const content = (
           </p>
           <p>
             The bar stays orange for the lifetime of the process instance associated with the occurrence, even if the
-            event ends up handled successfully in a while.
+            event ends up handled successfully in a later while.
           </p>
           <p>Note: this indication is best-effort — not every occurrence is tracked.</p>
         </>
@@ -115,8 +115,8 @@ const content = (
 
     <Item
       className="legend-swatch"
-      primaryText="Instances timing out"
-      secondaryText="Orange horizontal lines indicate intervals in event time where at least one application instance is in TIMEOUT state."
+      primaryText="Instances stalling"
+      secondaryText="Orange horizontal lines indicate intervals in event time where at least one application instance is in STALL state."
       collapsibleText={
         <>
           <p>
@@ -158,7 +158,7 @@ const content = (
     />
 
     <p>Hover over the event bars in the timeline to inspect exact counts.</p>
-    <p>Click them to see events in full detail, and troubleshoot eventual warnings or errors.</p>
+    <p>Click them to see events in full detail, and troubleshoot eventual intermittent failures or crashes.</p>
   </div>
 );
 

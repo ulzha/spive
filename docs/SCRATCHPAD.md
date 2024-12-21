@@ -21,9 +21,9 @@ Answer to the question: "What's the smallest amount of effort to get robust obse
 
 There are only two kinds of errors - hardware breaking, and bugs (programmer logic lapses, code reaching illegal/unanticipated state).
 
-There is only one kind of warning - timeout/setback.
-(We don't stop on warnings, we retry forever)
-(Oops, what's OpaqueException then. Two kinds of warnings, timeout/overdue and gossip/mayday call?)
+There is only one kind of warning - stall.
+(We don't stop on timeouts/setbacks/intermittent failures, we retry forever)
+(Oops, what's OpaqueException then. Two kinds of warnings, stall and gossip/mayday call?)
 (Low level errors which are handled by retrying are not even errors. A series of them turns into a warning when retried for a certain amount of time.)
 
 Quasi-durable execution? Is this structured scalability? (By analogy to structured concurrency)

@@ -27,14 +27,14 @@ public record InstanceStatusChange(
 
     // clock on the instance
     // null when unknown
-    // For TIMEOUT status, this corresponds to start of event handling, plus timeout duration.
+    // For STALL status, this corresponds to start of event's handling, plus timeout duration.
     @Nullable Instant instant,
 
     // model.InstanceStatus? TODO figure out UX with that - field types from application's own model
     String status,
 
     // stacktrace etc. Add plenty more structure later
-    // For TIMEOUT status, this captures the first warning before timeout was detected. Thus it is
+    // For STALL status, this captures the first warning before timeout was detected. Thus it is
     // more like "suspect cause" - Spīve does not know for sure. If no warning is detected before
     // that
     // point, `null` will be captured. (UI might still have capability to look up stack traces on

@@ -1,9 +1,9 @@
 package io.ulzha.spive.app.workloads.watchdog;
 
 import static io.ulzha.spive.lib.umbilical.UmbilicalReader.getErrorUpdate;
-import static io.ulzha.spive.lib.umbilical.UmbilicalReader.getTimeoutUpdate;
+import static io.ulzha.spive.lib.umbilical.UmbilicalReader.getStallUpdate;
 import static io.ulzha.spive.lib.umbilical.UmbilicalReader.isError;
-import static io.ulzha.spive.lib.umbilical.UmbilicalReader.isTimeout;
+import static io.ulzha.spive.lib.umbilical.UmbilicalReader.isStall;
 
 import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.app.model.InstanceStatus;
@@ -38,8 +38,9 @@ public class StatusTracker {
   }
 
   /**
-   * Regarding timeout, we report it only if we have caught the moment when the current event is
-   * overdue, and otherwise report nominal, as a "recovery" at unknown instant. Could be improved.
+   * Regarding timeout, we report it as stall only if we have caught the moment when the current
+   * event is overdue, and otherwise report nominal, as a "recovery" at unknown instant. Could be
+   * improved.
    */
   public InstanceStatusChange getStatus(int timeoutMillis) {
     if (event.status.equals(InstanceStatus.ERROR.name())) {
@@ -65,11 +66,10 @@ public class StatusTracker {
     }
 
     if (currentEventTime != EventTime.INFINITE_PAST) {
-      if (isTimeout(placenta.get(currentEventTime), timeoutMillis, wallClockTime.get())) {
+      if (isStall(placenta.get(currentEventTime), timeoutMillis, wallClockTime.get())) {
         event.eventTime = currentEventTime;
-        event.status = InstanceStatus.TIMEOUT.name();
-        final ProgressUpdate update =
-            getTimeoutUpdate(placenta.get(currentEventTime), timeoutMillis);
+        event.status = InstanceStatus.STALL.name();
+        final ProgressUpdate update = getStallUpdate(placenta.get(currentEventTime), timeoutMillis);
         event.instant = update.instant();
         event.cause = update.warning();
       } else {

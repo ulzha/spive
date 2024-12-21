@@ -190,7 +190,7 @@ class PollLoopTest {
                 instance.id,
                 t1,
                 Instant.parse("2021-04-14T10:00:16.111Z"),
-                InstanceStatus.TIMEOUT.name(),
+                InstanceStatus.STALL.name(),
                 null));
     assertIterableEquals(expected, eventLog.asPayloadList());
   }
@@ -250,7 +250,7 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.checkpoint = t1;
-    instance.status = InstanceStatus.TIMEOUT;
+    instance.status = InstanceStatus.STALL;
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
     pollLoop.pollOnce();
 
@@ -305,7 +305,7 @@ class PollLoopTest {
                         Instant.parse("2021-04-14T10:54:59.999Z"), true, null, null))));
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
-    instance.status = InstanceStatus.TIMEOUT;
+    instance.status = InstanceStatus.STALL;
     pollLoop.pollOnce();
 
     final List<Object> expected =
@@ -329,7 +329,7 @@ class PollLoopTest {
                         Instant.parse("2021-04-14T10:00:01.111Z"), false, null, null))));
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, null, 0, 0));
 
-    instance.status = InstanceStatus.TIMEOUT;
+    instance.status = InstanceStatus.STALL;
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:55:00Z"));
     pollLoop.pollOnce();
 
@@ -352,7 +352,7 @@ class PollLoopTest {
     fakePlacenta.givenHeartbeatSnapshot(new HeartbeatSnapshot(sample, t1, 1, 0));
 
     instance.process = null;
-    instance.status = InstanceStatus.TIMEOUT;
+    instance.status = InstanceStatus.STALL;
     controlPlaneWallClockTime.set(Instant.parse("2021-04-14T10:00:02.222Z"));
     pollLoop.pollOnce();
 

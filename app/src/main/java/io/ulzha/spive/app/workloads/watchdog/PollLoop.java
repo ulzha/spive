@@ -78,7 +78,7 @@ class PollLoop {
                 && instance.status != EXIT
                 && instance.status != InstanceStatus.valueOf(instanceStatusChange.status()),
         instanceStatusChange);
-    // With TIMEOUT sometimes the cause will appear as a warning in a later update. TODO capture
+    // With STALL sometimes the cause will appear as a warning in a later update. TODO capture
     // as a new event? calculate the time contribution to prevent red herrings? identify the cause
     // with profiling even if no gateway explicitly retried a call? trueCauseTracker? on demand
     // only, via frontend?

@@ -49,6 +49,8 @@ public class Timeline {
       // difference between newest and preceding snapshot of a tile
       // or maybe these counts help, but they would be inferred from heartbeat(s), not from iopws
       long nInputEventsInProgress,
+      // TODO nInputEventsInWarning? Intermittent failures -> greenish yellow? Nice to have but
+      // doesn't trigger any KTLO logic, hence should live in a separate observability application.
       long nInputEventsInStall,
       long nInputEventsInError,
       long nInputEventsHandledOk,
