@@ -160,7 +160,7 @@ public class UmbilicalTest {
     final Instant t1 = Instant.parse("2023-01-02T00:07:00Z");
     for (Instant t = t0; !t.equals(t1); t = t.plus(15, ChronoUnit.SECONDS)) {
       if (t.atZone(ZoneOffset.UTC).getMinute() % 5 != 0) {
-        sut.aggregateIopw(t, 1, 0);
+        sut.aggregateIopw(t, 1);
       }
     }
 

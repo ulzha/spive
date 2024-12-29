@@ -75,7 +75,6 @@ public interface CopyInstance {
         final EventIterator eventIterator = new EventIterator(inputEventLog.iterator());
 
         // FIXME thread-safe supplier
-        // FIXME beat outside an event when the write is actually from a concurrent workload
         final UmbilicalWriter umbilicus = umbilical.new Umbilicus(() -> eventIterator.lastTimeRead);
 
         final EventLock eventLock = new EventLock();

@@ -1,5 +1,6 @@
 package io.ulzha.spive.basicrunner.api;
 
+import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,4 +29,7 @@ public class FakeUmbilicus implements UmbilicalWriter {
 
   @Override
   public void addHeartbeat() {}
+
+  @Override
+  public void addOutputEvent(EventTime outputEventTime) {}
 }

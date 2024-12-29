@@ -38,8 +38,8 @@ import java.util.function.Supplier;
  * and cause repeated side effects, but it must never drop into replay mode inadvertently, as that
  * would cause dropped side effects.)
  *
- * <p>Thread-safety is limited: allows snapshotting from API thread(s), concurrently with one event
- * loop producing updates.
+ * <p>Thread-safety is limited: allows snapshotting from API thread(s), concurrently with updates
+ * through Umbilicus.
  *
  * <p>(Ugly. Wonder if we can hide BasicRunnerClient and Umbilicus, make it just Umbilical on both
  * ends...)
@@ -249,6 +249,15 @@ public class Umbilical {
     public void addHeartbeat() {
       Umbilical.this.addHeartbeat(currentEventTime.get());
     }
+
+    @Override
+    /**
+     * Not thread-safe. (Currently we only have output gateway of the locking variety, it takes care
+     * of coordinating updates between event loop and concurrent workloads.)
+     */
+    public void addOutputEvent(EventTime outputEventTime) {
+      Umbilical.this.addOutputEvent(outputEventTime);
+    }
   }
 
   /** Set by event loop after every event successfully handled. */
@@ -287,7 +296,7 @@ public class Umbilical {
       synchronized (heartbeat) {
         list.add(update);
         heartbeat.nInputEventsHandled++;
-        buffer.aggregateIopw(eventTime.instant, 1, 0);
+        buffer.aggregateIopw(eventTime.instant, 1);
       }
     } else {
       list.add(update);
@@ -301,8 +310,6 @@ public class Umbilical {
    *
    * <p>TODO maintain an even more elaborate sample - the first warning and the eventual error per
    * partition? firsts for distinct warnings? and counts? same eventually for errors
-   *
-   * <p>TODO non-constant space buffer for I/O stats. Maybe subsuming some of the warnings/errors ^.
    */
   private static class Heartbeat {
     // ConcurrentSkipListMap doesn't support null keys, but we maintain a convention that null means
@@ -368,8 +375,12 @@ public class Umbilical {
     }
   }
 
-  public void aggregateIopw(Instant instant, long dInputEventsHandled, long dOutputEvents) {
-    buffer.aggregateIopw(instant, dInputEventsHandled, dOutputEvents);
+  public void addOutputEvent(EventTime outputEventTime) {
+    buffer.addOutputEvent(outputEventTime);
+  }
+
+  public void aggregateIopw(Instant instant, long dInputEventsHandled) {
+    buffer.aggregateIopw(instant, dInputEventsHandled);
   }
 
   public List<Iopw> getIopwsList(final Instant start) {

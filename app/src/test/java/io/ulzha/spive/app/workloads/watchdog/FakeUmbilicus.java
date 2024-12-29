@@ -1,5 +1,6 @@
 package io.ulzha.spive.app.workloads.watchdog;
 
+import io.ulzha.spive.lib.EventTime;
 import io.ulzha.spive.lib.umbilical.UmbilicalWriter;
 
 public class FakeUmbilicus implements UmbilicalWriter {
@@ -19,4 +20,7 @@ public class FakeUmbilicus implements UmbilicalWriter {
 
   @Override
   public void addHeartbeat() {}
+
+  @Override
+  public void addOutputEvent(EventTime outputEventTime) {}
 }

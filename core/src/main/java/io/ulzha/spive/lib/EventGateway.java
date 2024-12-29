@@ -138,6 +138,10 @@ public class EventGateway extends Gateway {
           final EventEnvelope wanted = EventEnvelope.wrap(event);
           final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
           if (actual == wanted) {
+            // maybe this report can be in eventIterator... DRYer... But we might prefer no added
+            // complexity there... unless reduced locking benefit also manifests, or something like
+            // that
+            umbilicus.addOutputEvent(actual.time());
             return true;
           } // FIXME else loop
         }
@@ -178,6 +182,10 @@ public class EventGateway extends Gateway {
             final EventEnvelope wanted = EventEnvelope.wrap(event);
             final EventEnvelope actual = eventIterator.appendOrPeek(wanted);
             if (actual == wanted) {
+              // maybe this report can be in eventIterator... DRYer... But we might prefer no added
+              // complexity there... unless reduced locking benefit also manifests, or something
+              // like that
+              umbilicus.addOutputEvent(actual.time());
               return true;
             } // FIXME else loop
           }
@@ -279,6 +287,10 @@ public class EventGateway extends Gateway {
         if (actual == wanted) {
           // we actually appended
           System.out.println("Led with a consequential event, wdyt? " + eventTime);
+          // maybe this report can be in eventIterator... DRYer... But we might prefer no added
+          // complexity there... unless reduced locking benefit also manifests, or something like
+          // that
+          umbilicus.addOutputEvent(actual.time());
         } else {
           // must act idempotent anyway, as we came here from an event handler
           if (!actual.equals(wanted)) {
