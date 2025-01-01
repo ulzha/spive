@@ -286,6 +286,7 @@ public class Umbilical {
     // after success, input count must appear consistently incremented
     // after emitting each event, output count must appear uncontradictory with input count
     // at other times, the updates can be added with less contention
+    // nevertheless we could maintain order, make heartbeat receive updates first
     final ConcurrentProgressUpdatesList list = heartbeat.get(eventTime);
     if (list == null) {
       synchronized (heartbeat) {
@@ -376,6 +377,9 @@ public class Umbilical {
   }
 
   public void addOutputEvent(EventTime outputEventTime) {
+    synchronized (heartbeat) {
+      heartbeat.nOutputEvents++;
+    }
     buffer.addOutputEvent(outputEventTime);
   }
 

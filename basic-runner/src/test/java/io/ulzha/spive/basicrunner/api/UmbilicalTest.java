@@ -43,6 +43,7 @@ public class UmbilicalTest {
             nullValue(),
             containsEssentially(new ProgressUpdate(), ProgressUpdate.createSuccess())));
     assertThat(actual.nInputEventsHandled(), is(1L));
+    assertThat(actual.nOutputEvents(), is(0L));
   }
 
   @Test
@@ -53,6 +54,7 @@ public class UmbilicalTest {
     for (int i = 0; i < 5; i++) {
       final EventTime t = EventTime.fromString("2021-12-10T05:00:00Z#" + i);
       sut.addHeartbeat(t);
+      sut.addOutputEvent(t);
       sut.addSuccess(t);
     }
 
@@ -67,7 +69,7 @@ public class UmbilicalTest {
             nullValue(),
             containsEssentially(new ProgressUpdate(), ProgressUpdate.createSuccess())));
     assertThat(actual.checkpoint(), is(t4));
-    assertThat(actual.nInputEventsHandled(), is(5L));
+    assertThat(actual.nOutputEvents(), is(5L));
   }
 
   @Test
@@ -151,6 +153,25 @@ public class UmbilicalTest {
   //  @Test
   //  void givenNominalUpdates_getHeartbeatSnapshotVerbose_shouldReturnFullSnapshot() {
   //  }
+
+  @Test
+  void givenSomeIo_getIopwsList_shouldReturnEventCounts() {
+    final Umbilical sut = new Umbilical();
+
+    final Instant t0 = Instant.parse("2024-12-31T23:55:00Z");
+    final Instant t1 = Instant.parse("2025-01-01T00:00:15Z");
+    for (Instant t = t0; !t.equals(t1); t = t.plus(15, ChronoUnit.SECONDS)) {
+      sut.aggregateIopw(t, 1);
+      sut.addOutputEvent(new EventTime(t, 0));
+    }
+
+    var l1 = sut.getIopwsList(t0);
+    assertThat(l1.size(), is(5));
+    assertThat(l1.get(0).windowStart(), is(Instant.parse("2024-12-31T23:55:00Z")));
+    assertThat(l1.get(0).windowEnd(), is(Instant.parse("2024-12-31T23:56:00Z")));
+    assertThat(l1.get(0).nInputEventsHandledOk(), is(4L));
+    assertThat(l1.get(0).nOutputEvents(), is(4L));
+  }
 
   @Test
   void givenMuchIo_getIopwsList_shouldReturnOneDayAtATime() {
