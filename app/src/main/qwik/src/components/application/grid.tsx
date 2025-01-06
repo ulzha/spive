@@ -3,10 +3,10 @@ import { MUIDataGrid, MUILinearProgress } from "~/integrations/react/mui";
 import type { MUIGridColDef } from "~/integrations/react/mui";
 import EventGrid from "~/components/event/grid";
 
-declare const renderTimeline: (el: Element, duration: number, offset: number, color: string) => void;
+declare const renderTimeline: (el: Element, id: string) => void;
 
-const renderTimelineDOM = $((el: Element) => {
-  renderTimeline(el, 1, 0, "#1db855");
+const renderTimelineDOM = $((el: Element, id: string) => {
+  renderTimeline(el, id);
 });
 
 const renderSpanDOM = $((el: Element, id: string) => {

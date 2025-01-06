@@ -1,15 +1,11 @@
 // zoom & pan learnings from https://observablehq.com/@d3/zoomable-area-chart
 // and https://observablehq.com/@bmschmidt/sharing-a-single-zoom-state-between-svg-canvas-and-webgl
 
-renderTimeline = function(el, volume, offset, color) {
+renderTimeline = function(el, id) {
   // inspired from https://www.essycode.com/posts/create-sparkline-charts-d3/
+  // and dunno where the overflow-into-another-color compaction idea came from
   const WIDTH      = 700;
   const HEIGHT     = 10;
-  const DATA_COUNT = 175;
-  const BAR_WIDTH  = WIDTH / DATA_COUNT - 1;
-  const data = d3.range(DATA_COUNT).map( d => (d < DATA_COUNT - offset ?  (Math.random() < volume ? 1 - Math.random() : 1) : 1) );
-
-  const y    = d3.scaleLinear().domain([0, 1]).range([HEIGHT, 0]);
 
   const rangePicker = d3.select(el)
     .classed('timeline', true)
@@ -18,23 +14,15 @@ renderTimeline = function(el, volume, offset, color) {
 
   const svg = d3.select(el)
     .append('svg')
+      .attr('id', 'timeline-svg-' + id)
       .style('outline', '1px solid orange')
       .attr('width', WIDTH)
       .attr('height', HEIGHT);
-  const g = svg.append('g');
 
-  g.selectAll('.bar').data(data)
-    .enter()
-    .append('rect')
-      .classed('bar', true)
-      .attr('y', d => HEIGHT - y(d))
-      .attr('width', BAR_WIDTH)
-      .attr('height', d => y(d))
-      .attr('fill', d => (d < .2 ? color : '#1db855'));
-
+  // singleton to zoom all timelines together
   if (!zoomTimeline.zoom) {
     zoomTimeline.zoom = d3.zoom()
-      .scaleExtent([1, 65536]) // TODO max to 5 pixels per second default. Allow custom/infinite?
+      .scaleExtent([1, 16 * 65536]) // TODO max to 5 pixels per second default. Allow custom/infinite?
       .extent([[0, 0], [WIDTH, HEIGHT]])
       .translateExtent([[0, 0], [WIDTH, 0]])
       .on("zoom", zoomTimeline);
@@ -44,7 +32,37 @@ renderTimeline = function(el, volume, offset, color) {
   svg.call(zoomTimeline.zoom)
     .transition()
       .duration(750)
-      .call(zoomTimeline.zoom.scaleTo, 4, [WIDTH * .9, 0]);
+      .call(zoomTimeline.zoom.scaleTo, 16 * 65536, [WIDTH, 0]);
+}
+
+function generateDummyTimelineBars(applications) {
+  const DATA_COUNT = 175;
+  const WIDTH      = 700;
+  const HEIGHT     = 10;
+  const y = d3.scaleLinear().domain([0, 1]).range([HEIGHT, 0]);
+
+  for (const a of applications) {
+    const data = d3.range(DATA_COUNT).map( d => {
+      windowStart = Math.floor(new Date().getTime() / (60 * 1000)) * (60 * 1000) - d * 60 * 1000;
+      return {
+        windowStart: windowStart,
+        windowEnd: windowStart + 60 * 1000,
+        nOutputEvents: 1 - windowStart % (60 * 60 * 1000) / (60 * 60 * 1000),
+      };
+    });
+    d3.select(`#timeline-svg-${a.id}`)
+      .selectAll('.bar')
+      .data(data, d => d.windowStart)
+      .join('rect')
+        .classed('bar', true)
+        .attr('y', d => HEIGHT - y(d.nOutputEvents))
+        .attr('width', 3)
+        .attr('height', d => y(d.nOutputEvents))
+        .attr('fill', '#1db855');
+  }
+
+  // TODO not when panned somewhere intentionally
+  zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date(), 0, [WIDTH, 0]);
 }
 
 function renderTimelineAxis(x) {
@@ -71,9 +89,11 @@ function zoomTimeline({transform}) {
 
   const xz = transform.rescaleX(x);
 
+  // TODO hide/drop granularity groups
+  // while keeping the possibility to show coarser granularity when the finer window is not available
   d3.select(this)
     .selectAll(".bar")
-      .attr("x", (d, i) => xz(new Date(Date.UTC(1970 + i, 0))))
+      .attr("x", d => xz(d.windowStart))
 
   d3.selectAll(".timeline svg")
     // avoid recursing on the element that generated the call. Note: `this` won't work with an arrow function

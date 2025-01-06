@@ -6,6 +6,8 @@ import Header from "~/components/application/header";
 import ApplicationGrid from "~/components/application/grid";
 import styles from "~/components/application/application.module.css";
 
+declare const generateDummyTimelineBars: (rows: any[]) => void;
+
 const platformUrl = "http://localhost:8440";
 
 export default component$(() => {
@@ -19,6 +21,15 @@ export default component$(() => {
       console.log(sseLastEventId.value, event);
       sseLastEventId.value = event.lastEventId;
     };
+  });
+
+  useVisibleTask$(async ({ track, cleanup }) => {
+    const rows = track(state.rows);
+
+    // do we register every new app id to tile streamer, or is streamer going to track applicationsResource? or is backend (dashboard app) going to stream all apps tiles?
+    const dummyEventSourceInterval = setInterval(() => generateDummyTimelineBars(rows), 5000);
+
+    cleanup(() => clearInterval(dummyEventSourceInterval));
   });
 
   const pushSpinner = $((id: string) => {
@@ -42,7 +53,11 @@ export default component$(() => {
       return response.json() as Promise<any[]>;
     });
 
-    return res.map((app: any, i: number) => ({ rank: i, ...app }));
+    // return res.map((app: any, i: number) => ({ rank: i, ...app }));
+    return [
+      {rank: 0, name: "Loco", id: "flabbergasted"},
+      ...res.map((app: any, i: number) => ({ rank: i + 1, ...app }))
+    ];
   });
 
   const deployApplication = $(({ name, version, ...fields }: { name: string; version: string }) => {
