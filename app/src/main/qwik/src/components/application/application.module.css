@@ -26,6 +26,12 @@
     width: 100%;
   }
 
+  :global .MuiDataGrid-columnHeaders {
+    /* for axis... but might want elide title instead... or put axis in a separate subheader row */
+    margin-bottom: 11px;
+    overflow: visible;
+  }
+
   :global .MuiDataGrid-cell[data-field="rank"],
   :global .MuiDataGrid-columnHeader[data-field="rank"] {
     padding: 0;
@@ -33,8 +39,6 @@
   }
 
   :global .MuiDataGrid-row > .MuiDataGrid-cell[data-field="timeline"] {
-    overflow: visible;
-
     /* ref div, otherwise pointless */
     div {
       height: 36px;
@@ -65,10 +69,19 @@
 
   :global .timeline-axis {
     position: absolute;
-    bottom: 0;
+    left: 0;
+    bottom: -11px;
     width: 100%;
-    margin-right: 24px;
-    outline: 1px solid pink;
+    box-sizing: border-box;
+    height: 20px;
+    padding: 0 10px;
+
+    svg {
+      width: 100%;
+      box-sizing: border-box;
+      height: 20px;
+      outline: 1px solid pink;
+    }
   }
 
   :global .MuiCardHeader-content {

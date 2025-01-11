@@ -70,12 +70,11 @@ function renderTimelineAxis(x) {
     const xAxisHeight = 20;
 
     renderTimelineAxis.g = d3.select(".MuiDataGrid-columnHeader[data-field='timeline']")
-      .append('svg')
+      .append('div')
         .classed('timeline-axis', true)
-        .attr('width', 700)
-        .attr('height', xAxisHeight)
-        .append('g')
-          .attr("transform", `translate(0,${xAxisHeight - 1})`);
+        .append('svg')
+          .append('g')
+            .attr("transform", `translate(0,${xAxisHeight - 1})`);
   }
 
   renderTimelineAxis.g
