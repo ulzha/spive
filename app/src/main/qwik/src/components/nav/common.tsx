@@ -5,7 +5,13 @@ import HelpButton from "~/components/nav/support/help";
 import { qwikify$ } from "@builder.io/qwik-react";
 import styles from "./nav.module.css";
 
-export default qwikify$((props) => (
+interface CommonCardProps {
+  titleText: string;
+  class: string;
+  children?: any;
+};
+
+export default qwikify$((props: CommonCardProps) => (
   <div className="padding">
     <div className={styles.credits}>
       <a href="https://github.com/ulzha/spive" title="GitHub" target="_blank">

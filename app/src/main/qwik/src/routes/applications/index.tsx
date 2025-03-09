@@ -38,8 +38,6 @@ export default component$(() => {
 
   const applicationsResource = useResource$<any>(async ({ track, cleanup }) => {
     track(() => sseLastEventId.value);
-
-    console.log("Oh here we go again");
     const abortController = new AbortController();
     cleanup(() => abortController.abort("cleanup"));
 
@@ -47,17 +45,12 @@ export default component$(() => {
       signal: abortController.signal,
     }).then((response) => {
       if (!response.ok) {
-        console.debug("Meh", response.status, response.statusText);
+        throw new Error(`${response.status} ${response.statusText}`);
       }
-      console.debug("Fetched");
-      return response.json() as Promise<any[]>;
+      return response.json();
     });
 
-    // return res.map((app: any, i: number) => ({ rank: i, ...app }));
-    return [
-      {rank: 0, name: "Loco", id: "flabbergasted"},
-      ...res.map((app: any, i: number) => ({ rank: i + 1, ...app }))
-    ];
+    return res.map((app: any, i: number) => ({ rank: i, ...app }));
   });
 
   const deployApplication = $(({ name, version, ...fields }: { name: string; version: string }) => {
@@ -70,11 +63,10 @@ export default component$(() => {
     };
     fetch(
       platformUrl + "/api/applications/" + encodeURIComponent(name) + "/" + encodeURIComponent(version),
-      requestOptions
+      requestOptions,
     )
       .then((response) => response.json())
-      .then((id) => pushSpinner(id))
-      .catch((error) => console.log(error));
+      .then((id) => pushSpinner(id));
   });
 
   return (
@@ -83,12 +75,13 @@ export default component$(() => {
       <MUICardContent>
         <Resource
           value={applicationsResource}
+          onPending={() => <p>Loading...</p>}
           onResolved={(applications) => {
             state.rows = applications;
             return <ApplicationGrid rows={state.rows} />;
           }}
           onRejected={(reason) => {
-            return reason;
+            return <p>{`${reason}`}</p>;
           }}
         />
       </MUICardContent>

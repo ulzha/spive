@@ -12,7 +12,11 @@ import {
   TextField,
 } from "@mui/material";
 
-export default function NewApplicationForm({ onNew }: { onNew: ({}: { name: string; version: string }) => any }) {
+export interface NewApplicationFormProps {
+  onNew: ({}: { name: string; version: string }) => any;
+}
+
+export default function NewApplicationForm({ onNew }: NewApplicationFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [version, setVersion] = useState("");
