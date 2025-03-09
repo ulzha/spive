@@ -39,13 +39,16 @@ function generateDummyTimelineBars(applications) {
   const DATA_COUNT = 175;
   const WIDTH      = 700;
 
-  for (const a of applications) {
+  for (const [i, a] of applications.entries()) {
     const data = d3.range(-DATA_COUNT, 0).map( d => {
       windowStart = Math.floor(new Date().getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
+      n = 1 - windowStart % (60 * 60 * 1000) / (60 * 60 * 1000);
+      // k = (d % (i + 2) == 0 ? 1 : 0);
+      k = (i + 1) / applications.length;
       return {
         windowStart: windowStart,
         windowEnd: windowStart + 60 * 1000,
-        nOutputEvents: 1 - windowStart % (60 * 60 * 1000) / (60 * 60 * 1000),
+        nOutputEvents: n * k,
       };
     });
     addBars(d3.select(`#timeline-svg-${a.id}`), data);
@@ -74,9 +77,8 @@ function renderTimelineAxis(x) {
 
 function zoomTimeline({transform}) {
   const now = new Date();
-  // TODO check if it extrapolates - https://d3js.org/d3-scale/time doesn't say
   const x = d3.scaleUtc()
-    .domain([new Date(Date.UTC(0, 0)), now])
+    .domain([Date.UTC(0, 0), now])
     // .domain([0, now.getTime() / (60 * 1000) * 5])
     .range([0, 700]);
     // .range([0, now.getTime() / (60 * 1000) * 5]);
@@ -84,7 +86,7 @@ function zoomTimeline({transform}) {
   const xz = transform.rescaleX(x);
 
   // Bars are moved around en masse, courtesy of SVG groups
-  zoomBars(this, transform, xz);
+  zoomBars(d3.select(this), xz);
 
   d3.selectAll(".timeline svg")
     // avoid recursing on the element that generated the call. Note: `this` won't work with an arrow function

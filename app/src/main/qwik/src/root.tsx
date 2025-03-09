@@ -28,7 +28,7 @@ export default component$(() => {
         <RouterOutlet />
         <ServiceWorkerRegister />
         <script type="text/javascript" src="/d3.v6.min.js" />
-        <script type="text/javascript" src="/bigsvg.js" />
+        <script type="text/javascript" src="/bfsvg.js" />
         <script type="text/javascript" src="/timeline.js" />
       </body>
     </QwikCityProvider>
