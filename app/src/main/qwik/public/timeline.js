@@ -6,6 +6,8 @@ renderTimeline = function(el, id) {
   // and dunno where the overflow-into-another-color compaction idea came from
   const WIDTH      = 700;
   const HEIGHT     = 10;
+  // TODO stably compute, the intent is 5 pixels per <smallest Timeline.Scale>
+  const MAX_SCALE_FACTOR = 16 * 65536 * 26.9109046708
 
   const rangePicker = d3.select(el)
     .classed('timeline', true)
@@ -22,7 +24,7 @@ renderTimeline = function(el, id) {
   // singleton to zoom all timelines together
   if (!zoomTimeline.zoom) {
     zoomTimeline.zoom = d3.zoom()
-      .scaleExtent([1, 16 * 65536]) // TODO max to 5 pixels per second default. Allow custom/infinite?
+      .scaleExtent([1, MAX_SCALE_FACTOR])
       .extent([[0, 0], [WIDTH, HEIGHT]])  // getBoundingClientRect?
       .translateExtent([[0, 0], [WIDTH, 0]])
       .on("zoom", zoomTimeline);
@@ -32,7 +34,12 @@ renderTimeline = function(el, id) {
   svg.call(zoomTimeline.zoom)
     .transition()
       .duration(750)
-      .call(zoomTimeline.zoom.scaleTo, 16 * 65536, [WIDTH, 0]);
+      .call(zoomTimeline.zoom.scaleTo, MAX_SCALE_FACTOR / 60, [WIDTH, 0]);
+}
+
+function dummyHertz(t) {
+  // sawtooth growing from 0 to 1 over the course of an hour
+  return windowStart % (60 * 60 * 1000) / (60 * 60 * 1000);
 }
 
 function generateDummyTimelineBars(applications) {
@@ -40,18 +47,26 @@ function generateDummyTimelineBars(applications) {
   const WIDTH      = 700;
 
   for (const [i, a] of applications.entries()) {
+    const now = new Date();
+    const k = (i + 1) / applications.length;
     const data = d3.range(-DATA_COUNT, 0).map( d => {
-      windowStart = Math.floor(new Date().getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
-      n = 1 - windowStart % (60 * 60 * 1000) / (60 * 60 * 1000);
-      // k = (d % (i + 2) == 0 ? 1 : 0);
-      k = (i + 1) / applications.length;
+      windowStart = Math.floor(now.getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
       return {
         windowStart: windowStart,
         windowEnd: windowStart + 60 * 1000,
-        nOutputEvents: n * k,
+        height: dummyHertz(windowStart) * 10 * k,
       };
     });
     addBars(d3.select(`#timeline-svg-${a.id}`), data);
+    const dataSecond = d3.range(-60, 0).map( d => {
+      windowStart = Math.floor(now.getTime() / (1000)) * (1000) + d * 1000;
+      return {
+        windowStart: windowStart,
+        windowEnd: windowStart + 1000,
+        height: dummyHertz(windowStart) * 10 * k,
+      };
+    });
+    addBars(d3.select(`#timeline-svg-${a.id}`), dataSecond);
   }
 
   // TODO not when panned somewhere intentionally

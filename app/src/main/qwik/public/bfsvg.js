@@ -13,7 +13,6 @@
 const BAR_MAX_HEIGHT = 10;
 const BAR_INTERVAL = 5;
 const BAR_WIDTH = 3;
-const y = d3.scaleLinear().domain([0, 1]).range([BAR_MAX_HEIGHT, 0]);
 
 // seconds per bar
 const windowLengths = [
@@ -21,6 +20,7 @@ const windowLengths = [
   60,
   60 * 60,
   60 * 60 * 24,
+  60 * 60 * 24 * 365,  // FIXME
 ];
 
 function BarGroup(windowLength, start, end, svg) {
@@ -74,9 +74,9 @@ function addBars(svg, data) {
     .join('rect')
       .classed('bar', true)
       .attr('x', d => (d.windowStart - group.start) / windowLength * BAR_INTERVAL)
-      .attr('y', d => BAR_MAX_HEIGHT - y(d.nOutputEvents))
+      .attr('y', d => BAR_MAX_HEIGHT - d.height)
       .attr('width', BAR_WIDTH)
-      .attr('height', d => y(d.nOutputEvents))
+      .attr('height', d => d.height)
       .attr('fill', '#1db855');
 }
 
@@ -85,12 +85,31 @@ function zoomBars(el, xz) {
   if (!barGroups) {
     return;
   }
-  for (const group of barGroups[1]) {
-    const x = xz(group.start);
-    const x2 = xz(group.end);
-    const k1 = (x2 - x) * windowLengths[1] * 1000 / (group.end - group.start) / 5;
-    // console.log("applying zoom for level 1 group", new Date(group.start), tr.toString(), `translate(${x}, 0) scale(${k1}, 1)`);
-    group.g
-      .attr('transform', `translate(${x}, 0) scale(${k1}, 1)`);
+
+  // choose only one level that's going to be visible - the first one whose bars are spaced at least BAR_INTERVAL apart
+  const levelVisible = new Array(windowLengths.length).fill(false);
+  for (i = 0; i < windowLengths.length; i++) {
+    const xInterval = xz(new Date(windowLengths[i] * 1000)) - xz(new Date(0));
+    console.log(i, "xInterval", xInterval);
+    if (xInterval >= BAR_INTERVAL) {
+      levelVisible[i] = true;
+      break;
+    }
+  };
+
+  for (const [zoomLevel, groups] of barGroups.entries()) {
+    for (const group of groups) {
+      if (!levelVisible[zoomLevel] || group.end < xz.domain()[0] || group.start > xz.domain()[1]) {
+        group.g.attr('visibility', 'hidden');
+      } else {
+        const x = xz(group.start);
+        const x2 = xz(group.end);
+        const k = (x2 - x) * windowLengths[zoomLevel] * 1000 / (group.end - group.start) / 5;
+        console.log("visible group at level", zoomLevel, group.start, group.end, `translate(${x}, 0) scale(${k}, 1)`);
+        group.g
+        .attr('visibility', 'visible')
+        .attr('transform', `translate(${x}, 0) scale(${k}, 1)`);
+      }
+    }
   }
 }
