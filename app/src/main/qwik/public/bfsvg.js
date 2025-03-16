@@ -58,7 +58,7 @@ function getBarGroup(svg, zoomLevel, windowStart) {
   return newGroup;
 }
 
-function addBars(svg, data) {
+function addBars(svg, data, blur) {
   const windowLength = data[0].windowEnd - data[0].windowStart;
   const zoomLevel = windowLengths.findIndex(z => z >= windowLength / 1000);
   if (zoomLevel === -1) {
@@ -67,17 +67,43 @@ function addBars(svg, data) {
   const group = getBarGroup(svg, zoomLevel, data[0].windowStart);
   group.update(data);
   console.log("adding bars", windowLength, zoomLevel, group.start, group.end, data[0].windowStart, data[data.length - 1].windowEnd);
-  group.g
-    .attr('x', 0)  // if this gives flicker, then maybe transform on the fly (if groups never grow backwards then it won't)
-    .selectAll('.bar')
-    .data(group.data, d => d.windowStart)
-    .join('rect')
+
+  function enterBar(enter) {
+    return enter.append('rect')
       .classed('bar', true)
       .attr('x', d => (d.windowStart - group.start) / windowLength * BAR_INTERVAL)
       .attr('y', d => BAR_MAX_HEIGHT - d.height)
       .attr('width', BAR_WIDTH)
       .attr('height', d => d.height)
       .attr('fill', '#1db855');
+  }
+
+  group.g
+    .attr('x', 0)  // if this gives flicker, then maybe transform on the fly (if groups never grow backwards then it won't)
+    .selectAll('.bar')
+    .data(group.data, d => d.windowStart)
+    .join(enterBar);
+
+  if (blur) {
+    function enterBlur(enter) {
+      return enter.append('g')
+        .classed('blur', true)
+        .attr('filter', 'url(#blur)')
+        .attr('transform', d => `translate(${(d.windowStart - group.start) / windowLength * BAR_INTERVAL},0)`)
+        .attr('width', BAR_INTERVAL)
+        .attr('height', BAR_MAX_HEIGHT)
+        .append('rect')
+          .attr('y', d => BAR_MAX_HEIGHT - d.height)
+          .attr('width', BAR_WIDTH)
+          .attr('height', d => d.height)
+          .attr('fill', '#1db855');
+    }
+
+    group.g
+      .selectAll('.blur')
+      .data(blur, d => d.windowStart)
+      .join(enterBlur);
+  }
 }
 
 function zoomBars(el, xz) {

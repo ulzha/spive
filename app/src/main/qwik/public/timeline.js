@@ -7,7 +7,7 @@ renderTimeline = function(el, id) {
   const WIDTH      = 700;
   const HEIGHT     = 10;
   // TODO stably compute, the intent is 5 pixels per <smallest Timeline.Scale>
-  const MAX_SCALE_FACTOR = 16 * 65536 * 26.9109046708
+  const MAX_SCALE_FACTOR = 16 * 65536 * 26.92
 
   const rangePicker = d3.select(el)
     .classed('timeline', true)
@@ -20,6 +20,12 @@ renderTimeline = function(el, id) {
       .style('outline', '1px solid orange')
       .attr('width', WIDTH)
       .attr('height', HEIGHT);
+
+  svg.append('defs')
+    .append('filter')
+      .attr('id', 'blur')
+      .append('feGaussianBlur')
+        .attr('stdDeviation', 2);
 
   // singleton to zoom all timelines together
   if (!zoomTimeline.zoom) {
@@ -42,6 +48,12 @@ function dummyHertz(t) {
   return windowStart % (60 * 60 * 1000) / (60 * 60 * 1000);
 }
 
+function dummyHertzEstimate(dataSecond, windowStart) {
+  // average over the secondly windows that have been received
+  const received = dataSecond.filter(d => d.windowStart >= windowStart);
+  return received.reduce((acc, d) => acc + d.height, 0) / received.length;
+}
+
 function generateDummyTimelineBars(applications) {
   const DATA_COUNT = 175;
   const WIDTH      = 700;
@@ -49,6 +61,7 @@ function generateDummyTimelineBars(applications) {
   for (const [i, a] of applications.entries()) {
     const now = new Date();
     const k = (i + 1) / applications.length;
+
     const data = d3.range(-DATA_COUNT, 0).map( d => {
       windowStart = Math.floor(now.getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
       return {
@@ -57,7 +70,6 @@ function generateDummyTimelineBars(applications) {
         height: dummyHertz(windowStart) * 10 * k,
       };
     });
-    addBars(d3.select(`#timeline-svg-${a.id}`), data);
     const dataSecond = d3.range(-60, 0).map( d => {
       windowStart = Math.floor(now.getTime() / (1000)) * (1000) + d * 1000;
       return {
@@ -66,6 +78,20 @@ function generateDummyTimelineBars(applications) {
         height: dummyHertz(windowStart) * 10 * k,
       };
     });
+
+    // BE would only send final iopws (completion determined from input completion mark)
+    // the blurry partial ones are produced on FE (partialness determined by being between the last completed window and the current time/rightmost time on screen)
+    const lastWindow = data[data.length - 1];
+    const blur = [
+      {
+        windowStart: lastWindow.windowEnd,
+        windowEnd: lastWindow.windowEnd + 60 * 1000,
+        height: dummyHertzEstimate(dataSecond, lastWindow.windowEnd),
+        blurStart: lastWindow.windowEnd + 60 * 1000 * dataSecond.length / 60,
+      }
+    ];
+
+    addBars(d3.select(`#timeline-svg-${a.id}`), data, blur);
     addBars(d3.select(`#timeline-svg-${a.id}`), dataSecond);
   }
 
