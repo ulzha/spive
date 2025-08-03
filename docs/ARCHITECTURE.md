@@ -2,7 +2,7 @@
 
 ### Spīve Architecture Strategy
 
-Spīve platform is a facade/glue that sits on top of technology stacks for event stream storage and processing (often underpinned by some of: Apache Kafka, Apache Pulsar, Google Cloud Pub/Sub, Amazon Kinesis, Kubernetes), and offers developers a simple abstraction for writing event-sourced applications, as well as a UI for operating/managing these applications.
+Spīve platform is a facade/glue that sits on top of technology stacks for event stream storage and processing (often underpinned by some of: Apache Kafka, Apache Pulsar, Google Cloud Pub/Sub, KurrentDB, Amazon Kinesis, Kubernetes), and offers developers a simple abstraction for writing event-sourced applications, as well as a UI for operating/managing these applications.
 
 TODO image
 

@@ -79,8 +79,8 @@ function generateDummyTimelineBars(applications) {
       };
     });
 
-    // BE would only send final iopws (completion determined from input completion mark)
-    // the blurry partial ones are produced on FE (partialness determined by being between the last completed window and the current time/rightmost time on screen)
+    // TODO incorporate final iopws by shard, with a touch of blur (when an instance is erroring/stalling, and the app and its downstream graph is lumbering on with only a subset of partitions, we don't want entire screenfuls blurred and barless)
+    // blur distinctly input bars layer only? In gray - orange - red?
     const lastWindow = data[data.length - 1];
     const blur = [
       {
@@ -98,6 +98,37 @@ function generateDummyTimelineBars(applications) {
   // TODO not when panned somewhere intentionally
   // zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date(), 0, [WIDTH, 0]);  dunno why this
   zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date().getTime() / (60 * 1000) * 5, 0, [WIDTH, 0]);
+}
+
+function fetchProcessTimeline(processId) {
+  return fetch(`/api/process/${processId}/timeline`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const bars = data.map(d => {
+        return {
+          windowStart: d.tile.windowStart,
+          windowEnd: d.tile.windowEnd,
+          height: d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart) * 1000,
+        };
+      });
+      addBars(d3.select(`#timeline-svg-${processId}`), bars);
+    });
+}
+
+function fetchTimelineBars(applications) {
+  const WIDTH = 700;
+
+  Promise.all(applications.map(a => fetchProcessTimeline(a.id)))
+    .then(() => {
+      // TODO not when panned somewhere intentionally
+      // zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date(), 0, [WIDTH, 0]);  dunno why this
+      zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date().getTime() / (60 * 1000) * 5, 0, [WIDTH, 0]);
+    });
 }
 
 function renderTimelineAxis(x) {

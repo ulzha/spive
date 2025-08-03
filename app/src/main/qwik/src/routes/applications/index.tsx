@@ -7,6 +7,7 @@ import ApplicationGrid from "~/components/application/grid";
 import styles from "~/components/application/application.module.css";
 
 declare const generateDummyTimelineBars: (rows: any[]) => void;
+declare const fetchTimelineBars: (rows: any[]) => void;
 
 const platformUrl = "http://localhost:8440";
 
@@ -27,9 +28,11 @@ export default component$(() => {
     const rows = track(state.rows);
 
     // do we register every new app id to tile streamer, or is streamer going to track applicationsResource? or is backend (dashboard app) going to stream all apps tiles?
-    const dummyEventSourceInterval = setInterval(() => generateDummyTimelineBars(rows), 5000);
+    // const dummyEventSourceInterval = setInterval(() => generateDummyTimelineBars(rows), 5000);
+    const eventSourceInterval = setInterval(() => fetchTimelineBars(rows), 5000);  // FIXME overlapping
 
-    cleanup(() => clearInterval(dummyEventSourceInterval));
+    // cleanup(() => clearInterval(dummyEventSourceInterval));
+    cleanup(() => clearInterval(eventSourceInterval));
   });
 
   const pushSpinner = $((id: string) => {
@@ -48,6 +51,11 @@ export default component$(() => {
         throw new Error(`${response.status} ${response.statusText}`);
       }
       return response.json();
+    }).catch((err) => {
+      return [
+        { id: "flabbergasted", name: "App1" },
+        { id: "flabbergastee", name: "App2" },
+      ];
     });
 
     return res.map((app: any, i: number) => ({ rank: i, ...app }));

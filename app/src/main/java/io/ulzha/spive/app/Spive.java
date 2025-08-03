@@ -114,6 +114,13 @@ public class Spive implements SpiveInstance {
   public void accept(final InstanceIopw event) {
     Process.Instance instance = platform.getInstanceById(event.instanceId());
     instance.timeline.update(event);
+    instance.process.timeline.aggregate(event);
+    // TODO some sort of watermark event consequential to this, when all instances have reported in?
+    // ProcessProgress
+    // ...or PartitionGroupProgress tailored for downstream consumers sharding scheme
+    // Could be ephemerally derived. Seems like an overcomplication to track it in events
+    // Does ProcessProgress exist for the sake of UI perhaps? Indicate completed handling of
+    // minutely windows, so polling of incomplete windows adjusts the start of lookback accordingly
   }
 
   @Override

@@ -10,13 +10,15 @@ import com.linecorp.armeria.server.annotation.Put;
 import com.linecorp.armeria.server.annotation.RequestObject;
 import io.ulzha.spive.app.events.CreateProcess;
 import io.ulzha.spive.app.model.Platform;
-import io.ulzha.spive.app.model.agg.Timeline;
+import io.ulzha.spive.app.model.Process;
+import io.ulzha.spive.app.model.agg.Timeline.Scale;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventTime;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -98,20 +100,42 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
     // Generally, external large objects handling in apps logic needs a facilitating mechanism
   }
 
+  // maybe should just be a mapper tweak, not an extra boilerplate record?
+  public record TileForFrontend(
+    long windowStart,
+    long windowEnd,
+    long nOutputEvents) {}
+
   public record TileSnapshot(
       // Control plane event time. Later tiles supersede earlier ones.
+      // TODO concurrent structure for that contract
       EventTime snapshotTime,
       UUID processId,
       UUID instanceId, // if null then it's aggregated over all instances
-      Timeline.Tile tile) {}
+      TileForFrontend tile) {}
 
   // bulk state fetcher for loading the applications page (TODO later by dashboard id... Or that
   // aggregation happens in a separate DashboardPrecomputer app)
   // subsequent tiles should be filled in by SSE
   // will also need events that invalidate a range of tiles? (As when compacted)
-  @Get("/timeline")
-  public HttpResponse progress() {
-    final List<TileSnapshot> response = null;
+  // @Get("/timeline")
+
+  @Get("/process/{id}/timeline")
+  public HttpResponse processTimeline(@Param("id") String id, @Param("start") String start,
+                              @Param("stop") String stop, @Param("resolution") String resolution) {
+
+    final UUID processId = UUID.fromString(id);
+    final Process process = platform.processesById.get(processId);
+    final List<TileSnapshot> response = new ArrayList<>();
+
+    for (var tileEntry: process.timeline.tiles.get(Scale.MINUTE).entrySet()) {
+      var tile = tileEntry.getValue();
+      response.add(new TileSnapshot(
+          null,
+          processId,
+          null,
+          new TileForFrontend(tile.windowStart().getEpochSecond(), tile.windowEnd().getEpochSecond(), tile.nOutputEvents())));
+    }
     return HttpResponse.ofJson(response);
   }
 }

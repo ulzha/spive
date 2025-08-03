@@ -91,6 +91,39 @@ public class Timeline {
                 iopw.nInputEventsHandledOk(),
                 0,
                 iopw.nOutputEvents()));
-    System.out.println("Minutely scale updated with " + iopw);
+  }
+
+  public void aggregate(final InstanceIopw iopw) {
+    tiles
+    .get(Scale.MINUTE)
+    .compute(
+        iopw.windowStart(),
+        (k, v) -> {
+          if (v == null) {
+            return new Tile(
+                iopw.windowStart(),
+                iopw.windowEnd(),
+                0,
+                0,
+                0,
+                0,
+                0,
+                iopw.nInputEventsHandledOk(),
+                0,
+                iopw.nOutputEvents());
+          } else {
+            return new Tile(
+                v.windowStart(),
+                v.windowEnd(),
+                0,
+                0,
+                0,
+                0,
+                0,
+                v.nInputEventsHandledOk() + iopw.nInputEventsHandledOk(),
+                0,
+                v.nOutputEvents() + iopw.nOutputEvents());
+          }
+        });
   }
 }

@@ -23,15 +23,12 @@
 - [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by an hourly batch scan?) Debouncing perhaps useful in some cases?
 - [ ] An example application retrieving events for history display as a user-facing feature
 - [ ] Example advanced distributed data structure implementation (real time toplist?)
-- [ ] Visualize workload logs somehow in between events as well... or just link to Stackdriver? Champion [golden signals](https://sre.google/sre-book/monitoring-distributed-systems/), aligned to timeline (with its warning and error hues)... or to the deploy log (because that's real-ish time, whereas applications may be far from it)? Should have a way to view logs sorted by event time?
-- [ ] Wall clock time view for metrics, in- or excluding instances that are in catchup... Embedded from 3rd party sources like that? Example with Open Telemetry, Grafana Mimir
 - [ ] Example interactive application, web page updating itself until you see your writes (Also where does the fanout lie for building one result set from a massively sharded backend? In a sidecar? Or rather, fan-in updates to an index in front, like ElasticSearch, and get away with only single gets from backend?)
 - [ ] Compute checksums and sanity check for nondeterminism (error on replay - alt. warning if tolerated... Of a suppressed kind?)
 - [ ] Compute diffs between streams
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
 - [ ] Example minor upgrade (involves inspection of diffs)
 - [ ] Example major upgrade flow (must be trivial to add a new field to CreateFoo event, for example. New Stream - copy Types -> edit? Then copy Stream with defaults? When to deploy the process? What to do with partially applied side effects when handlers of the old process are interrupted?)
-- [ ] PoC cost visualization (in control plane timeline a.k.a. deploy log, as annotations sourced from a separate app) - cost+trend of each replay, and cost+trend of nominal operation between deploys
 - [ ] Dark mode, HTML (noscript) mode, Zen mode
 - [ ] Support distributed synchronization of snapshot workloads across shards (may fail on network partition. Scheduling in advance increases reliability) (may need to freeze partition layout to deterministically produce dataset files... And have some sort of stable unique identifier)
 - [ ] Pause function ("wait for input" workload shorthand?) in UI to pause a partition/instance/the whole world at a given event time, indefinitely - useful for scheduled maintenance of external systems, debugging, etc.
@@ -91,7 +88,7 @@
 - [ ] SpiveCompactor as a separate infra application. (Only for compactable applications that provide the compaction job logic.) (Compactions can be batch, Kappa architecture meets Lambda architecture.) (Compaction also to play a role in GDPR/PII data deletion?) Compaction to generate historical graph? (Doubt)
 - [ ] Example compaction job as a reduce operator packaged alongside event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
 - [ ] SpiveArchiver as a related infra application
-- [ ] Investigate snapshotting the process memory at a low level... Though this wouldn't work across code versions... (No need to snapshot workloads or gateways, which deal with all the impure things like handles and resources. All the instance state in memory must be completely at rest between events. If we support spill to disk, must capture that too.) https://github.com/google/snappy-start, CRIU
+- [ ] Investigate snapshotting the process memory at a low level... Though this wouldn't work across code versions... (No need to snapshot workloads or gateways, which deal with all the impure things like handles and resources. All the instance state in memory must be completely at rest between events. If we support spill to disk, must capture that too.) https://modal.com/blog/mem-snapshots, CRIU
 - [ ] Example notify()/wait() to concurrent workloads when something changes (must work without breaking memory snapshotting). More specific convenience APIs, like observable EventLoop.currentEventTime (doubt)?
 - [ ] Batching of side effects - how to batch also multiple side effects for a single partition while keeping consistency guarantees? Could be a relevant optimization in some use cases
 - [ ] Fluid namespacing, decoupled from view grouping/favoriting (not displayed when unambiguous, trivial adding of a layer, assisted merging)... Coupled with ownership structure?
@@ -100,6 +97,11 @@
 - [ ] Periodically archivable application helpers, aware that only a limited event history matters? Like in bookkeeping, with montly reporting, or in trading, with a daily cycle.
 - [ ] Stream and event handler design should facilitate rekeying (e.g. `channel` -> `channel+priority` should not cause much code change, but enable queue management, if that's not at odds with the application logic. Same for `something` -> `something+s2cell` - not much code change, but enables geosharding)
 - [ ] Grouping of companion applications which consume a given application's events (a compactor, a generated backup replicator, a generated optimization attempt, etc.) close together with the primary application for UI intuitiveness. (And for risky event visibility, and for cost visibility.)
+
+### Important integrations
+
+- [ ] Wall clock time view for metrics and logs, in- or excluding instances that are in catchup... Embedded from 3rd party sources? Champion [golden signals](https://sre.google/sre-book/monitoring-distributed-systems/). Aligned to timeline (with its warning and error hues)... or to the deploy log (because that's real-ish time, whereas applications may be far from it)? Example with Open Telemetry, Grafana Mimir
+- [ ] PoC cost visualization (in control plane timeline a.k.a. deploy log, as annotations sourced from a separate app) - cost+trend of each replay, and cost+trend of nominal operation between deploys
 
 ### Undecided problems
 
