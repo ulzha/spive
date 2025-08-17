@@ -7,7 +7,7 @@ renderTimeline = function(el, id) {
   const WIDTH      = 700;
   const HEIGHT     = 10;
   // TODO stably compute, the intent is 5 pixels per <smallest Timeline.Scale>
-  const MAX_SCALE_FACTOR = 16 * 65536 * 26.92
+  const MAX_SCALE_FACTOR = 16 * 65536 * 27.1;
 
   const rangePicker = d3.select(el)
     .classed('timeline', true)
@@ -81,6 +81,16 @@ function generateDummyTimelineBars(applications) {
 
     // TODO incorporate final iopws by shard, with a touch of blur (when an instance is erroring/stalling, and the app and its downstream graph is lumbering on with only a subset of partitions, we don't want entire screenfuls blurred and barless)
     // blur distinctly input bars layer only? In gray - orange - red?
+    // for outputs, no blur but blinking background in sync with caret? (Many instances may be in different event times currently. Just make it somewhat clear where the past/complete bars are)
+
+    // how to indicate that a window is not complete but some output already exists? Caret blink with log momentary hertz, stem fat and colored to a height roughly matching hertz-so-far?
+    // shadow effect on caret, cue input and output bars?
+    // do not design for fat bars at all?
+    // do not design for fat in-progress bars at all? In wider zooms, just blend the latest from sub-pixel windows? Still not very likeable, may look like a misleading average forecast
+    // ux toggle between smooth (resolution annotated on the side) and discrete (resolution readable on the timeline)?
+    // caret dividing the in-progress bar, correct current hertz-so-far and nothing to the right? Smooth or discrete position possible
+    // correct (min) total hertz, and caret y = hertz-so-far? Might be flappy around the overflow
+
     const lastWindow = data[data.length - 1];
     const blur = [
       {
@@ -101,19 +111,30 @@ function generateDummyTimelineBars(applications) {
 }
 
 function fetchProcessTimeline(processId) {
-  return fetch(`/api/process/${processId}/timeline`)
+  const platformUrl = "http://localhost:8440"; // FIXME backend single source of truth
+  const now = new Date();
+  const timelineQueryParams = new URLSearchParams({
+     // TODO fit width, don't re-request completed windows
+    start: now.toISOString(),
+    stop: new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
+    resolution: 'minute',
+  }).toString();
+  return fetch(`${platformUrl}/api/process/${processId}/timeline?${timelineQueryParams}`)
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP status ${response.status}`);
       }
       return response.json();
     })
     .then(data => {
       const bars = data.map(d => {
         return {
-          windowStart: d.tile.windowStart,
-          windowEnd: d.tile.windowEnd,
-          height: d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart) * 1000,
+          windowStart: d.tile.windowStart * 1000,
+          windowEnd: d.tile.windowEnd * 1000,
+          height: Math.max(
+            Math.min(d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart), 10),
+            d.tile.nOutputEvents ? 1 : 0
+          ),
         };
       });
       addBars(d3.select(`#timeline-svg-${processId}`), bars);

@@ -101,10 +101,7 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
   }
 
   // maybe should just be a mapper tweak, not an extra boilerplate record?
-  public record TileForFrontend(
-    long windowStart,
-    long windowEnd,
-    long nOutputEvents) {}
+  public record TileForFrontend(long windowStart, long windowEnd, long nOutputEvents) {}
 
   public record TileSnapshot(
       // Control plane event time. Later tiles supersede earlier ones.
@@ -121,20 +118,27 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
   // @Get("/timeline")
 
   @Get("/process/{id}/timeline")
-  public HttpResponse processTimeline(@Param("id") String id, @Param("start") String start,
-                              @Param("stop") String stop, @Param("resolution") String resolution) {
+  public HttpResponse processTimeline(
+      @Param("id") String id,
+      @Param("start") String start,
+      @Param("stop") String stop,
+      @Param("resolution") String resolution) {
 
     final UUID processId = UUID.fromString(id);
     final Process process = platform.processesById.get(processId);
     final List<TileSnapshot> response = new ArrayList<>();
 
-    for (var tileEntry: process.timeline.tiles.get(Scale.MINUTE).entrySet()) {
+    for (var tileEntry : process.timeline.tiles.get(Scale.MINUTE).entrySet()) {
       var tile = tileEntry.getValue();
-      response.add(new TileSnapshot(
-          null,
-          processId,
-          null,
-          new TileForFrontend(tile.windowStart().getEpochSecond(), tile.windowEnd().getEpochSecond(), tile.nOutputEvents())));
+      response.add(
+          new TileSnapshot(
+              null,
+              processId,
+              null,
+              new TileForFrontend(
+                  tile.windowStart().getEpochSecond(),
+                  tile.windowEnd().getEpochSecond(),
+                  tile.nOutputEvents())));
     }
     return HttpResponse.ofJson(response);
   }
