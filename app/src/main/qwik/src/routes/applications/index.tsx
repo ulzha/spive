@@ -4,16 +4,21 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 import CommonCard from "~/components/nav/common";
 import Header from "~/components/application/header";
 import ApplicationGrid from "~/components/application/grid";
+import Timeline from "~/components/application/timeline/timeline";
 import styles from "~/components/application/application.module.css";
 
-declare const generateDummyTimelineBars: (rows: any[]) => void;
-declare const fetchTimelineBars: (rows: any[]) => void;
-
-const platformUrl = "http://localhost:8440";
+const platformUrl = import.meta.env.PUBLIC_PLATFORM_URL;
 
 export default component$(() => {
   const sseLastEventId = useSignal(""); // "id" field is updated (with something pseudorandom? Event time?) when Spive progresses through events in dashboard state change stream. Might be debounced a fair bit on the backend, but also track() effectively debounces, I suppose
-  const state = useStore<any>({ rows: [] });
+  const state = useStore<any>({rows: [] });
+  // shared among all timelines for now. They're zoomed together and refreshed together
+  const timelinesState = useStore<any>({
+    offset: 0, // right hand side of the timeline shall show now + offset (ms)
+    scale: 1,
+    resolution: 'minutes',
+    fetchTrigger: {value: 1}, // nested to let only barsResource in timelines re-render, if possible, not the component itself
+  });
 
   useVisibleTask$(() => {
     const eventSource = new EventSource(`${platformUrl}/sse`);
@@ -28,11 +33,12 @@ export default component$(() => {
     const rows = track(state.rows);
 
     // do we register every new app id to tile streamer, or is streamer going to track applicationsResource? or is backend (dashboard app) going to stream all apps tiles?
-    // const dummyEventSourceInterval = setInterval(() => generateDummyTimelineBars(rows), 5000);
-    const eventSourceInterval = setInterval(() => fetchTimelineBars(rows), 5000);  // FIXME overlapping
+    const fetchTimelineInterval = setInterval(() => {
+      timelinesState.fetchTrigger.value ^= 1;
+      zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), (new Date().getTime() + timelinesState.offset) / (60 * 1000) * 5, 0, [700, 0]);
+    }, 5000);
 
-    // cleanup(() => clearInterval(dummyEventSourceInterval));
-    cleanup(() => clearInterval(eventSourceInterval));
+    cleanup(() => clearInterval(fetchTimelineInterval));
   });
 
   const pushSpinner = $((id: string) => {
@@ -86,7 +92,15 @@ export default component$(() => {
           onPending={() => <p>Loading...</p>}
           onResolved={(applications) => {
             state.rows = applications;
-            return <ApplicationGrid rows={state.rows} />;
+            // ApplicationGrid is a React island, whereas we want to work with timelines Qwik style, so for now they aren't children of ApplicationGrid. SVG updates are hand-grafted into cells
+            return (
+              <>
+                <ApplicationGrid rows={state.rows} />
+                {state.rows.map((row: any) => (
+                  <Timeline key={row.id} processId={row.id} {...timelinesState} />
+                ))}
+              </>
+            );
           }}
           onRejected={(reason) => {
             return <p>{`${reason}`}</p>;

@@ -43,115 +43,6 @@ renderTimeline = function(el, id) {
       .call(zoomTimeline.zoom.scaleTo, MAX_SCALE_FACTOR / 60, [WIDTH, 0]);
 }
 
-function dummyHertz(t) {
-  // sawtooth growing from 0 to 1 over the course of an hour
-  return windowStart % (60 * 60 * 1000) / (60 * 60 * 1000);
-}
-
-function dummyHertzEstimate(dataSecond, windowStart) {
-  // average over the secondly windows that have been received
-  const received = dataSecond.filter(d => d.windowStart >= windowStart);
-  return received.reduce((acc, d) => acc + d.height, 0) / received.length;
-}
-
-function generateDummyTimelineBars(applications) {
-  const DATA_COUNT = 175;
-  const WIDTH      = 700;
-
-  for (const [i, a] of applications.entries()) {
-    const now = new Date();
-    const k = (i + 1) / applications.length;
-
-    const data = d3.range(-DATA_COUNT, 0).map( d => {
-      windowStart = Math.floor(now.getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
-      return {
-        windowStart: windowStart,
-        windowEnd: windowStart + 60 * 1000,
-        height: dummyHertz(windowStart) * 10 * k,
-      };
-    });
-    const dataSecond = d3.range(-60, 0).map( d => {
-      windowStart = Math.floor(now.getTime() / (1000)) * (1000) + d * 1000;
-      return {
-        windowStart: windowStart,
-        windowEnd: windowStart + 1000,
-        height: dummyHertz(windowStart) * 10 * k,
-      };
-    });
-
-    // TODO incorporate final iopws by shard, with a touch of blur (when an instance is erroring/stalling, and the app and its downstream graph is lumbering on with only a subset of partitions, we don't want entire screenfuls blurred and barless)
-    // blur distinctly input bars layer only? In gray - orange - red?
-    // for outputs, no blur but blinking background in sync with caret? (Many instances may be in different event times currently. Just make it somewhat clear where the past/complete bars are)
-
-    // how to indicate that a window is not complete but some output already exists? Caret blink with log momentary hertz, stem fat and colored to a height roughly matching hertz-so-far?
-    // shadow effect on caret, cue input and output bars?
-    // do not design for fat bars at all?
-    // do not design for fat in-progress bars at all? In wider zooms, just blend the latest from sub-pixel windows? Still not very likeable, may look like a misleading average forecast
-    // ux toggle between smooth (resolution annotated on the side) and discrete (resolution readable on the timeline)?
-    // caret dividing the in-progress bar, correct current hertz-so-far and nothing to the right? Smooth or discrete position possible
-    // correct (min) total hertz, and caret y = hertz-so-far? Might be flappy around the overflow
-
-    const lastWindow = data[data.length - 1];
-    const blur = [
-      {
-        windowStart: lastWindow.windowEnd,
-        windowEnd: lastWindow.windowEnd + 60 * 1000,
-        height: dummyHertzEstimate(dataSecond, lastWindow.windowEnd),
-        blurStart: lastWindow.windowEnd + 60 * 1000 * dataSecond.length / 60,
-      }
-    ];
-
-    addBars(d3.select(`#timeline-svg-${a.id}`), data, blur);
-    addBars(d3.select(`#timeline-svg-${a.id}`), dataSecond);
-  }
-
-  // TODO not when panned somewhere intentionally
-  // zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date(), 0, [WIDTH, 0]);  dunno why this
-  zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date().getTime() / (60 * 1000) * 5, 0, [WIDTH, 0]);
-}
-
-function fetchProcessTimeline(processId) {
-  const platformUrl = "http://localhost:8440"; // FIXME backend single source of truth
-  const now = new Date();
-  const timelineQueryParams = new URLSearchParams({
-     // TODO fit width, don't re-request completed windows
-    start: now.toISOString(),
-    stop: new Date(now.getTime() - 60 * 60 * 1000).toISOString(),
-    resolution: 'minute',
-  }).toString();
-  return fetch(`${platformUrl}/api/process/${processId}/timeline?${timelineQueryParams}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP status ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      const bars = data.map(d => {
-        return {
-          windowStart: d.tile.windowStart * 1000,
-          windowEnd: d.tile.windowEnd * 1000,
-          height: Math.max(
-            Math.min(d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart), 10),
-            d.tile.nOutputEvents ? 1 : 0
-          ),
-        };
-      });
-      addBars(d3.select(`#timeline-svg-${processId}`), bars);
-    });
-}
-
-function fetchTimelineBars(applications) {
-  const WIDTH = 700;
-
-  Promise.all(applications.map(a => fetchProcessTimeline(a.id)))
-    .then(() => {
-      // TODO not when panned somewhere intentionally
-      // zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date(), 0, [WIDTH, 0]);  dunno why this
-      zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), new Date().getTime() / (60 * 1000) * 5, 0, [WIDTH, 0]);
-    });
-}
-
 function renderTimelineAxis(x) {
   if (!renderTimelineAxis.g?.size()) {
     const xAxisHeight = 20;
@@ -172,9 +63,7 @@ function zoomTimeline({transform}) {
   const now = new Date();
   const x = d3.scaleUtc()
     .domain([Date.UTC(0, 0), now])
-    // .domain([0, now.getTime() / (60 * 1000) * 5])
     .range([0, 700]);
-    // .range([0, now.getTime() / (60 * 1000) * 5]);
 
   const xz = transform.rescaleX(x);
 
