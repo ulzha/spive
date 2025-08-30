@@ -15,7 +15,8 @@ export default component$(() => {
   // shared among all timelines for now. They're zoomed together and refreshed together
   const timelinesState = useStore<any>({
     offset: 0, // right hand side of the timeline shall show now + offset (ms)
-    scale: 1,
+    fetchStart: null,
+    fetchStop: null,
     resolution: 'minutes',
     fetchTrigger: {value: 1}, // nested to let only barsResource in timelines re-render, if possible, not the component itself
   });
@@ -30,13 +31,30 @@ export default component$(() => {
   });
 
   useVisibleTask$(async ({ track, cleanup }) => {
-    const rows = track(state.rows);
+    track(state.rows);
+
+    var timelineVisibleRange = {
+      min: null,
+      max: null
+    };
+
+    const triggerFetch = () => {
+      if (timelineVisibleRange.min !== null) {
+        timelinesState.offset = timelineVisibleRange.max;
+        timelinesState.fetchStart = timelineVisibleRange.min;
+        timelinesState.fetchStop = timelineVisibleRange.max;
+        timelinesState.fetchTrigger.value ^= 1;
+      }
+    };
+
+    zoomTimeline.onZoomed = (min, max) => {
+      timelineVisibleRange.min = min;
+      timelineVisibleRange.max = max;
+      triggerFetch();
+    };
 
     // do we register every new app id to tile streamer, or is streamer going to track applicationsResource? or is backend (dashboard app) going to stream all apps tiles?
-    const fetchTimelineInterval = setInterval(() => {
-      timelinesState.fetchTrigger.value ^= 1;
-      zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), (new Date().getTime() + timelinesState.offset) / (60 * 1000) * 5, 0, [700, 0]);
-    }, 5000);
+    const fetchTimelineInterval = setInterval(triggerFetch, 5000);
 
     cleanup(() => clearInterval(fetchTimelineInterval));
   });
@@ -96,9 +114,9 @@ export default component$(() => {
             return (
               <>
                 <ApplicationGrid rows={state.rows} />
-                {state.rows.map((row: any) => (
+                {timelinesState.fetchStart ? state.rows.map((row: any) => (
                   <Timeline key={row.id} processId={row.id} {...timelinesState} />
-                ))}
+                )) : null}
               </>
             );
           }}

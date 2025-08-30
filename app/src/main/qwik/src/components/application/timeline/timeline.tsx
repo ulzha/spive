@@ -7,13 +7,14 @@ const platformUrl = import.meta.env.PUBLIC_PLATFORM_URL;
 
 interface TimelineProps {
   processId: string;
-  offset: number;
-  scale: number;
+  offset: number; // where to pan svg live... Will be something else for non-live states
+  fetchStart: Date;
+  fetchStop: Date;
   resolution: string;
   fetchTrigger: any;
 }
 
-export default component$<TimelineProps>(({processId, offset, scale, resolution, fetchTrigger}) => {
+export default component$<TimelineProps>(({processId, offset, fetchStart, fetchStop, resolution, fetchTrigger}) => {
   // const now = new Date(); // TODO also keep rendering newest events because user likely will return to that?
 
   const barsResource = useResource$<any>(async ({ track, cleanup }) => {
@@ -21,12 +22,10 @@ export default component$<TimelineProps>(({processId, offset, scale, resolution,
     const abortController = new AbortController();
     cleanup(() => abortController.abort("cleanup"));
 
-    const stop = new Date().getTime() + offset;
-
     const timelineQueryParams = new URLSearchParams({
       // TODO fit width, don't re-request completed windows
-      start: new Date(stop - 3600 * 1000).toISOString(),
-      stop: new Date(stop).toISOString(),
+      start: fetchStart.toISOString(),
+      stop: fetchStop.toISOString(),
       resolution: resolution,
     }).toString();
 
@@ -42,13 +41,14 @@ export default component$<TimelineProps>(({processId, offset, scale, resolution,
   });
 
   const renderTime = new Date().toISOString();
-  const propsDump = `${renderTime} ${processId} ${offset} ${scale} ${resolution} ${fetchTrigger.value}`;
+  const propsDump = <>{`${renderTime} ${processId} ${offset}`}<br/>{`${fetchStart.toISOString()}`}<br/>{`${fetchStop.toISOString()}`}<br/>{`${resolution} ${fetchTrigger.value} `}</>;
 
-  return <Resource
-    value={barsResource}
-    onPending={() => <p>{`${propsDump} loading...`}</p>}
-    onResolved={(timelineResponse) => {
-      if (isBrowser) {
+  return <p>
+    {propsDump}
+    <Resource
+      value={barsResource}
+      onPending={() => <>Loading...</>}
+      onResolved={(timelineResponse) => {
         addBars(d3.select(`#timeline-svg-${processId}`), timelineResponse.map(d => ({
           windowStart: d.tile.windowStart * 1000,
           windowEnd: d.tile.windowEnd * 1000,
@@ -56,17 +56,15 @@ export default component$<TimelineProps>(({processId, offset, scale, resolution,
             Math.min(d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart), 10),
             d.tile.nOutputEvents ? 1 : 0
           ),
-        })));
-      }
-      return <p>{`${propsDump}`}</p>;
-    }}
-    onRejected={(reason) => {
-      if (isBrowser) {
+        })), []);
+        return <>Loaded</>;
+      }}
+      onRejected={(reason) => {
         generateDummyBars(d3.select(`#timeline-svg-${processId}`), 0.7);
-      }
-      return <p>{`${propsDump} ${reason}`}</p>;
-    }}
-  />
+        return <>{`${reason}`}</>;
+      }}
+    />
+  </p>;
 });
 
 // TODO incorporate final iopws by shard, with a touch of blur (when an instance is erroring/stalling, and the app and its downstream graph is lumbering on with only a subset of partitions, we don't want entire screenfuls blurred and barless)

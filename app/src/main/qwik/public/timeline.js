@@ -77,4 +77,8 @@ function zoomTimeline({transform}) {
 
   // The axis and labels are redrawn on every zoom and pan event
   renderTimelineAxis(xz);
+
+  if (zoomTimeline.onZoomed) {
+    zoomTimeline.onZoomed(x.invert(transform.invertX(0)), x.invert(transform.invertX(700)));
+  }
 }
