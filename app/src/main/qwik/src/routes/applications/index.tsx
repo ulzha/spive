@@ -14,10 +14,10 @@ export default component$(() => {
   const state = useStore<any>({rows: [] });
   // shared among all timelines for now. They're zoomed together and refreshed together
   const timelinesState = useStore<any>({
-    offset: 0, // right hand side of the timeline shall show now + offset (ms)
+    offset: 0,
+    level: 1,
     fetchStart: null,
     fetchStop: null,
-    resolution: 'minutes',
     fetchTrigger: {value: 1}, // nested to let only barsResource in timelines re-render, if possible, not the component itself
   });
 
@@ -33,24 +33,16 @@ export default component$(() => {
   useVisibleTask$(async ({ track, cleanup }) => {
     track(state.rows);
 
-    var timelineVisibleRange = {
-      min: null,
-      max: null
+    zoomTimeline.onZoomed = (min, max, level) => {
+      timelinesState.offset = 0;
+      timelinesState.level = level;
+      timelinesState.fetchStart = min;
+      timelinesState.fetchStop = max;
     };
 
     const triggerFetch = () => {
-      if (timelineVisibleRange.min !== null) {
-        timelinesState.offset = timelineVisibleRange.max;
-        timelinesState.fetchStart = timelineVisibleRange.min;
-        timelinesState.fetchStop = timelineVisibleRange.max;
-        timelinesState.fetchTrigger.value ^= 1;
-      }
-    };
-
-    zoomTimeline.onZoomed = (min, max) => {
-      timelineVisibleRange.min = min;
-      timelineVisibleRange.max = max;
-      triggerFetch();
+      timelinesState.fetchTrigger.value ^= 1;
+      zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), (new Date().getTime() + timelinesState.offset) / (60 * 1000) * 5, 0, [700, 0]);
     };
 
     // do we register every new app id to tile streamer, or is streamer going to track applicationsResource? or is backend (dashboard app) going to stream all apps tiles?

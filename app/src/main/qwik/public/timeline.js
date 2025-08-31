@@ -79,6 +79,10 @@ function zoomTimeline({transform}) {
   renderTimelineAxis(xz);
 
   if (zoomTimeline.onZoomed) {
-    zoomTimeline.onZoomed(x.invert(transform.invertX(0)), x.invert(transform.invertX(700)));
+    zoomTimeline.onZoomed(
+      xz.domain()[0],
+      xz.domain()[1],
+      visibleLevel(xz)
+    );
   }
 }

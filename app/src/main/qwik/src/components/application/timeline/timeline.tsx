@@ -8,13 +8,18 @@ const platformUrl = import.meta.env.PUBLIC_PLATFORM_URL;
 interface TimelineProps {
   processId: string;
   offset: number; // where to pan svg live... Will be something else for non-live states
+  level: number;
   fetchStart: Date;
   fetchStop: Date;
-  resolution: string;
   fetchTrigger: any;
 }
 
-export default component$<TimelineProps>(({processId, offset, fetchStart, fetchStop, resolution, fetchTrigger}) => {
+function levelToString(level: number) {
+  const levels = ["seconds", "minutes", "hours", "days", "weeks", "months", "years"];
+  return levels[level];
+}
+
+export default component$<TimelineProps>(({processId, offset, level, fetchStart, fetchStop, fetchTrigger}) => {
   // const now = new Date(); // TODO also keep rendering newest events because user likely will return to that?
 
   const barsResource = useResource$<any>(async ({ track, cleanup }) => {
@@ -26,7 +31,7 @@ export default component$<TimelineProps>(({processId, offset, fetchStart, fetchS
       // TODO fit width, don't re-request completed windows
       start: fetchStart.toISOString(),
       stop: fetchStop.toISOString(),
-      resolution: resolution,
+      resolution: levelToString(level),
     }).toString();
 
     const response = await fetch(`${platformUrl}/api/process/${processId}/timeline?${timelineQueryParams}`, {
@@ -41,7 +46,7 @@ export default component$<TimelineProps>(({processId, offset, fetchStart, fetchS
   });
 
   const renderTime = new Date().toISOString();
-  const propsDump = <>{`${renderTime} ${processId} ${offset}`}<br/>{`${fetchStart.toISOString()}`}<br/>{`${fetchStop.toISOString()}`}<br/>{`${resolution} ${fetchTrigger.value} `}</>;
+  const propsDump = <>{`${renderTime} ${processId} ${offset} ${level}`}<br/>{`${fetchStart.toISOString()}`}<br/>{`${fetchStop.toISOString()}`}<br/>{`${fetchTrigger.value} `}</>;
 
   return <p>
     {propsDump}

@@ -66,7 +66,7 @@ function addBars(svg, data, blur) {
   }
   const group = getBarGroup(svg, zoomLevel, data[0].windowStart);
   group.update(data);
-  console.log("adding bars", windowLength, zoomLevel, group.start, group.end, data[0].windowStart, data[data.length - 1].windowEnd);
+  // console.log("adding bars", windowLength, zoomLevel, group.start, group.end, data[0].windowStart, data[data.length - 1].windowEnd);
 
   function enterBar(enter) {
     return enter.append('rect')
@@ -106,6 +106,16 @@ function addBars(svg, data, blur) {
   }
 }
 
+function visibleLevel(xz) {
+  for (let i = 0; i < windowLengths.length; i++) {
+    const xInterval = xz(new Date(windowLengths[i] * 1000)) - xz(new Date(0));
+    if (xInterval >= BAR_INTERVAL) {
+      return i;
+    }
+  }
+  return windowLengths.length - 1;
+}
+
 function zoomBars(el, xz) {
   const barGroups = barGroupsByApplicationId[el.attr('id')];
   if (!barGroups) {
@@ -113,25 +123,17 @@ function zoomBars(el, xz) {
   }
 
   // choose only one level that's going to be visible - the first one whose bars are spaced at least BAR_INTERVAL apart
-  const levelVisible = new Array(windowLengths.length).fill(false);
-  for (i = 0; i < windowLengths.length; i++) {
-    const xInterval = xz(new Date(windowLengths[i] * 1000)) - xz(new Date(0));
-    console.log(i, "xInterval", xInterval);
-    if (xInterval >= BAR_INTERVAL) {
-      levelVisible[i] = true;
-      break;
-    }
-  };
+  const l = visibleLevel(xz);
 
   for (const [zoomLevel, groups] of barGroups.entries()) {
     for (const group of groups) {
-      if (!levelVisible[zoomLevel] || group.end < xz.domain()[0] || group.start > xz.domain()[1]) {
+      if (zoomLevel !== l || group.end < xz.domain()[0] || group.start > xz.domain()[1]) {
         group.g.attr('visibility', 'hidden');
       } else {
         const x = xz(group.start);
         const x2 = xz(group.end);
         const k = (x2 - x) * windowLengths[zoomLevel] * 1000 / (group.end - group.start) / 5;
-        console.log("visible group at level", zoomLevel, group.start, group.end, `translate(${x}, 0) scale(${k}, 1)`);
+        // console.log("visible group at level", zoomLevel, group.start, group.end, `translate(${x}, 0) scale(${k}, 1)`);
         group.g
         .attr('visibility', 'visible')
         .attr('transform', `translate(${x}, 0) scale(${k}, 1)`);
