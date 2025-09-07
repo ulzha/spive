@@ -27,7 +27,7 @@ export default component$(() => {
       <body>
         <RouterOutlet />
         <ServiceWorkerRegister />
-        <script type="text/javascript" src="/d3.v6.min.js" />
+        <script type="text/javascript" src="/d3.v7.min.js" />
         <script type="text/javascript" src="/bfsvg.js" />
         <script type="text/javascript" src="/timeline.js" />
       </body>

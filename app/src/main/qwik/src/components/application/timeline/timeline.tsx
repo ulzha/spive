@@ -1,4 +1,4 @@
-import { Resource, component$, isBrowser, useResource$ } from "@builder.io/qwik";
+import { Resource, component$, useResource$ } from "@builder.io/qwik";
 import { generateDummyBars } from "./dummy";
 
 declare const addBars: (svgEl: any, bars: any[], blur: any[]) => void;
@@ -21,6 +21,7 @@ function levelToString(level: number) {
 
 export default component$<TimelineProps>(({processId, offset, level, fetchStart, fetchStop, fetchTrigger}) => {
   // const now = new Date(); // TODO also keep rendering newest events because user likely will return to that?
+  console.log("Rendering Timeline");
 
   const barsResource = useResource$<any>(async ({ track, cleanup }) => {
     track(() => fetchTrigger.value);

@@ -6,6 +6,9 @@ function dummyHertz(t) {
 function dummyHertzEstimate(dataSecond, windowStart) {
   // average over the secondly windows that have been received
   const received = dataSecond.filter(d => d.windowStart >= windowStart);
+  if (!received.length) {
+    return 0;
+  }
   return received.reduce((acc, d) => acc + d.height, 0) / received.length;
 }
 

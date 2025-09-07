@@ -42,7 +42,8 @@ export default component$(() => {
 
     const triggerFetch = () => {
       timelinesState.fetchTrigger.value ^= 1;
-      zoomTimeline.zoom.translateTo(d3.select('.timeline svg'), (new Date().getTime() + timelinesState.offset) / (60 * 1000) * 5, 0, [700, 0]);
+      zoomTimeline.updateDomain();
+      zoomTimeline.forceZoomEvent(); // TODO force it smooth
     };
 
     // do we register every new app id to tile streamer, or is streamer going to track applicationsResource? or is backend (dashboard app) going to stream all apps tiles?

@@ -59,6 +59,8 @@ function getBarGroup(svg, zoomLevel, windowStart) {
 }
 
 function addBars(svg, data, blur) {
+  // inspired from https://www.essycode.com/posts/create-sparkline-charts-d3/
+  // and dunno where the overflow-into-another-color compaction idea came from
   const windowLength = data[0].windowEnd - data[0].windowStart;
   const zoomLevel = windowLengths.findIndex(z => z >= windowLength / 1000);
   if (zoomLevel === -1) {
@@ -124,19 +126,21 @@ function zoomBars(el, xz) {
 
   // choose only one level that's going to be visible - the first one whose bars are spaced at least BAR_INTERVAL apart
   const l = visibleLevel(xz);
+  // console.log("visible level", l);
 
   for (const [zoomLevel, groups] of barGroups.entries()) {
     for (const group of groups) {
       if (zoomLevel !== l || group.end < xz.domain()[0] || group.start > xz.domain()[1]) {
-        group.g.attr('visibility', 'hidden');
+        group.g
+          .attr('visibility', 'hidden');
       } else {
         const x = xz(group.start);
         const x2 = xz(group.end);
         const k = (x2 - x) * windowLengths[zoomLevel] * 1000 / (group.end - group.start) / 5;
         // console.log("visible group at level", zoomLevel, group.start, group.end, `translate(${x}, 0) scale(${k}, 1)`);
         group.g
-        .attr('visibility', 'visible')
-        .attr('transform', `translate(${x}, 0) scale(${k}, 1)`);
+          .attr('visibility', 'visible')
+          .attr('transform', `translate(${x}, 0) scale(${k}, 1)`);
       }
     }
   }
