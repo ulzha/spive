@@ -140,3 +140,8 @@ Traffic Director ..is not based on DNS
 People say "service" but they have a function in mind (function of a request)... Stateful services can do the things we wish and still operate at web-scale (by sharding)
 
 Serviceless = focus on data flow of each individual datum/field. DDD/OOP but without that much concern about how to slice it up into services.
+
+Even the special case, backend systems that need steady availability throughout network partitions, can
+be easy to express in Spīve via stream
+to some extent comply and Spīve can help come up with a total order of events after reconnecting
+instead of exposing late arrival of events as a complicating condition in business logic, Spīve chooses to primarily address this problem through first class versioning of streams, resp. processes, along with convenience automation and orchestration to migrate the world (the dependency graph downstream of the corrupt stream, and their hitherto created side effects) to a corrected version of the event order. (Cf. n-temporal models, backdating.) This comes with recomputation costs that may be formidable yet feasible, a tradeoff for overall productivity gain.

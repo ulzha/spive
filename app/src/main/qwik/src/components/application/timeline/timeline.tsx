@@ -1,5 +1,5 @@
 import { Resource, component$, useResource$ } from "@builder.io/qwik";
-import { generateDummyBars } from "./dummy";
+import { generateDummyBars, generateDummyBarsWithIncoming } from "./dummy";
 
 declare const addBars: (svgEl: any, bars: any[], blur: any[]) => void;
 
@@ -66,7 +66,9 @@ export default component$<TimelineProps>(({processId, offset, level, fetchStart,
         return <>Loaded</>;
       }}
       onRejected={(reason) => {
-        generateDummyBars(d3.select(`#timeline-svg-${processId}`), 0.7);
+        (processId === "flabbergasted" ?
+          generateDummyBars(d3.select(`#timeline-svg-${processId}`), 0.7) :
+          generateDummyBarsWithIncoming(d3.select(`#timeline-svg-${processId}`), 0.7));
         return <>{`${reason}`}</>;
       }}
     />

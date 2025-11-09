@@ -43,6 +43,53 @@ export function generateDummyBars(svgEl, k) {
     }
   ];
 
-  addBars(svgEl, dataMinute, blur);
-  addBars(svgEl, dataSecond);
+  addOkBars(svgEl, dataMinute);
+  addBlurBars(svgEl, blur);
+  addOkBars(svgEl, dataSecond);
+}
+
+export function generateDummyBarsWithIncoming(svgEl, k) {
+  const DATA_COUNT = 175;
+  const now = new Date();
+  const delayMinutes = 7;
+
+  const incoming = d3.range(-DATA_COUNT, 0).map( d => {
+    const windowStart = Math.floor(now.getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
+    return {
+      windowStart: windowStart,
+      windowEnd: windowStart + 60 * 1000,
+      height: dummyHertz(windowStart) * 10 * k,
+    };
+  });
+  const dataMinute = d3.range(-DATA_COUNT, -delayMinutes).map( d => {
+    const windowStart = Math.floor(now.getTime() / (60 * 1000)) * (60 * 1000) + d * 60 * 1000;
+    return {
+      windowStart: windowStart,
+      windowEnd: windowStart + 60 * 1000,
+      height: dummyHertz(windowStart) * 10 * k,
+    };
+  });
+  const dataSecond = d3.range(-60 - delayMinutes * 60, -delayMinutes * 60).map( d => {
+    const windowStart = Math.floor(now.getTime() / (1000)) * (1000) + d * 1000;
+    return {
+      windowStart: windowStart,
+      windowEnd: windowStart + 1000,
+      height: dummyHertz(windowStart) * 10 * k,
+    };
+  });
+
+  const lastWindow = dataMinute[dataMinute.length - 1];
+  const blur = [
+    {
+      windowStart: lastWindow.windowEnd,
+      windowEnd: lastWindow.windowEnd + 60 * 1000,
+      height: dummyHertzEstimate(dataSecond, lastWindow.windowEnd),
+      blurStart: lastWindow.windowEnd + 60 * 1000 * dataSecond.length / 60,
+    }
+  ];
+
+  addIncomingBars(svgEl, incoming);
+  addOkBars(svgEl, dataMinute);
+  addBlurBars(svgEl, blur);
+  addOkBars(svgEl, dataSecond);
 }
