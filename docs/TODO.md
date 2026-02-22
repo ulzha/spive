@@ -12,7 +12,9 @@
 - [ ] Visualize errors (first occurrence of a blocker, by exception type, and the fraction of partitions affected)
 - [ ] Scroll left to seamlessly pan to a lower resolution historical graph
 - [ ] CLI log tailer - slight improvement over bare -euxo and docker compose. Single pane of interactive pseudographics mode. The dev script, the bootstrap container, the platform it attempts to bootstrap, etc. Just scrollable independently, errors highlighted (yellow when LLM "would warn" like 404 and such, orange when actual warnings); later also time correlatable with Spīve-specific inference
-- [ ] Have UI quickly filter/query streams by time span or key/partition (tour de force - generate code example for doing the same thing as UI does in CLI, Scio, BigQuery, etc)
+- [ ] Have UI quickly filter/query streams by time span
+- [ ] Filter by key/partition, as well as free text search
+- [ ] Generate a code example for doing the same thing as UI does in CLI, KSQL, Scio, BigQuery, etc
 - [ ] Regenerate app.spive.gen for examples/ in CI
 - [ ] DockerRunner, QuickBasicRunner (InProcessThreadRunner?)
 - [ ] 5 minute "Getting Started" guide + a HelloWorld app - how to generate app.spive.gen, develop and run locally. (Cookiecutter kind of thing but able to function offline, once cached)

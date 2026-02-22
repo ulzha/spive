@@ -107,7 +107,7 @@ do echo "retrying in 1 s"; sleep 1; done
 # expect SpiveDev0 to watch the instance and append progress events to the log
 until
   heartbeat=$($CURL http://localhost:8430/api/v0/thread_groups/85ceafce-ebb3-3a3c-a3e6-46d064c782ab/heartbeat)
-  echo "$heartbeat" | jq -r .checkpoint | grep "#n"
+  echo "$heartbeat" | jq -r .checkpoint | grep "#0"
 do echo "retrying in 1 s"; sleep 1; done
 
 # 9. print instructions, keep following the output of each container
