@@ -60,6 +60,7 @@ public class Umbilical {
   // Used for deduplicating, to not re-report the fatal error needlessly upon instance teardown.
   // Unneeded?
   private final AtomicReference<Throwable> lastError = new AtomicReference<>();
+
   // TODO report when we're trailing
   // TODO will probably benefit from a few more configuration items from SpiveScaler:
   //  * handlerTimeout - same for all handlers, or perhaps per gateway?
@@ -250,11 +251,11 @@ public class Umbilical {
       Umbilical.this.addHeartbeat(currentEventTime.get());
     }
 
-    @Override
     /**
      * Not thread-safe. (Currently we only have output gateway of the locking variety, it takes care
      * of coordinating updates between event loop and concurrent workloads.)
      */
+    @Override
     public void addOutputEvent(EventTime outputEventTime) {
       Umbilical.this.addOutputEvent(outputEventTime);
     }

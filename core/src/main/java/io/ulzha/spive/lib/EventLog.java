@@ -96,21 +96,7 @@ public interface EventLog extends Iterable<EventEnvelope>, AutoCloseable {
 
   public AppendIterator iterator();
 
-  /**
-   * @return false if we have read all the events and the log is closed, true otherwise (which means
-   *     it may have zero or more events to catch up with right now, and more can further be
-   *     appended).
-   */
-  //  boolean mayHavePastEvents();
-
-  /**
-   * @return false if we have read all the events earlier than `present` and there is no possibility
-   *     for more events to appear earlier than `present` (either the log is closed or it has some
-   *     sensing/enforcing capability that tells that `present` is a perfect watermark).
-   */
-  //  boolean mayHavePastEvents(EventTime present);
-
-  /**
+  /* unclear if needed:
    * Tries to append event to the end of the log.
    *
    * <p>Validates that its event time comes strictly after the latest event time already present.

@@ -29,6 +29,7 @@ public class Jars {
       Pattern.compile(
           "^https://repo.maven.apache.org/maven2/[^/]+/([a-z0-9_/-]+)/([^/]+)/([^/]+)/([^/]+\\.jar)$");
   static final Pattern VERSION_RE = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
+
   //  static final Pattern LOCAL_BUILD_RE =
   //      Pattern.compile("^file:///.*/git/([a-z0-9_-]+)/([^/]+)/.*/([^/]+\\.jar)$");
   //  static final Pattern LOCAL_BUILD_VERSION_RE = Pattern.compile("^\\d+\\.\\d+\\.\\d+$");
@@ -95,11 +96,15 @@ public class Jars {
     final File jarFile = new File(getJarDir(artifactUrl), jarName);
 
     if (!jarFile.exists()) {
-      final URL jarUrl = new URL(artifactUrl);
+      try {
+        final URL jarUrl = new URI(artifactUrl).toURL();
 
-      try (InputStream inputStream = jarUrl.openStream()) {
-        LOG.info("Downloading " + jarUrl + " to " + jarFile);
-        Files.copy(inputStream, jarFile.toPath()); // FIXME stage and atomically move into place
+        try (InputStream inputStream = jarUrl.openStream()) {
+          LOG.info("Downloading " + jarUrl + " to " + jarFile);
+          Files.copy(inputStream, jarFile.toPath()); // FIXME stage and atomically move into place
+        }
+      } catch (URISyntaxException e) {
+        throw new IOException("Invalid artifactUrl: " + artifactUrl, e);
       }
     }
 

@@ -47,30 +47,6 @@ public final class BigtableEventLog implements EventLog {
     return dataClient.readRows(query).iterator();
   }
 
-  /**
-   * Reads the next event after prevEvent.
-   *
-   * <p>Will block after the last row until more events are appended or the log is closed.
-   *
-   * <p>Note: AppendIteratorImpl is a more efficient way to read many events sequentially, as it
-   * keeps ServerStream open.
-   *
-   * @return the next event, or null to signify a closed log.
-   */
-  // private EventEnvelope read(final EventEnvelope prevEvent)
-
-  /**
-   * Bigtable does not offer the ability to do a reverse scan. So we do a bit of binary search to
-   * beginning of time if there's no event >= hintEventTime, or to the end of time if the last event
-   * is not found within X events from hintEventTime.
-   *
-   * @param hintEventTime used as a starting position
-   * @return the last event time in the log.
-   */
-  //  private EventTime seekLast(final EventTime hintEventTime) throws IOException {
-  //    throw new RuntimeException("not implemented");
-  //  }
-
   @Override
   public EventTime appendAndGetAdjustedTime(final EventEnvelope event) throws IOException {
     // naively seek to the end and try appending, and repeat until no conflict

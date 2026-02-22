@@ -42,7 +42,7 @@ public class EventGateway extends Gateway {
         seed, (k, v) -> getPseudorandomUuid(v == null ? k : v));
   }
 
-  /**
+  /* unclear if needed:
    * Blocks indefinitely until an append occurs or a competing prior append has been positively
    * detected.
    *

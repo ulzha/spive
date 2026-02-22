@@ -125,8 +125,11 @@ public class Process {
   public static class Instance {
     public UUID id;
     public volatile Process process; // null if this instance has been deleted
+
     // ^ awkward but it's a convenience, null check equivalent to absence check in process.instances
+
     // artifact - could benefit from varying runner and packaging per Instance in rare cases?
+
     // version - varying runner versions and varying library/inventory versions must be recorded?
 
     private Instance() {}

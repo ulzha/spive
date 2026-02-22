@@ -175,6 +175,7 @@ public class Stream {
    */
   public static record PartitionRange(String id // captures keyRange, so not a UUID
       ) {}
+
   // or maybe we don't need to encode keyRange, it just needs to be deterministically computed
   //
   //    /** Should perhaps focus on hash ring approach, not semantic ranges at field level? */

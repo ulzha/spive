@@ -21,6 +21,7 @@ import java.util.Set;
 public final class LocalFileSystemEventLog implements EventLog {
   private final Path filePath;
   private final FileChannel channel;
+
   // (Found a few examples like GoogleCloudStorageReadChannel implements SeekableByteChannel)
 
   public LocalFileSystemEventLog(final Path filePath) throws IOException {

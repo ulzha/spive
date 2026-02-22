@@ -91,12 +91,12 @@ Last but not least, on the flipside of Spīve's conceptual simplicity lies its u
 
 ### Development environment
 
-Backend and application examples are currently developed as a Maven project using Java 19. Set up like:
+Backend and application examples are currently developed as a Maven project using Java 25. Set up like:
 
     curl -s "https://get.sdkman.io" | bash
     source ~/.sdkman/bin/sdkman-init.sh
-    sdk install java 19.0.2-open
-    sdk install mvnd 1.0-m6-m40
+    sdk install java 25.0.2-amzn
+    sdk install mvnd 2.0.0-rc-3
     mvnd clean verify
 
 Frontend uses Qwik, D3 and Material UI. See the respective [README.md](../app/src/main/qwik/README.md) file for instructions.

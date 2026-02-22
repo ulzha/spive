@@ -40,9 +40,10 @@ public class Event {
   // (A tuple of POXO class and serde id+version that wrote it)
   // (Capture also instance that wrote it? In case a zombie runner needs to be hunted down.)
   // (And serde id+version that read it? This would be constant for the duration of a process?)
-  public Object payload; // the event object passed to application, perhaps class from
-  // io.ulzha.spive.app.events... or not relative to io.ulzha.spive at all... should it repeat
-  // the `time` field always?
+
+  // the event object passed to application, perhaps a class from io.ulzha.spive.app.events... or
+  // not relative to io.ulzha.spive at all...
+  public Object payload;
 
   public Event(EventTime time, UUID id, EventSerde serde, Object payload) {
     this.time = time;

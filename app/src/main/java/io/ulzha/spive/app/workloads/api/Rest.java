@@ -16,6 +16,8 @@ import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
 import io.ulzha.spive.lib.EventTime;
 import java.io.IOException;
 import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -81,23 +83,28 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
 
   private void validateArtifactUrl(String artifactUrl) throws IOException {
     final String jarUrl = "jar:" + artifactUrl.split(";")[0] + "!/";
-    final URL url = new URL(jarUrl);
-    final URLConnection connection = url.openConnection();
+    try {
+      final URL url = new URI(jarUrl).toURL();
+      final URLConnection connection = url.openConnection();
 
-    // TODO merge with basic-runner's validation function?
-    // Jar would not necessarily be reachable from control plane. Runner's validation can be awaited
-    // by control plane, it can see heartbeat not started. Here we just check well-formedness maybe?
-    // For methods and modifiers validation,
-    // https://docs.oracle.com/javase/tutorial/deployment/jar/jarclassloader.html what this doing?
-    if (!(connection instanceof JarURLConnection)) {
-      throw new IOException("Not a JAR URL");
+      // TODO merge with basic-runner's validation function?
+      // Jar would not necessarily be reachable from control plane. Runner's validation can be
+      // awaited by control plane, it can see heartbeat not started. Here we just check
+      // well-formedness maybe?
+      // For methods and modifiers validation,
+      // https://docs.oracle.com/javase/tutorial/deployment/jar/jarclassloader.html what this doing?
+      if (!(connection instanceof JarURLConnection)) {
+        throw new IOException("Not a JAR URL");
+      }
+      ((JarURLConnection) connection).getManifest();
+      // manifest.getEntries().keySet().stream()
+      //     .forEach(key -> System.err.println("I just had a manifest entry: " + key));
+
+      // The jar should be kept in state? Shared with runners from there?... Just a checksum surely?
+      // Generally, external large objects handling in apps logic needs a facilitating mechanism
+    } catch (URISyntaxException e) {
+      throw new IOException("Invalid artifactUrl: " + artifactUrl, e);
     }
-    ((JarURLConnection) connection).getManifest();
-    // manifest.getEntries().keySet().stream()
-    //     .forEach(key -> System.err.println("I just had a manifest entry: " + key));
-
-    // The jar should be kept in state? Shared with runners from there?... Just a checksum surely?
-    // Generally, external large objects handling in apps logic needs a facilitating mechanism
   }
 
   // maybe should just be a mapper tweak, not an extra boilerplate record?

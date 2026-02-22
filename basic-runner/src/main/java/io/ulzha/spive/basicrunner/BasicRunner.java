@@ -126,7 +126,7 @@ public final class BasicRunner {
       // (TODO test)
       // Rest handlers exceptions don't bubble up here, HttpServer and its executor put walls up:
       // https://stackoverflow.com/questions/1838923/why-is-uncaughtexceptionhandler-not-called-by-executorservice
-      if (!(t instanceof HandledException || t instanceof ThreadDeath)) {
+      if (!(t instanceof HandledException)) {
         final String message = addErrors(thread, t);
         // make sure the throwing thread's name is logged (with slf4j-simple it is...)
         LOG.error("Uncaught exception, {}:", message, t);

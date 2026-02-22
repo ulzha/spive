@@ -14,6 +14,7 @@
 - [ ] CLI log tailer - slight improvement over bare -euxo and docker compose. Single pane of interactive pseudographics mode. The dev script, the bootstrap container, the platform it attempts to bootstrap, etc. Just scrollable independently, errors highlighted (yellow when LLM "would warn" like 404 and such, orange when actual warnings); later also time correlatable with Spīve-specific inference
 - [ ] Have UI quickly filter/query streams by time span
 - [ ] Filter by key/partition, as well as free text search
+- [ ] Live scroll forward, showing event contents as well if expanded. Option to FF to current time
 - [ ] Generate a code example for doing the same thing as UI does in CLI, KSQL, Scio, BigQuery, etc
 - [ ] Regenerate app.spive.gen for examples/ in CI
 - [ ] DockerRunner, QuickBasicRunner (InProcessThreadRunner?)

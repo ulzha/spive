@@ -15,6 +15,7 @@ public class SpiveScaler implements SpiveScalerInstance {
   // TODO showcase how to replicate Spive app model (partially?)
   private final Platform platform;
   private final SpiveScalerOutputGateway output;
+
   //  private final SpiveGateway spive;
 
   public SpiveScaler(final SpiveScalerOutputGateway output /*, SpiveGateway spive*/) {
