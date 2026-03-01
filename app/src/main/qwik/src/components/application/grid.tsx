@@ -115,13 +115,14 @@ export default component$<GridProps>(({ rows }: GridProps) => {
   return (
     <MUIDataGrid
       client:visible
+      className="application-grid"
       density="compact"
       rows={rows}
       spanRows={spanRows}
       columns={columns}
       autoHeight
-      pageSize={rows.length + spanRows.length} // all in one page
-      pageSizeOptions={[rows.length + spanRows.length]}
+      // pageSize={rows.length + spanRows.length} // all in one page
+      // pageSizeOptions={[rows.length + spanRows.length]}
       initialState={{
         columns: { columnVisibilityModel: { uuid: false, version: false } },
         sorting: { sortModel: [{ field: "rank", sort: "asc" }] },

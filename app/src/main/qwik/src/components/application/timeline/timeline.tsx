@@ -2,6 +2,7 @@ import { Resource, component$, useResource$ } from "@builder.io/qwik";
 import { generateDummyBars, generateDummyBarsWithIncoming } from "./dummy";
 
 declare const addBars: (svgEl: any, bars: any[], blur: any[]) => void;
+declare const addOkBars: (svgEl: any, bars: any[]) => void;
 
 const platformUrl = import.meta.env.PUBLIC_PLATFORM_URL;
 
@@ -55,14 +56,17 @@ export default component$<TimelineProps>(({processId, offset, level, fetchStart,
       value={barsResource}
       onPending={() => <>Loading...</>}
       onResolved={(timelineResponse) => {
-        addBars(d3.select(`#timeline-svg-${processId}`), timelineResponse.map(d => ({
-          windowStart: d.tile.windowStart * 1000,
-          windowEnd: d.tile.windowEnd * 1000,
-          height: Math.max(
-            Math.min(d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart), 10),
-            d.tile.nOutputEvents ? 1 : 0
-          ),
-        })), []);
+        addOkBars(
+          d3.select(`#timeline-svg-${processId}`),
+          timelineResponse.map(d => ({
+            windowStart: d.tile.windowStart * 1000,
+            windowEnd: d.tile.windowEnd * 1000,
+            height: Math.max(
+              Math.min(d.tile.nOutputEvents / (d.tile.windowEnd - d.tile.windowStart), 10),
+              d.tile.nOutputEvents ? 1 : 0
+            ),
+          }))
+        );
         return <>Loaded</>;
       }}
       onRejected={(reason) => {

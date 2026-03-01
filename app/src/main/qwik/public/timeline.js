@@ -111,6 +111,10 @@ zoomTimeline.updateExtents = function(width) {
 
 zoomTimeline.forceZoomEvent = function() {
   const svgs = d3.selectAll('.timeline svg');
+  if (svgs.empty()) {
+    console.warn("Precondition failed - svg not yet rendered. Mind to reorder calls a bit more robustly?");
+    return;
+  }
   const t0 = d3.zoomTransform(svgs.nodes()[0]);
   svgs.call(zoomTimeline.zoom.transform, t0);
 };

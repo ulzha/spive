@@ -167,7 +167,6 @@ export default function Legend() {
   const [el, setEl] = useState<HTMLElement | null>(null);
   const containerRef = useRef();
 
-  console.log(el?.closest(".padding"));
   return (
     <>
       <Popover

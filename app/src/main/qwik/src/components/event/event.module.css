@@ -26,7 +26,6 @@
     padding-right: 0;
   }
 
-  /* come on */
   :global .MuiDataGrid-cell[data-field="took"] > div {
     text-align: right;
   }
@@ -35,7 +34,7 @@
     width: 12px;
     height: 12px;
     float: left;
-    margin-top: 4px;
+    margin-top: 12px;
     margin-left: -10px;
     margin-right: 10px;
   }
