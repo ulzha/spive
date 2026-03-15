@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public class Cors {
   public static Function<? super HttpService, CorsService> decorator() {
-    return CorsService.builderForAnyOrigin()
+    return CorsService.builder("http://localhost:5173") // FIXME
         .allowRequestMethods(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)
         .allowAllRequestHeaders(true)
         .maxAge(Duration.ofSeconds(300))

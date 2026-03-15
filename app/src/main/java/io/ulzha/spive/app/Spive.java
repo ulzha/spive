@@ -3,7 +3,10 @@ package io.ulzha.spive.app;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.linecorp.armeria.common.logging.LogLevel;
+import com.linecorp.armeria.common.logging.LogWriter;
+import com.linecorp.armeria.server.HttpService;
 import com.linecorp.armeria.server.Server;
+import com.linecorp.armeria.server.ServerErrorHandler;
 import com.linecorp.armeria.server.logging.LoggingService;
 import io.ulzha.spive.app.events.CreateEventLog;
 import io.ulzha.spive.app.events.CreateInstance;
@@ -22,6 +25,7 @@ import io.ulzha.spive.app.model.Stream;
 import io.ulzha.spive.app.model.Type;
 import io.ulzha.spive.app.spive.gen.SpiveInstance;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
+import io.ulzha.spive.app.workloads.api.ClientErrorException;
 import io.ulzha.spive.app.workloads.api.Cors;
 import io.ulzha.spive.app.workloads.api.Rest;
 import io.ulzha.spive.app.workloads.api.Sse;
@@ -36,6 +40,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -299,6 +304,37 @@ public class Spive implements SpiveInstance {
   }
 
   public class Api implements Runnable {
+    /**
+     * Summarize client errors in the 4xx response body, unlike the default minimal Armeria
+     * HttpStatusException response.
+     *
+     * <p>The default behavior for a HttpStatusException with cause ends up _too_ verbose on the
+     * logging side, with stacktrace, and too quiet on client side - does not reveal cause in
+     * response body at all.
+     *
+     * <p>On the other hand, a plain HttpResponse by default is logged without even one line of
+     * cause. Ideally we want to have that configurable upwards a fair bit.
+     */
+    final ServerErrorHandler errorHandler =
+        (ctx, cause) -> {
+          if (cause instanceof ClientErrorException) {
+            return ((ClientErrorException) cause).toHttpResponse();
+          }
+
+          // Let ServerErrorHandler.ofDefault() handle the exception.
+          return null;
+        };
+
+    final Function<? super HttpService, LoggingService> loggingDecorator =
+        LoggingService.builder()
+            .logWriter(
+                LogWriter.builder()
+                    .requestLogLevel(LogLevel.INFO)
+                    .successfulResponseLogLevel(LogLevel.INFO)
+                    .failureResponseLogLevel(LogLevel.INFO)
+                    .build())
+            .newDecorator();
+
     @Override
     public void run() {
       // FIXME port determined from the control plane or random via runner decision?
@@ -308,12 +344,8 @@ public class Spive implements SpiveInstance {
               .annotatedService("/api", new Rest(platform, output))
               .service("/sse", Sse.service(platform))
               .decorator(Cors.decorator())
-              .decorator(
-                  LoggingService.builder()
-                      .requestLogLevel(LogLevel.INFO)
-                      .successfulResponseLogLevel(LogLevel.INFO)
-                      .failureResponseLogLevel(LogLevel.INFO)
-                      .newDecorator())
+              .decorator(loggingDecorator)
+              .errorHandler(errorHandler)
               .build();
       server.closeOnJvmShutdown(() -> System.out.println("Server closing on JVM shutdown"));
       server.start().join();

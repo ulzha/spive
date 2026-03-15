@@ -2,7 +2,6 @@ package io.ulzha.spive.app.workloads.api;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
-import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.HttpStatusException;
 import com.linecorp.armeria.server.annotation.ConsumesJson;
 import com.linecorp.armeria.server.annotation.Get;
@@ -18,6 +17,7 @@ import io.ulzha.spive.app.validators.PlatformStateValidator;
 import io.ulzha.spive.lib.EventTime;
 import java.io.IOException;
 import java.net.JarURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -55,11 +55,7 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
     // FIXME nontrivial generation of UUID, to make the event belong to the intended partition
     final UUID uuid = UUID.randomUUID();
 
-    try {
-      validateArtifactUrl(request.artifactUrl());
-    } catch (IOException e) {
-      throw HttpStatusException.of(HttpStatus.UNPROCESSABLE_ENTITY, e);
-    }
+    validateArtifactUrl(request.artifactUrl());
 
     final CreateProcess event =
         new CreateProcess(
@@ -76,16 +72,11 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
         () -> new PlatformStateValidator(platform, validationErrors).isValidFor(event), event)) {
       return HttpResponse.ofJson(HttpStatus.CREATED, uuid);
     }
-    // Ideally cause should be in the log, as well as in response. Need to understand how
-    // ServerErrorHandler really works and do a custom one?
-    // https://javadoc.io/doc/com.linecorp.armeria/armeria-javadoc/latest/com/linecorp/armeria/server/ServerErrorHandler.html
-    // By default, a HttpStatusException with cause ends up _too_ verbose on the logging side, and
-    // too quiet on client side - does not reveal cause in response body at all.
-    return HttpResponse.of(
-        HttpStatus.CONFLICT, MediaType.PLAIN_TEXT, String.join(". ", validationErrors));
+
+    throw new ClientErrorException(HttpStatus.CONFLICT, String.join(". ", validationErrors));
   }
 
-  private void validateArtifactUrl(String artifactUrl) throws IOException {
+  private void validateArtifactUrl(String artifactUrl) {
     final String jarUrl = "jar:" + artifactUrl.split(";")[0] + "!/";
     try {
       final URL url = new URI(jarUrl).toURL();
@@ -98,7 +89,8 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
       // For methods and modifiers validation,
       // https://docs.oracle.com/javase/tutorial/deployment/jar/jarclassloader.html what this doing?
       if (!(connection instanceof JarURLConnection)) {
-        throw new IOException("Not a JAR URL");
+        throw new ClientErrorException(
+            HttpStatus.BAD_REQUEST, "Not a JAR URL: '" + artifactUrl + "'");
       }
       ((JarURLConnection) connection).getManifest();
       // manifest.getEntries().keySet().stream()
@@ -106,8 +98,11 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
 
       // The jar should be kept in state? Shared with runners from there?... Just a checksum surely?
       // Generally, external large objects handling in apps logic needs a facilitating mechanism
-    } catch (URISyntaxException e) {
-      throw new IOException("Invalid artifactUrl: " + artifactUrl, e);
+    } catch (URISyntaxException | MalformedURLException e) {
+      throw new ClientErrorException(
+          HttpStatus.BAD_REQUEST, "Malformed JAR URL: " + e.getMessage());
+    } catch (IOException e) {
+      throw new ClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Unprocessable JAR URL", e);
     }
   }
 
