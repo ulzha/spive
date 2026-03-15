@@ -2,6 +2,7 @@ package io.ulzha.spive.app.workloads.api;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
+import com.linecorp.armeria.common.MediaType;
 import com.linecorp.armeria.server.HttpStatusException;
 import com.linecorp.armeria.server.annotation.ConsumesJson;
 import com.linecorp.armeria.server.annotation.Get;
@@ -13,6 +14,7 @@ import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
 import io.ulzha.spive.app.model.agg.Timeline.Scale;
 import io.ulzha.spive.app.spive.gen.SpiveOutputGateway;
+import io.ulzha.spive.app.validators.PlatformStateValidator;
 import io.ulzha.spive.lib.EventTime;
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -68,17 +70,19 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
             request.availabilityZones(),
             request.inputStreamIds(),
             request.outputStreamIds());
+    final List<String> validationErrors = new ArrayList<>();
+
     if (output.emitIf(
-        // TODO ensure that the output stream exists
-        // TODO ensure that there are no cycles of streams
-        () ->
-            !(platform.processesByApplicationAndVersion.containsKey(name)
-                    && platform.processesByApplicationAndVersion.get(name).containsKey(version))
-                && !platform.processesById.containsKey(uuid),
-        event)) {
+        () -> new PlatformStateValidator(platform, validationErrors).isValidFor(event), event)) {
       return HttpResponse.ofJson(HttpStatus.CREATED, uuid);
     }
-    throw HttpStatusException.of(HttpStatus.CONFLICT);
+    // Ideally cause should be in the log, as well as in response. Need to understand how
+    // ServerErrorHandler really works and do a custom one?
+    // https://javadoc.io/doc/com.linecorp.armeria/armeria-javadoc/latest/com/linecorp/armeria/server/ServerErrorHandler.html
+    // By default, a HttpStatusException with cause ends up _too_ verbose on the logging side, and
+    // too quiet on client side - does not reveal cause in response body at all.
+    return HttpResponse.of(
+        HttpStatus.CONFLICT, MediaType.PLAIN_TEXT, String.join(". ", validationErrors));
   }
 
   private void validateArtifactUrl(String artifactUrl) throws IOException {
@@ -133,6 +137,11 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
 
     final UUID processId = UUID.fromString(id);
     final Process process = platform.processesById.get(processId);
+
+    if (process == null) {
+      throw HttpStatusException.of(HttpStatus.NOT_FOUND);
+    }
+
     final List<TileSnapshot> response = new ArrayList<>();
 
     for (var tileEntry : process.timeline.tiles.get(Scale.MINUTE).entrySet()) {

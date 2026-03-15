@@ -18,7 +18,6 @@ import io.ulzha.spive.app.events.InstanceStatusChange;
 import io.ulzha.spive.app.model.InstanceStatus;
 import io.ulzha.spive.app.model.Platform;
 import io.ulzha.spive.app.model.Process;
-import io.ulzha.spive.app.model.Process.Shard;
 import io.ulzha.spive.app.model.Stream;
 import io.ulzha.spive.app.model.Type;
 import io.ulzha.spive.app.spive.gen.SpiveInstance;
@@ -187,7 +186,7 @@ public class Spive implements SpiveInstance {
     // InstanceStatusChange/DeleteInstance. Creations can happen consequentially maybe, in reaction
     // to process creation and workload input and Scaler calling Shard creation/deletion API
     for (var entry : process.shards.entrySet()) {
-      final Shard shard = entry.getKey();
+      final Process.Shard shard = entry.getKey();
       for (int i = 0; i < shard.nDesiredInstances(); i++) {
         // TODO all becomes more complex with multiple inputs
         List<String> partitionRanges =
