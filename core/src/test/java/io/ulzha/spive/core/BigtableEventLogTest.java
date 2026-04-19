@@ -512,7 +512,7 @@ public class BigtableEventLogTest {
             .setCell(
                 "event",
                 "payload",
-                "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"]}");
+                "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamId\": \"11111111-1111-1111-1111-111111111111\"}");
     testDataClient.mutateRow(m);
     prevTime = EventTime.fromString("1111-11-11T00:00:00Z#0");
 
@@ -545,7 +545,7 @@ public class BigtableEventLogTest {
             .setCell(
                 "event",
                 "payload",
-                "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"]}");
+                "{\"processId\": \"00000000-0000-0000-0000-000000000000\", \"name\": \"Yuck\", \"version\": \"0.0.1\", \"artifact\": \"file:///app/target/yuck-0.0.1-SNAPSHOT.jar;mainClass=com.yuck.app.spive.gen.YuckInstance$Main\", \"availabilityZones\": [\"dev-0\"], \"inputStreamIds\": [\"11111111-1111-1111-1111-111111111111\"], \"outputStreamId\": \"11111111-1111-1111-1111-111111111111\"}");
     testDataClient.mutateRow(m);
     prevTime = EventTime.fromString("1111-11-11T00:00:00Z#0");
 

@@ -98,7 +98,7 @@ export default function NewApplicationForm({ onNew }: NewApplicationFormProps) {
                 artifactUrl: artifactUrl,
                 availabilityZones: ["dev-1"],
                 inputStreamIds: ["321f31ba-30b8-4cb2-8564-3b4302fcb5ec"],
-                outputStreamIds: ["321f31ba-30b8-4cb2-8564-3b4302fcb5ec"],
+                outputStreamId: "321f31ba-30b8-4cb2-8564-3b4302fcb5ec",
               });
             }}
           >

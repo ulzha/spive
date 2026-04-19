@@ -99,7 +99,7 @@ deploy_clicc_tracc_request='{
   "artifactUrl": "file:///mnt/artifact-repo/spive-example-clicc-tracc-0.0.1-SNAPSHOT.jar;mainClass=io.ulzha.spive.example.clicctracc.app.spive.gen.CliccTraccInstance$Main",
   "availabilityZones": ["dev-1"],
   "inputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"],
-  "outputStreamIds": ["708d2710-3a80-4d40-abb6-3b29a828c289"]
+  "outputStreamId": "708d2710-3a80-4d40-abb6-3b29a828c289"
 }'
 until
   $CURL -X PUT -H "Content-Type: application/json" -d "$deploy_clicc_tracc_request" -i http://localhost:8440/api/applications/CliccTracc/0.0.1-alpha

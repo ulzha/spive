@@ -11,26 +11,22 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * A distributed process. (Not to be confused with a process running on a single computer.)
+ * A distributed Process. (Not to be confused with a process running on a single computer.)
  *
  * <p>Represents one deployment of an application code. Multiple Processes for one application name
  * may be deployed and run concurrently, such as CI test runs, ad-hoc runs by developers, and by
  * automatic optimization harnesses. (TODO say only one is exposed in service discovery? Per
  * hermetic domain)
  *
- * <p>A process may be stateless or stateful. Process Instances can have state in local memory,
- * which must be deterministically computed from the consumed Events.
+ * <p>A Process may be stateless or stateful. Process Instances can benefit from deterministic state, i.e. state kept in local memory, fast to access in Event handlers, deterministically derived from the history of Events.
  *
- * <p>A process can consume zero or more Streams of Events, and it can produce zero or one Stream.
+ * <p>A Process can consume zero or more Streams of Events, and it can produce zero or one Stream.
  *
  * <p>Event consumption can fail (throw exceptions or propagate exceptions from a third party system
  * behind a Gateway), in which case event-sourced Processes never skip the problematic event, but
- * instead retry reliably. Spīve always tries to "keep the lights on" by replaying event history on
- * a copy of the failing Process Instance, which allows Processes to proceed through hardware
- * failures and similar. The replacement Process Instance replays the same partition range as the
- * original one, starting from the same position that the whole Process was started from, reliably.
+ * instead retry reliably. Depending on how permanent the failure is, Spīve tries to "keep the lights on" by spawning new Process Instances and replaying event history on those to cover for a failing Instance. This allows Processes to proceed through hardware failures and similar.
  *
- * <p>Many processes can be consuming from the same Stream; a process can start consumption from the
+ * <p>Many Processes can be consuming from the same Stream; a Process can start consumption from the
  * very beginning of the Stream or from an arbitrary position in it.
  *
  * <p>A Process can be split into Shards for horizontal scaling. Each Shard consumes a different
@@ -80,7 +76,8 @@ public class Process {
   // occur before start times of input streams, also in PAST.
   public EventTime startTime; // = EventTime.INFINITE_PAST?
   public Set<Workload> workloads = new HashSet<>();
-  public Set<Stream> outputStreams = new HashSet<>();
+  // null if no output
+  public Stream outputStream;
   public Set<Gateway> gateways = new HashSet<>();
 
   // aggregate precomputed for frontend visualization purposes
@@ -112,8 +109,8 @@ public class Process {
         + startTime
         + ", workloads="
         + workloads
-        + ", outputStreams="
-        + outputStreams
+        + ", outputStream="
+        + outputStream
         + ", gateways="
         + gateways
         + ", instances="
@@ -265,14 +262,14 @@ public class Process {
       String artifactUrl,
       List<String> availabilityZones,
       Set<Stream> inputStreams,
-      Set<Stream> outputStreams) {
+      Stream outputStream) {
     this.name = name;
     this.version = version;
     this.id = id;
     this.artifactUrl = artifactUrl;
     this.availabilityZones = availabilityZones;
     this.inputStreams = inputStreams;
-    this.outputStreams = outputStreams;
+    this.outputStream = outputStream;
 
     final Shard defaultShard =
         new Shard(

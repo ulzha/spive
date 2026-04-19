@@ -26,7 +26,7 @@
 - [ ] An example change data capture (CDC) application (sorting notifications with 1 h delay? Dataflow job triggered at watermark and doing appendAndGetTime for late events, aided by an hourly batch scan?) Debouncing perhaps useful in some cases?
 - [ ] An example application retrieving events for history display as a user-facing feature
 - [ ] Example advanced distributed data structure implementation (real time toplist?)
-- [ ] Example interactive application, web page updating itself until you see your writes (Also where does the fanout lie for building one result set from a massively sharded backend? In a sidecar? Or rather, fan-in updates to an index in front, like ElasticSearch, and get away with only single gets from backend?)
+- [ ] Example interactive application, web page updating itself until you see your writes (Also where does the fanout lie for building one result set from a massively sharded backend? Event-sourced updates fan-in to an index in front, like ElasticSearch?)
 - [ ] Compute checksums and sanity check for nondeterminism (error on replay - alt. warning if tolerated... Of a suppressed kind?)
 - [ ] Compute diffs between streams
 - [ ] Example patch upgrade (involves a pre-release fork that gets promoted to a patch version when it has been verified working)
@@ -88,6 +88,7 @@
 - [ ] Document/demo how to implement custom deploy/undeploy hooks listening to platform events to clean up application resources (like dashboards, or Pub/Sub subscriptions) reliably even if application instances die abruptly
 - [ ] Example forking/decoration/piggyback flow - frictionlessly and safely reuse parent application(s) in-memory state as part of the model of a new application, replicated without the parent side effects, but with added I/O to more streams, and/or with different workloads
 - [ ] Split tool, also exemplifying forking/decoration/piggyback flow - can emit two event logs from one, without reading twice?
+- [ ] Examples of generic applications. (At the level of serialized payload byte stream? and/or some sort of pattern matching?) Make example/generic-copy, if example/copy has static types... and example/generic-fork... One and the same artifact deployed with different application names
 - [ ] Basic compaction tool. (Must not screw with consequential streaks... Can there be a protective measure?)
 - [ ] SpiveCompactor as a separate infra application. (Only for compactable applications that provide the compaction job logic.) (Compactions can be batch, Kappa architecture meets Lambda architecture.) (Compaction also to play a role in GDPR/PII data deletion?) Compaction to generate historical graph? (Doubt)
 - [ ] Example compaction job as a reduce operator packaged alongside event handlers, implementing an additional interface? Example ad-hoc compaction job for debouncing flapping/reverting accidental flood of state changes?
@@ -100,7 +101,7 @@
 - [ ] CRUDdy application helpers, with a state-keeping model (document model) defined abstractly and code-generated? When consuming multiple input streams, a document model joining them together can also be code-generated? Simplified side effect replay - only send the latest state of the document?
 - [ ] Periodically archivable application helpers, aware that only a limited event history matters? Like in bookkeeping, with montly reporting, or in trading, with a daily cycle.
 - [ ] Stream and event handler design should facilitate rekeying (e.g. `channel` -> `channel+priority` should not cause much code change, but enable queue management, if that's not at odds with the application logic. Same for `something` -> `something+s2cell` - not much code change, but enables geosharding)
-- [ ] Grouping of companion applications which consume a given application's events (a compactor, a generated backup replicator, a generated optimization attempt, etc.) close together with the primary application for UI intuitiveness. (And for risky event visibility, and for cost visibility.)
+- [ ] Grouping of companion applications which consume a given application's events (a compactor, a generic backup replicator, a SpiveBench attempt made by SpiveOptimizer, etc.) close together with the primary application for UI intuitiveness. (And for risky event visibility, and for cost visibility.)
 
 ### Important integrations
 

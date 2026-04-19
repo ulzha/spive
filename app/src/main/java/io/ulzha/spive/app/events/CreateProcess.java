@@ -13,4 +13,4 @@ public record CreateProcess(
     // encodes runtimes? runner gateway classes? clusters? pools? discovery names?
     List<String> availabilityZones,
     List<UUID> inputStreamIds,
-    List<UUID> outputStreamIds) {}
+    UUID outputStreamId) {}

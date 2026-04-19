@@ -47,7 +47,7 @@ public interface UmbilicalWriter {
    * emissions are not. Idempotent emissions would occur as a result of reprocessing preexisting
    * events with side effects, as well as with new events, in active-active configuration, when
    * replicas emit concurrently. It holds true that the sum of counts across all replicas equals the
-   * total number of new events _added_ to output stream(s) by the process as a whole.
+   * total number of new events _added_ to the output stream by the process as a whole.
    */
   public void addOutputEvent(EventTime outputEventTime);
 }

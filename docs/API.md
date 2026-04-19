@@ -141,7 +141,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   TODO elaborate
 
-  Events from the same partition are always processed in order. (Note that the order of events from different partitions is not deterministic, even when processed on one instance. In particular some partitions may crash, and thus suspend their event handling indefinitely, while others proceed ahead in event time.)
+  Events from a single partition are always processed in total order. Moreover, a total order of events from different partitions from every input stream also exists, and is maintained when processed on one instance, but not so across instances. (In particular, some partitions may crash, and the affected instances would suspend their event handling indefinitely, while others proceed ahead in event time.)
 
   In application event handlers, spinning up multiple threads for additional parallelism rarely makes sense, as throughput can be boosted by sharding to more instances instead, with the added benefit of more predictable behavior.
 
@@ -161,7 +161,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   You can add code in your event handler to flag successful completion in application state, too, if you desire that your application's workloads receive such feedback (thus a <abbr title="Backend for Fireworks Frontend">BFF</abbr> can notify user's browser to replace the spinner with a fire emoji, for example).
 
-  This is not to preclude emitting additional events of the kind "FireballCreated" and "FireballExtinguished", but as per the above, often it is enough to just have events that initiate side effects. By convention, name these events in imperative tense.
+  This is not to preclude emitting additional events of the kind "FireballCreated" and "FireballExtinguished", but as per the above, often it is enough to just have events that _initiate_ side effects and state changes. By convention, name these events in imperative tense.
 
 #### Application versioning
 
@@ -180,13 +180,13 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 ##### *i. Patch*
 
   A "patch" upgrade refers to when you deploy a new version of your application merely to fix a crash, a performance problem, or touch up its logic, in a fully backward compatible way. (E.g., you have a stateless microapplication that consumes an event stream about newly uploaded content, and asynchronously emits detected language events for each new piece uploaded. You have developed better language detection logic for future content, or, say, a third-party language detection provider has changed their URL and you need to migrate to the new one.)
-  * The names and schemas of your output streams do not change.
+  * The name and schema of your output stream does not change.
   * You have established that the output events that your earlier versions created remain correct, as far as your contract with your downstream applications goes. In other words, they do not need to be bulk updated or revoked.
   * Note on inputful applications: eventual replay of the new code version, over the preexisting events in its input streams thus far, must yield the same exact output events as the previous version. To satisfy this, a hardcoded condition may be needed, maintaining the old logic and toggling on new logic at a specific event time. (Such conditions are a bit of a code smell. Performing a #minor upgrade might suit better here, with more overhead but with fewer constraints.)
 
   (Can be a deferred one? Can patch chain be maintained indefinitely, juggling artifact versions behind the scenes? Won't suit stateful apps.)
 
-  For this case, Spīve lets you launch the new version of the application with replay from the beginning of its input streams, compare outputs with the previous version to verify whatever aspects you would like, and at a certain point in event time swap the new version's output in place of the original output stream, transparently to downstream applications and without causing a replay in them.
+  For this case, Spīve lets you launch the new version of the application with replay from the beginning of its input streams, compare output with the previous version to verify whatever aspects you would like, and at a certain point in event time swap the new version's output stream in place of the original output stream, transparently to downstream applications and without causing a replay in them.
 
   (Can be different event times by partition group? If a crash is to be fixed with this, then application of the patch at crash event time is desirable; alas, other instances have meanwhile progressed forward... Look into non-instantaneous upgrade, despite the lots of bookkeeping? Or the transient portion can be an edit?)
 
@@ -202,7 +202,7 @@ TODO Document a nice two-sided list, what concerns don't exist, what concerns do
 
   Operations-wise, a minor upgrade results in the appearance of a new input version in your consumer dashboards, with corresponding color-coding in the UI, which helps them troubleshoot, in case the upgrade does trigger bugs.
 
-  Caveat regarding [semver](https://semver.org/): a minor upgrade yields an observable change of Stream contents, so operationally a minor upgrade is not necessarily frictionless/backwards compatible for consumers; yet the semantics of those contents must be backwards compatible, which is why we name it "minor".
+  Caveat regarding [semver](https://semver.org/): a minor upgrade yields an observable change of Stream contents, so operationally a minor upgrade is not necessarily frictionless/backwards compatible for consumers; yet the semantics surrounding those contents must be backwards compatible, which is why we name it "minor".
 
 ##### *iii. Major*
 

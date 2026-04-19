@@ -43,7 +43,7 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
       String artifactUrl,
       List<String> availabilityZones,
       List<UUID> inputStreamIds,
-      List<UUID> outputStreamIds) {}
+      UUID outputStreamId) {}
 
   @Put("/applications/{name}/{version}")
   // possible to assume this regardles of header, and avoid "No suitable request converter found"?
@@ -65,7 +65,7 @@ public record Rest(Platform platform, SpiveOutputGateway output) {
             request.artifactUrl(),
             request.availabilityZones(),
             request.inputStreamIds(),
-            request.outputStreamIds());
+            request.outputStreamId());
     final List<String> validationErrors = new ArrayList<>();
 
     if (output.emitIf(
