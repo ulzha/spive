@@ -34,8 +34,7 @@ public class GenerateIocCode {
                     new AppIoc.WorkloadDescriptor("Api")),
                 List.of(
                     new AppIoc.GatewayDescriptor(
-                        "io.ulzha.spive.basicrunner.api.BasicRunnerGateway", "runner")),
-                true),
+                        "io.ulzha.spive.basicrunner.api.BasicRunnerGateway", "runner"))),
             "scaler/app/src/main/java/io/ulzha/spive/scaler/app/spive/gen",
             new AppIoc.AppDescriptor(
                 "io.ulzha.spive.scaler.app.SpiveScaler",
@@ -44,8 +43,7 @@ public class GenerateIocCode {
                     new AppIoc.EventDescriptor(
                         "pojo:io.ulzha.spive.scaler.app.events.ScaleProcess")),
                 List.of(new AppIoc.WorkloadDescriptor("Watchdog")),
-                List.of(),
-                true),
+                List.of()),
             "example/clicc-tracc/app/src/main/java/io/ulzha/spive/example/clicctracc/app/spive/gen",
             new AppIoc.AppDescriptor(
                 "io.ulzha.spive.example.clicctracc.app.CliccTracc",
@@ -53,8 +51,7 @@ public class GenerateIocCode {
                     new AppIoc.EventDescriptor(
                         "pojo:io.ulzha.spive.example.clicctracc.app.events.Clicc")),
                 List.of(new AppIoc.WorkloadDescriptor("Metronome")),
-                List.of(),
-                true),
+                List.of()),
             "example/copy/app/src/main/java/io/ulzha/spive/example/copy/app/spive/gen",
             new AppIoc.AppDescriptor(
                 "io.ulzha.spive.example.copy.app.Copy",
@@ -62,8 +59,7 @@ public class GenerateIocCode {
                     new AppIoc.EventDescriptor(
                         "pojo:io.ulzha.spive.example.copy.app.events.CreateFoo")),
                 List.of(),
-                List.of(),
-                false));
+                List.of()));
 
     for (String dir : configs.keySet()) {
       AppIoc.generateAppInstanceCode(configs.get(dir), dir);

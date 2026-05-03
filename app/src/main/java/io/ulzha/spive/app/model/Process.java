@@ -18,13 +18,17 @@ import java.util.stream.Collectors;
  * automatic optimization harnesses. (TODO say only one is exposed in service discovery? Per
  * hermetic domain)
  *
- * <p>A Process may be stateless or stateful. Process Instances can benefit from deterministic state, i.e. state kept in local memory, fast to access in Event handlers, deterministically derived from the history of Events.
+ * <p>A Process may be stateless or stateful. Process Instances can benefit from deterministic
+ * state, i.e. state kept in local memory, fast to access in Event handlers, deterministically
+ * derived from the history of Events.
  *
  * <p>A Process can consume zero or more Streams of Events, and it can produce zero or one Stream.
  *
  * <p>Event consumption can fail (throw exceptions or propagate exceptions from a third party system
  * behind a Gateway), in which case event-sourced Processes never skip the problematic event, but
- * instead retry reliably. Depending on how permanent the failure is, Spīve tries to "keep the lights on" by spawning new Process Instances and replaying event history on those to cover for a failing Instance. This allows Processes to proceed through hardware failures and similar.
+ * instead retry reliably. Depending on how permanent the failure is, Spīve tries to "keep the
+ * lights on" by spawning new Process Instances and replaying event history on those to cover for a
+ * failing Instance. This allows Processes to proceed through hardware failures and similar.
  *
  * <p>Many Processes can be consuming from the same Stream; a Process can start consumption from the
  * very beginning of the Stream or from an arbitrary position in it.

@@ -175,7 +175,9 @@ public class Spive implements SpiveInstance {
             event.inputStreamIds().stream()
                 .map(platform.streamsById::get)
                 .collect(Collectors.toSet()),
-            event.outputStreamId() == null ? null : platform.streamsById.get(event.outputStreamId()));
+            event.outputStreamId() == null
+                ? null
+                : platform.streamsById.get(event.outputStreamId()));
     platform.processesById.put(process.id, process);
     platform
         .processesByApplicationAndVersion

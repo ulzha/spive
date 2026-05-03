@@ -35,8 +35,11 @@ public record PlatformStateValidator(Platform platform, List<String> validationE
       }
     }
     // TODO ensure that the output stream exists and isn't owned by a different process
-    // TODO ensure naming of output stream matches application name (maybe it just has to be created here with the process...)
-    // TODO ensure that the types of events are compatible - `pojo:` as a tag is perhaps confusing now, deserialization may use a different programming language altogether. So the compatibility is to be worked out at field type level.
+    // TODO ensure naming of output stream matches application name (maybe it just has to be created
+    // here with the process...)
+    // TODO ensure that the types of events are compatible - `pojo:` as a tag is perhaps confusing
+    // now, deserialization may use a different programming language altogether. So the
+    // compatibility is to be worked out at field type level.
     // TODO ensure that there are no cycles of streams
 
     return validationErrors.isEmpty();

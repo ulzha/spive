@@ -127,8 +127,7 @@ public class AppIoc {
       String mainClass,
       List<EventDescriptor> events,
       List<WorkloadDescriptor> workloads,
-      List<GatewayDescriptor> gateways,
-      boolean readsOwnOutput) {
+      List<GatewayDescriptor> gateways) {
     public String getPackage() {
       int iDot = mainClass.lastIndexOf('.');
       return "package " + String.join(".", mainClass.substring(0, iDot), "spive", "gen") + ";";
@@ -156,10 +155,6 @@ public class AppIoc {
 
     public boolean getHasConcurrentWorkloads() {
       return !workloads.isEmpty();
-    }
-
-    public boolean getReadsOwnOutput() {
-      return readsOwnOutput; // TODO infer from input and output streams obvs
     }
   }
 

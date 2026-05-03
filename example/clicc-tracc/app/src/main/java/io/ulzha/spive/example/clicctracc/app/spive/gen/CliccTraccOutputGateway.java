@@ -19,9 +19,6 @@ import java.util.function.Supplier;
  *
  * <p>The methods are merely adapting app events, via serde for the given Type, to generic
  * EventGateway interface.
- *
- * <p>This application consumes its own output stream, therefore implementations of emit* methods
- * must block on event handlers - hence the use of EventIterator to coordinate with EventLoop.
  */
 // <PojoAsJson, or some scheme revolving around Types>
 public class CliccTraccOutputGateway extends EventGateway {
